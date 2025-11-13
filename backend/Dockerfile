@@ -8,9 +8,9 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 
 # Build ra WAR file
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
-# --- Giai đoạn chạy ---
+# --- Giai đoạn chạy ---l
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
