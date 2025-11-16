@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+header {
+  @apply w-full h-[50px] overflow-hidden;
+}
+
+header img {
+  @apply w-full h-full object-cover;
+}
+
+nav {
+  @apply grid grid-cols-3 h-[70px] overflow-hidden mx-30;
+}
+
+.nav-left {
+  @apply p-4;
+}
+
+.nav-left img {
+  @apply w-[50%] h-full object-contain;
+}
+
+.nav-right {
+  @apply flex items-center mx-auto;
+}
+
+.nav-icons {
+  @apply w-5 h-5 cursor-pointer;
+}
+
+.nav-search {
+  @apply grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
+}
+
+.input-search {
+  @apply px-4 py-2 outline-none;
+}
