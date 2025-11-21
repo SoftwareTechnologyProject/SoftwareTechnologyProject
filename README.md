@@ -61,8 +61,8 @@
 ```
 main        →  nhánh deploy
 └── develop →  nhánh tổng hợp
-    ├── feature/module1-home
-    ├── feature/module2-auth
+    ├── feature/home
+    ├── feature/auth
     └── ...
 ```
 
@@ -265,29 +265,72 @@ volumes:
 
 ### Khuyến nghị khi đang phát triển (hot reload nhanh):
 
-**Backend:**
+#### **Bước 1: Chạy PostgreSQL (BẮT BUỘC)**
 ```bash
 cd backend
+docker compose up -d db
+
+# Kiểm tra PostgreSQL đã chạy chưa
+docker compose ps
+```
+
+> ✅ PostgreSQL phải chạy trước, nếu không backend sẽ báo lỗi kết nối!
+
+#### **Bước 2: Chạy Backend (Terminal 1)**
+```bash
+cd backend
+mvn spring-boot:run
+# Hoặc nếu có mvnw
 ./mvnw spring-boot:run
 ```
 
-**Frontend (terminal khác):**
+**Kiểm tra backend đã chạy:**
+- Mở: http://localhost:8080/swagger-ui/index.html
+- Thấy Swagger UI → ✅ Backend OK
+
+#### **Bước 3: Chạy Frontend (Terminal 2 - mở terminal mới)**
 ```bash
 cd frontend
-npm install        # Chỉ lần đầu
+npm install        # Chỉ lần đầu tiên
 npm run dev
 ```
 
-**PostgreSQL (nếu cần):**
+**Kiểm tra frontend đã chạy:**
+- Terminal hiển thị: `Local: http://localhost:5173/`
+- Mở: http://localhost:5173
+- Thấy trang web với Header/Footer → ✅ Frontend OK
+
+---
+
+### 🎯 Sau khi chạy thủ công:
+
+| Service | URL | Cách kiểm tra |
+|---------|-----|---------------|
+| **Frontend** | http://localhost:5173 | Mở trình duyệt thấy giao diện |
+| **Backend API** | http://localhost:8080 | Swagger UI hoạt động |
+| **PostgreSQL** | localhost:5432 | `docker compose ps` thấy bookstore_db running |
+
+---
+
+### 🔧 Các lệnh hữu ích khi chạy thủ công:
+
 ```bash
-docker run --name bookstore-postgres \
-  -e POSTGRES_DB=bookstore \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=123456 \
-  -p 5432:5432 -d postgres:15
+# Xem PostgreSQL logs
+docker compose logs -f db
+
+# Dừng PostgreSQL
+docker compose down
+
+# Reset database (xóa toàn bộ data)
+docker compose down -v
+
+# Kiểm tra port đang được dùng
+lsof -i :8080  # Backend
+lsof -i :5173  # Frontend
+lsof -i :5432  # PostgreSQL
 ```
 
-> 💡 **Lưu ý:** Backend hiện đang dùng H2 in-memory database nên không cần PostgreSQL để test local.
+> 💡 **Lưu ý:** Backend hiện đang dùng **PostgreSQL** (không phải H2). Đảm bảo PostgreSQL đã chạy trước khi start backend, nếu không sẽ báo lỗi `Connection refused`.
 
 ---
 
