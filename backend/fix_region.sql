@@ -1,0 +1,1 @@
+ALTER DATABASE bookstore SET timezone TO 'Asia/Ho_Chi_Minh';

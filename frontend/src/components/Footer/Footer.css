@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+footer {
+    @apply mx-30;
+}
+
+h2 {
+    @apply font-bold;
+}
+
+.footer-container {
+    @apply w-full bg-[var(--components-color)] grid grid-cols-2 p-4 mx-auto;
+}
+
+.footer-left {
+    @apply mr-10 border-r-1;
+}
+
+.footer-left img {
+    @apply w-[45%];
+}
+
+.social-icons {
+    @apply flex flex-row justify-center items-center m-10;
+}
+
+.footer-service {
+    @apply grid grid-cols-3;
+}
+
+.footer-service li {
+    @apply pt-2;
+}
+
+.footer-contact {
+    @apply pt-5;
+}
+
+.footer-contact ul {
+    @apply flex flex-row pt-2;
+}
+
+.footer-contact li {
+    @apply flex flex-row pr-4;
+}
+
+.logo-delivery {
+    @apply grid grid-cols-3;
+}
+
+.logo-delivery img {
+    @apply size-30 object-contain m-auto;
+}
