@@ -2,19 +2,32 @@
   port: 8080
 
 spring:
+  # PostgreSQL Database (Production & Team Development)
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bookstore}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:123456}
+    url: jdbc:postgresql://localhost:5432/bookstore
+    username: postgres
+    password: 123456
     driver-class-name: org.postgresql.Driver
+
+  # H2 Database (Uncomment để dùng H2 cho test nhanh)
+  # datasource:
+  #   url: jdbc:h2:mem:bookstore
+  #   driver-class-name: org.h2.Driver
+  #   username: sa
+  #   password:
+  # h2:
+  #   console:
+  #     enabled: true
+  #     path: /h2-console
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-    show-sql: ${SPRING_JPA_SHOW_SQL:true}
+      ddl-auto: create-drop  # Tạm thời dùng create-drop để xóa bảng cũ và tạo lại schema mới
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
 
@@ -22,4 +35,5 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui
+    enabled: true

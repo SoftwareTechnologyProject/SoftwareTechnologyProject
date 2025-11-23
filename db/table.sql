@@ -5,6 +5,9 @@ CREATE TABLE Accounts (
     password VARCHAR(255) NOT NULL
 );
 
+--ENUM
+CREATE TYPE UserRole AS ENUM ('CUSTOMER', 'STAFF', 'OWNER');
+
 CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
     fullName VARCHAR(255) NOT NULL,
@@ -39,14 +42,23 @@ CREATE TABLE Category (
 CREATE TABLE Book (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    authorId INT,
-    categoryId INT,
     publisherId INT,
-    published IMESTAMPTZ DEFAULT NOW(),
+    publisherYear INT,
+    published_at IMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     description TEXT
 );
 
+-- ================= Bảng cho quan hệ nhiều - nhiều (Không vẽ trong class diagram) =====================
+CREATE TABLE book_author (
+    bookId INT,
+    authorId INT,
+    PRIMARY KEY (bookId, authorId),
+    FOREIGN KEY (bookId) REFERENCES Book(id) ON DELETE CASCADE,
+    FOREIGN KEY (authorId) REFERENCES Publisher(id) ON DELETE CASCADE
+);
+
+-- ================= Bảng cho quan hệ nhiều - nhiều (Không vẽ trong class diagram) =====================
 CREATE TABLE book_category (
     bookId INT,
     categoryId INT,
@@ -55,11 +67,13 @@ CREATE TABLE book_category (
     FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE
 );
 
+CREATE TYPE BookStatus AS ENUM ('AVAILABLE', 'OUT_OF_STOCK');
 CREATE TABLE BookVariants (
     id SERIAL PRIMARY KEY,
     bookId INT REFERENCES Book(id),
     price DOUBLE NOT NULL,
     quantity INT,
+    sold INT,
     status BookStatus NOT NULL -- ENUM
 );
 
@@ -69,15 +83,20 @@ CREATE TABLE BookImages (
     image_url VARCHAR(255) NOT NULL
 );
 
+CREATE TYPE ReviewStatus AS ENUM ('PENDING', 'ACCEPTED');
 CREATE TABLE Reviews (
     id SERIAL PRIMARY KEY,
     userId INT REFERENCES Users(id),
     product_id INT REFERENCES Book(id),
     rating SMALLINT NOT NULL CHECK(rating BETWEEN 1 AND 5), --nếu đánh giá sao
     comment TEXT, 
-    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    status ReviewStatus NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+--ENUM
+CREATE TYPE StatusOrder AS ENUM ('PENDING', 'DELIVERY', 'SUCCESS');
+CREATE TYPE PaymentType AS ENUM ('COD', 'BANKING');
 
 CREATE TABLE Orders (
     id SERIAL PRIMARY KEY,
@@ -123,10 +142,19 @@ CREATE TABLE WishlistItems (
     bookVariantsId INT REFERENCES BookVariants(id)
 );
 
+-- ====================== NOTIFICATIONS ====================
+CREATE TABLE NOTIFICATIONS (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    customerId INT REFERENCES Users(id),
+    createAt TIMESTAMPTZ DEFAULT NOW(),
+    isRead BOOLEAN
+);
+
+-- ====================== Phần chatbox ======================
 CREATE TABLE Conversations (
     id SERIAL PRIMARY KEY,
     customerId INT REFERENCES Users(id), 
-    content TEXT NOT NULL,
     createAt TIMESTAMPTZ DEFAULT NOW(),
     updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
@@ -140,3 +168,19 @@ CREATE TABLE Messages (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     is_read BOOLEAN DEFAULT FALSE
 );
+
+-- ===================-== Phần FORUM ==========================
+CREATE TABLE Post (
+    id SERIAL PRIMARY KEY,
+    title TEXT,
+    owner_id INT REFERENCES Users(id),
+    createAt TIMESTAMPTZ DEFAULT NOW()
+)
+
+CREATE Comments (
+    comment_id SERIAL PRIMARY KEY,
+    topic_id INT REFERENCES topic(id),
+    content TEXT,
+    react INT,
+    createAt TIMESTAMPTZ DEFAULT NOW()
+)
