@@ -1,4 +1,4 @@
-package com.bookstore.backend.DTO;
+package com.bookstore.backend.dto;
 
 import com.bookstore.backend.model.Notification;
 import lombok.AllArgsConstructor;
