@@ -1,4 +1,5 @@
 import React from "react"
+import { Link } from "react-router-dom"
 import bannerHeader from '../../assets/banner-header.png';
 import logo from '../../assets/logo.png';
 import "./Header.css"
@@ -7,6 +8,7 @@ import { CiSearch } from "react-icons/ci";
 import { FiShoppingCart } from "react-icons/fi";
 import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
+import { RiCoupon3Line } from "react-icons/ri";
 
 const Header = () => {
     return (
@@ -18,7 +20,9 @@ const Header = () => {
 
                 <nav>
                     <div className="nav-left">
-                        <img src={logo} alt="logo" />
+                        <Link to="/">
+                            <img src={logo} alt="logo" />
+                        </Link>
                     </div>
 
                     <div className="nav-search">
@@ -30,6 +34,11 @@ const Header = () => {
                         <div>
                             <a href="#" className="flex flex-col items-center"><BsGrid className="nav-icons" /></a>
                             <span>Danh mục</span>
+                        </div>
+
+                        <div className="mx-4">
+                            <Link to="/vouchers" className="flex flex-col items-center"><RiCoupon3Line className="nav-icons" /></Link>
+                            <span>Voucher</span>
                         </div>
 
                         <div className="mx-4">
