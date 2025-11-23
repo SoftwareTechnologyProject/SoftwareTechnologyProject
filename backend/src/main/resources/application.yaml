@@ -22,7 +22,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop  # Tạm thời dùng create-drop để xóa bảng cũ và tạo lại schema mới
     show-sql: true
     properties:
       hibernate:

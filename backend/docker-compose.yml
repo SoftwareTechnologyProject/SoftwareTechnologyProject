@@ -28,7 +28,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+      - ../db/fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
 
 volumes:
   db_data:
