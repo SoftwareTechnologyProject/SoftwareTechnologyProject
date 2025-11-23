@@ -1,6 +1,6 @@
 import React from "react"
-import bannerHeader from '../../assets/banner-header.png';
-import logo from '../../assets/logo.png';
+import bannerHeader from '../../assets/banner/banner-header.png';
+import logo from '../../assets/logo/logo.png';
 import "./Header.css"
 import { BsGrid } from "react-icons/bs";
 import { CiSearch } from "react-icons/ci";
@@ -23,7 +23,7 @@ const Header = () => {
 
                     <div className="nav-search">
                         <input type="text" placeholder="Tìm kiếm..." className="input-search"/>
-                        <button><CiSearch className="nav-icons" /></button>
+                        <button><CiSearch className="w-5 h-5 cursor-pointer" /></button>
                     </div>
 
                     <div className="nav-right">
