@@ -6,8 +6,17 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long>{ // Sử dụng interface để tối ưu thay vì phải viết querry
-    List<Book> findByCategory(String category);
-    List<Book> findByAuthor(String author);
+public interface BookRepository extends JpaRepository<Book, Long> {
+    // Tìm sách theo tên category
+    List<Book> findByCategoriesNameIgnoreCase(String categoryName);
+    
+    // Tìm sách theo tên author
+    List<Book> findByAuthorsNameIgnoreCase(String authorName);
+    
+    // Tìm sách theo tên publisher
+    List<Book> findByPublisherNameIgnoreCase(String publisherName);
+    
+    // Tìm sách theo title
     List<Book> findByTitleContainingIgnoreCase(String keyword);
 }
+

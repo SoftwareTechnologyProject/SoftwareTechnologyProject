@@ -1,50 +1,61 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.dto.BookDTO;
 import com.bookstore.backend.model.Book;
-import com.bookstore.backend.service.BookService;
+import com.bookstore.backend.service.impl.BookServiceImpl;
 
-import org.springframework.beans.factory.annotation.*;
+import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@RestController // = @Controller + @ResponseBody, tự động convert sang JSON, không cần thêm
-                // ResponseBody mỗi method
+@RestController
 @RequestMapping("/books")
 public class BookController {
     @Autowired
-    private BookService bookService;
+    private BookServiceImpl bookService;
 
-    // endpint 1: GET /books -> lấy tất cả sách
+    // endpoint 1: GET /books -> lấy tất cả sách (trả về DTO)
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
         List<Book> books = bookService.getAllBooks();
-        return ResponseEntity.ok(books); // trả về HTTP 200 cùng với list
+        List<BookDTO> bookDTOs = books.stream()
+                .map(bookService::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(bookDTOs);
     }
 
-    // endpoint 2: GET /books/{id} -> lấy sách theo id
+    // endpoint 2: GET /books/{id} -> lấy sách theo id (trả về DTO)
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        Book books = bookService.getBookById(id);
-        return ResponseEntity.ok(books);
+    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+        Book book = bookService.getBookById(id);
+        BookDTO bookDTO = bookService.convertToDTO(book);
+        return ResponseEntity.ok(bookDTO);
     }
 
-    // endpoint 3: POST /books
+    // endpoint 3: POST /books -> tạo sách mới (nhận DTO)
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody Book book) { // @RequestBody nhận JSON từ body và chuyển thành Book
+    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookDTO bookDTO) {
+        Book book = bookService.convertToEntity(bookDTO);
         Book savedBook = bookService.createBook(book);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBook); // HTTP 201 created
+        BookDTO savedBookDTO = bookService.convertToDTO(savedBook);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedBookDTO);
     }
 
-    // endpoint 4: PUT /books/{id}
+    // endpoint 4: PUT /books/{id} -> cập nhật sách (nhận DTO)
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(
-            @PathVariable Long id, // lấy id từ URL
-            @RequestBody Book book) { // lấy dữ liệu mới từ client
-        Book updatedBook = bookService.updateBook(id, book);
-        return ResponseEntity.ok(updatedBook);
+    public ResponseEntity<BookDTO> updateBook(
+            @PathVariable Long id,
+            @Valid @RequestBody BookDTO bookDTO) {
+        Book bookDetails = bookService.convertToEntity(bookDTO);
+        Book updatedBook = bookService.updateBook(id, bookDetails);
+        BookDTO updatedBookDTO = bookService.convertToDTO(updatedBook);
+        return ResponseEntity.ok(updatedBookDTO);
     }
 
     // endpoint 5: DELETE /books/{id}
@@ -54,4 +65,13 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
+    // endpoint 6: GET /books/category/{categoryName} -> lấy sách theo category
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<List<BookDTO>> getBooksByCategory(@PathVariable String categoryName) {
+        List<Book> books = bookService.getBooksByCategory(categoryName);
+        List<BookDTO> bookDTOs = books.stream()
+                .map(bookService::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(bookDTOs);
+    }
 }
