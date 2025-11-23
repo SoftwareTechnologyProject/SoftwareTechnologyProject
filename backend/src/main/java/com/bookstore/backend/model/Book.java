@@ -3,6 +3,7 @@ package com.bookstore.backend.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "books")
@@ -50,6 +51,9 @@ public class Book {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "book")
+    List<BookVariants> bookVariantsList;
     
     // Constructors
     public Book() {}

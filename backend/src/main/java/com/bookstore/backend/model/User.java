@@ -1,10 +1,9 @@
 package com.bookstore.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -15,6 +14,10 @@ public class User {
     private Long id;
     private String email;
     private String password;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "users")
+    List<Orders> ordersList;
 
     public User() {}
 
@@ -29,4 +32,16 @@ public class User {
 
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<Orders> getOrdersList() {
+        return ordersList;
+    }
+
+    public void setOrdersList(List<Orders> ordersList) {
+        this.ordersList = ordersList;
+    }
 }
