@@ -1,29 +1,38 @@
 package com.bookstore.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
+import lombok.*;
 import java.time.LocalDateTime;
-import java.util.Set;
 
-@Data
-@AllArgsConstructor
 @Entity
+@Table(name = "notifications")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToMany
-    @JoinTable(name = "user_notification", joinColumns = @JoinColumn(name = "notification_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Users customer;
 
     private LocalDateTime createAt;
-    private boolean isRead;
+
+    @Builder.Default
+    private Boolean isRead = false;
+
     private String url;
 
+    @PrePersist
+    protected void onCreate() {
+        if (createAt == null) createAt = LocalDateTime.now();
+        if (isRead == null) isRead = false;
+    }
 }
