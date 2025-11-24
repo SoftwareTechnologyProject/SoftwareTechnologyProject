@@ -33,11 +33,15 @@ const VoucherManagement = () => {
         setLoading(true);
         try {
             const response = await fetch(API_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
-            setVouchers(data);
+            setVouchers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching vouchers:', error);
-            alert('Không thể tải danh sách voucher');
+            setVouchers([]);
+            alert('Không thể tải danh sách voucher: ' + error.message);
         } finally {
             setLoading(false);
         }
