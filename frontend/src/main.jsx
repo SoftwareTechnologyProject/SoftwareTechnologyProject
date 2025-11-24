@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './main.css'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
-import Home from './pages/Home'
-import VoucherManagement from './pages/VoucherManagement/VoucherManagement'
+import Home from './pages/Home.jsx'
+import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
