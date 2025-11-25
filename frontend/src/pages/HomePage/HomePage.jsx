@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
-import banner1 from "../../assets/banner/banner-1.png"
-import banner2 from "../../assets/banner/banner-3.png"
-import banner3 from "../../assets/banner/banner-5.png"
-import bannerMomo from "../../assets/banner/banner-momo.png"
-import bannerVnpay from "../../assets/banner/banner-vnpay.png"
-import recommendBanner from "../../assets/banner/recommend-banner.png"
+import banner1 from "../../assets/banner/banner-1.png";
+import banner2 from "../../assets/banner/banner-3.png";
+import banner3 from "../../assets/banner/banner-5.png";
+import bannerMomo from "../../assets/banner/banner-momo.png";
+import bannerVnpay from "../../assets/banner/banner-vnpay.png";
+import recommendBanner from "../../assets/banner/recommend-banner.png";
 
 import child from "../../assets/logo/child.png";
 import foreign from "../../assets/logo/foreign.png";
@@ -16,22 +17,22 @@ import skill from "../../assets/logo/skill.png";
 import vnHistory from "../../assets/logo/vnHistory.png";
 import paper from "../../assets/logo/paper.png";
 
-import card1 from "../../assets/gift-card/card-1.jpg"
-import ex1 from "../../assets/ex1.jpg"
+import card1 from "../../assets/gift-card/card-1.jpg";
+import ex1 from "../../assets/ex1.jpg";
 
-import Header from '../../components/Header/Header'
-import Footer from '../../components/Footer/Footer'
+import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 
-import { BsGrid } from "react-icons/bs"
+import { BsGrid } from "react-icons/bs";
 import { IoGiftOutline } from "react-icons/io5";
 import { FaArrowTrendUp } from "react-icons/fa6";
-import { FaRankingStar } from "react-icons/fa6";
 import { RiBook3Line } from "react-icons/ri";
 import { IoIosArrowForward } from "react-icons/io";
 
-import "./HomePage.css"
+import "./HomePage.css";
 
 const banners = [banner1, banner2, banner3];
+
 const catalog = [
     { img: paper, link: "/paper", content: "Giấy Photo" },
     { img: child, link: "/child-books", content: "Thiếu Nhi" },
@@ -42,57 +43,34 @@ const catalog = [
     { img: skill, link: "/skills", content: "Tâm Lý Kỹ Năng" },
     { img: vnHistory, link: "/vietnam-history", content: "Lịch Sử Việt Nam" },
 ];
-const giftCard = [
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-    { img: card1, link: "/card1" },
-];
-const listTrend = [
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-];
-const comboTrend = [
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-    { img: ex1, link: "/ex1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },
-];
+
+const giftCard = Array(9).fill({ img: card1, link: "/card1" });
+
+const listTrend = Array(10).fill({
+    img: ex1,
+    link: "/ex1",
+    title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian",
+    oldPrice: "40.000 đ",
+    newPrice: "36.000 đ",
+    discount: "-10%",
+});
+
+const comboTrend = Array(20).fill({
+    img: ex1,
+    link: "/ex1",
+    title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian",
+    oldPrice: "40.000 đ",
+    newPrice: "36.000 đ",
+    discount: "-10%",
+});
+
 
 const HomePage = () => {
 
     const [index, setIndex] = useState(0);
     const [giftIndex, setGiftIndex] = useState(0);
     const totalGiftSlides = Math.ceil(giftCard.length / 3);
+
     const [comboIndex, setComboIndex] = useState(0);
     const totalComboTrendSlides = Math.ceil(comboTrend.length / 5);
 
@@ -119,7 +97,9 @@ const HomePage = () => {
             <main>
                 <div className="banner-container">
                     <div className="elite-banner">
-                        <a href="#"><img src={banners[index]} alt="Auto banner" /></a>
+                        <Link to="#">
+                            <img src={banners[index]} alt="Auto banner" />
+                        </Link>
 
                         <button onClick={() => setIndex((index - 1 + banners.length) % banners.length)} className="arrow-left">
                             ❮
@@ -141,36 +121,31 @@ const HomePage = () => {
                             ))}
                         </div>
                     </div>
+
                     <div className="pay-banner">
-                        <a href="#"><img src={bannerMomo} alt="banner Momo" /></a>
-                        <a href="#"><img src={bannerVnpay} alt="banner Vnpay" /></a>
+                        <Link to="#"><img src={bannerMomo} alt="banner Momo" /></Link>
+                        <Link to="#"><img src={bannerVnpay} alt="banner Vnpay" /></Link>
                     </div>
                 </div>
 
-                {/* ======================= Product Catalog ========================= */}
-
+                {/* ======================= Catalog ========================= */}
                 <div className="product-catalog">
                     <div className="title-content">
                         <BsGrid className="icon-title" />
                         <h1>Danh Mục Sản Phẩm</h1>
                     </div>
+
                     <div className="catalog-detail">
                         {catalog.map((item, index) => (
-                            <a
-                                key={index}
-                                href={item.link}
-                            >
-                                <img src={item.img} alt={`catalog-${index}`} className="w-full h-auto" />
-                                <span> {item.content} </span>
-                            </a>
+                            <Link key={index} to={item.link}>
+                                <img src={item.img} alt="" className="w-full h-auto" />
+                                <span>{item.content}</span>
+                            </Link>
                         ))}
                     </div>
                 </div>
 
-                {/* ======================= End ========================= */}
-
                 {/* ======================= Gift Card ========================= */}
-
                 <div className="product-catalog">
                     <div className="title-content border-none">
                         <IoGiftOutline className="icon-title" />
@@ -191,9 +166,9 @@ const HomePage = () => {
                                     {giftCard
                                         .slice(groupIndex * 3, groupIndex * 3 + 3)
                                         .map((item, idx) => (
-                                            <a key={idx} href={item.link}>
+                                            <Link key={idx} to={item.link}>
                                                 <img src={item.img} alt="" className="w-full h-auto rounded-xl" />
-                                            </a>
+                                            </Link>
                                         ))}
                                 </div>
                             ))}
@@ -220,46 +195,39 @@ const HomePage = () => {
                     </div>
 
                     <div className="button-more">
-                        <a href="#"> Xem Thêm</a>
+                        <Link to="#">Xem Thêm</Link>
                     </div>
-
-                    {/* ============ End =============== */}
                 </div>
 
                 {/* ====================== Trending =================== */}
-
                 <div className="trending">
                     <div className="title-trending">
-                        < FaArrowTrendUp className="icon-title" />
+                        <FaArrowTrendUp className="icon-title" />
                         <h1>Xu Hướng Mua Sắm</h1>
                     </div>
 
                     <div className="trend-detail">
                         {listTrend.map((item, index) => (
-                            <a
-                                key={index}
-                                href={item.link}
-                            >
-                                <img src={item.img} alt={`trend-${index}`} className="w-full h-auto" />
-
+                            <Link key={index} to={item.link}>
+                                <img src={item.img} alt="" className="w-full h-auto" />
                                 <div className="label-price">
-                                    <h3> {item.title} </h3>
+                                    <h3>{item.title}</h3>
                                     <p className="special-price">
-                                        <span className="price-new"> {item.newPrice} </span>
-                                        <span className="percent-discount"> {item.discount} </span>
+                                        <span className="price-new">{item.newPrice}</span>
+                                        <span className="percent-discount">{item.discount}</span>
                                     </p>
-
-                                    <span className="price-old"> {item.oldPrice} </span>
+                                    <span className="price-old">{item.oldPrice}</span>
                                 </div>
-                            </a>
+                            </Link>
                         ))}
                     </div>
 
                     <div className="button-more">
-                        <a href="#"> Xem Thêm</a>
+                        <Link to="#">Xem Thêm</Link>
                     </div>
                 </div>
 
+                {/* ====================== Combo Trending =================== */}
                 <div className="combo-trending">
                     <div className="title-trending">
                         <RiBook3Line className="icon-title" />
@@ -279,7 +247,7 @@ const HomePage = () => {
                                     {comboTrend
                                         .slice(groupIdx * 5, groupIdx * 5 + 5)
                                         .map((item, idx) => (
-                                            <a key={idx} href={item.link}>
+                                            <Link key={idx} to={item.link}>
                                                 <img src={item.img} alt="" />
                                                 <div className="label-price">
                                                     <h3>{item.title}</h3>
@@ -289,7 +257,7 @@ const HomePage = () => {
                                                     </p>
                                                     <span className="price-old">{item.oldPrice}</span>
                                                 </div>
-                                            </a>
+                                            </Link>
                                         ))}
                                 </div>
                             ))}
@@ -315,43 +283,41 @@ const HomePage = () => {
                     </div>
 
                     <div className="button-more">
-                        <a href="#">Xem Thêm</a>
+                        <Link to="#">Xem Thêm</Link>
                     </div>
                 </div>
 
+                {/* ====================== Recommend =================== */}
                 <div className="recommend">
                     <img src={recommendBanner} alt="recommend banner" />
 
                     <div className="recommend-detail">
                         {listTrend.map((item, index) => (
-                            <a
-                                key={index}
-                                href={item.link}
-                            >
-                                <img src={item.img} alt={`trend-${index}`} className="w-full h-auto" />
-
+                            <Link key={index} to={item.link}>
+                                <img src={item.img} alt="" className="w-full h-auto" />
                                 <div className="label-price">
-                                    <h3> {item.title} </h3>
+                                    <h3>{item.title}</h3>
                                     <p className="special-price">
-                                        <span className="price-new"> {item.newPrice} </span>
-                                        <span className="percent-discount"> {item.discount} </span>
+                                        <span className="price-new">{item.newPrice}</span>
+                                        <span className="percent-discount">{item.discount}</span>
                                     </p>
-
-                                    <span className="price-old"> {item.oldPrice} </span>
+                                    <span className="price-old">{item.oldPrice}</span>
                                 </div>
-                            </a>
+                            </Link>
                         ))}
                     </div>
 
                     <div className="button-more mt-65">
-                        <a href="#" className="flex gap-2"> Xem Tất Cả <IoIosArrowForward className="text-center h-full" /></a>
+                        <Link to="#" className="flex gap-2">
+                            Xem Tất Cả <IoIosArrowForward />
+                        </Link>
                     </div>
                 </div>
             </main>
 
             <Footer />
         </>
-    )
-}
+    );
+};
 
 export default HomePage;
