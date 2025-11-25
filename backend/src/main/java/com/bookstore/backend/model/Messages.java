@@ -5,34 +5,36 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "messages")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notification {
+public class Messages {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "conversation_id")
+    private Conversations conversation;
+
+    @ManyToOne
+    @JoinColumn(name = "sender_id")
+    private Users sender;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Users customer;
-
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     @Builder.Default
     private Boolean isRead = false;
 
-    private String url;
-
     @PrePersist
     protected void onCreate() {
-        if (createAt == null) createAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = LocalDateTime.now();
         if (isRead == null) isRead = false;
     }
 }
