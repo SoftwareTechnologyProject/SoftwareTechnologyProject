@@ -1,4 +1,4 @@
-package com.bookstore.backend.DTO;
+package com.bookstore.backend.dto;
 
 import com.bookstore.backend.model.Notification;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ public class NotificationDTO {
 
     public static NotificationDTO from(Notification notification){
         return NotificationDTO.builder().content(notification.getContent())
-                .createAt(notification.getCreateAt()).isRead(notification.isRead()).url(notification.getUrl())
+                .createAt(notification.getCreateAt()).isRead(notification.getIsRead()).url(notification.getUrl())
                 .build();
     }
 }

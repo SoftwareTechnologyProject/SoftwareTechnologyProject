@@ -1,11 +1,11 @@
 import React from "react"
-import logo from '../../assets/logo.png';
-import logoLex from '../../assets/logo_lex.png';
-import logoNinja from '../../assets/Logo_ninjavan.png';
-import logoZalo from '../../assets/logo_zalopay_2.png';
-import logoMomo from '../../assets/momopay.png';
-import logoVnpay from '../../assets/vnpay_logo.png';
-import logoVnpost from '../../assets/vnpost1.png';
+import logo from '../../assets/logo/logo.png';
+import logoLex from '../../assets/logo/logo_lex.png';
+import logoNinja from '../../assets/logo/Logo_ninjavan.png';
+import logoZalo from '../../assets/logo/logo_zalopay_2.png';
+import logoMomo from '../../assets/logo/momopay.png';
+import logoVnpay from '../../assets/logo/vnpay_logo.png';
+import logoVnpost from '../../assets/logo/vnpost1.png';
 import "./Footer.css"
 import { FaFacebook } from "react-icons/fa";
 import { AiFillInstagram } from "react-icons/ai";
