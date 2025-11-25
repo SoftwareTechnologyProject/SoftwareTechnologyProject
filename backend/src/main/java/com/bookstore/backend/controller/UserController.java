@@ -1,6 +1,5 @@
 package com.bookstore.backend.controller;
 
-import com.bookstore.backend.model.User;
 import com.bookstore.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
