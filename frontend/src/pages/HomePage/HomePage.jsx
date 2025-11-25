@@ -27,42 +27,10 @@ import { BsGrid } from "react-icons/bs";
 import { IoGiftOutline } from "react-icons/io5";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { RiBook3Line } from "react-icons/ri";
-import { IoIosArrowForward } from "react-icons/io";
 
 import "./HomePage.css";
 
 const banners = [banner1, banner2, banner3];
-
-const catalog = [
-    { img: paper, link: "/paper", content: "Giấy Photo" },
-    { img: child, link: "/child-books", content: "Thiếu Nhi" },
-    { img: foreign, link: "/foreign-books", content: "Ngoại Văn" },
-    { img: language, link: "/language", content: "Sách Học Ngoại Ngữ" },
-    { img: literature, link: "/literature", content: "Văn Học" },
-    { img: sgk, link: "/textbooks", content: "SGK 2026" },
-    { img: skill, link: "/skills", content: "Tâm Lý Kỹ Năng" },
-    { img: vnHistory, link: "/vietnam-history", content: "Lịch Sử Việt Nam" },
-];
-
-const giftCard = Array(9).fill({ img: card1, link: "/card1" });
-
-const listTrend = Array(10).fill({
-    img: ex1,
-    link: "/ex1",
-    title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian",
-    oldPrice: "40.000 đ",
-    newPrice: "36.000 đ",
-    discount: "-10%",
-});
-
-const comboTrend = Array(20).fill({
-    img: ex1,
-    link: "/ex1",
-    title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian",
-    oldPrice: "40.000 đ",
-    newPrice: "36.000 đ",
-    discount: "-10%",
-});
 
 
 const HomePage = () => {
@@ -70,7 +38,6 @@ const HomePage = () => {
     const [index, setIndex] = useState(0);
     const [giftIndex, setGiftIndex] = useState(0);
     const totalGiftSlides = Math.ceil(giftCard.length / 3);
-
     const [comboIndex, setComboIndex] = useState(0);
     const totalComboTrendSlides = Math.ceil(comboTrend.length / 5);
 

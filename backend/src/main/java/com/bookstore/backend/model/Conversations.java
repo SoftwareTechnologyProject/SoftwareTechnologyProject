@@ -3,21 +3,19 @@ package com.bookstore.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "conversations")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notification {
+public class Conversations {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(columnDefinition = "TEXT")
-    private String content;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
@@ -25,14 +23,21 @@ public class Notification {
 
     private LocalDateTime createAt;
 
-    @Builder.Default
-    private Boolean isRead = false;
+    private LocalDateTime updatedAt;
 
-    private String url;
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<Messages> messages;
 
     @PrePersist
     protected void onCreate() {
         if (createAt == null) createAt = LocalDateTime.now();
-        if (isRead == null) isRead = false;
+        if (updatedAt == null) updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
