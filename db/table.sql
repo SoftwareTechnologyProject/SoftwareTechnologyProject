@@ -111,18 +111,6 @@ CREATE TABLE CartItems (
     quantity INT
 );
 
-CREATE TABLE Wishlists (
-    id SERIAL PRIMARY KEY,
-    userId INT REFERENCES Users(id),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE WishlistItems (
-    id SERIAL PRIMARY KEY,
-    wishlistId INT REFERENCES Wishlists(id),
-    bookVariantsId INT REFERENCES BookVariants(id)
-);
-
 CREATE TABLE Conversations (
     id SERIAL PRIMARY KEY,
     customerId INT REFERENCES Users(id), 
