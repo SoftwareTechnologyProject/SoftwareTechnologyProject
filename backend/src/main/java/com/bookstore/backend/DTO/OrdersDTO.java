@@ -1,6 +1,6 @@
 package com.bookstore.backend.DTO;
 
-import com.bookstore.backend.model.OrderDetail;
+import com.bookstore.backend.model.OrderDetails;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
@@ -15,7 +15,7 @@ public class OrdersDTO {
     private StatusOrder status;
     private PaymentType paymentType;
     private Date orderDate;
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetails> orderDetails;
     private Voucher voucher;
 
     public int getId() {
@@ -66,11 +66,11 @@ public class OrdersDTO {
         this.orderDate = orderDate;
     }
 
-    public List<OrderDetail> getOrderDetails() {
+    public List<OrderDetails> getOrderDetails() {
         return orderDetails;
     }
 
-    public void setOrderDetails(List<OrderDetail> orderDetails) {
+    public void setOrderDetails(List<OrderDetails> orderDetails) {
         this.orderDetails = orderDetails;
     }
 
