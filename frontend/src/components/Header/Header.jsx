@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
 import logo from '../../assets/logo/logo.png';
 import "./Header.css";
@@ -7,7 +8,7 @@ import { CiSearch } from "react-icons/ci";
 import { FiShoppingCart } from "react-icons/fi";
 import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
-import { Link } from "react-router-dom";
+import { RiCoupon3Line } from "react-icons/ri";
 
 const Header = () => {
     return (
@@ -34,6 +35,13 @@ const Header = () => {
                             <BsGrid className="nav-icons" />
                         </Link>
                         <span>Danh mục</span>
+                    </div>
+
+                    <div className="mx-4">
+                        <Link to="/vouchers" className="flex flex-col items-center">
+                            <RiCoupon3Line className="nav-icons" />
+                        </Link>
+                        <span>Voucher</span>
                     </div>
 
                     <div className="mx-4">
