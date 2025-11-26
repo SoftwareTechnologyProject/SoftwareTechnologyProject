@@ -30,5 +30,15 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: bookstore_pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8085:80"
+    depends_on:
+      - db
 volumes:
   db_data:
