@@ -9,7 +9,7 @@ header img {
 }
 
 nav {
-  @apply grid grid-cols-3 h-[70px] overflow-hidden mx-30;
+  @apply grid grid-cols-3 h-full overflow-hidden mx-30;
 }
 
 .nav-left {
@@ -25,7 +25,7 @@ nav {
 }
 
 .nav-icons {
-  @apply w-5 h-5 cursor-pointer;
+  @apply w-7 h-7 cursor-pointer;
 }
 
 .nav-search {

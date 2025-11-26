@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+/* ========== Common ================= */
+.product-catalog {
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[3fr_7fr] px-5 rounded-xl;
+}
+
+.icon-title {
+    @apply w-[70%] h-[70%] text-[var(--primary-color)] m-auto;
+}
+
+h1 {
+    @apply text-2xl font-bold place-content-center;
+}
+
+/* ============ End ================== */
+
+/* ========= Button More ========== */
+.button-more {
+    @apply flex justify-center font-bold pb-10 pt-4;
+}
+
+.button-more a {
+    @apply border-2 py-4 px-20 rounded-xl text-[var(--primary-color)];
+}
+
+/* ============ End ============== */
+
+/* ========================== Banner Area ====================================== */
+.banner-container {
+    @apply grid grid-cols-[7fr_3fr] gap-4 mx-30 my-5;
+}
+
+.banner-container img {
+    @apply rounded-xl;
+}
+
+.elite-banner {
+    @apply relative;
+}
+
+.elite-banner a {
+    @apply w-[80%];
+}
+
+.arrow-left {
+    @apply  absolute top-1/2 left-3 -translate-y-1/2 bg-white/40 hover:bg-white text-black p-4 rounded-full transition duration-300 ease-in cursor-pointer;
+}
+
+.arrow-right {
+    @apply  absolute top-1/2 right-3 -translate-y-1/2 bg-white/40 hover:bg-white text-black p-4 rounded-full transition duration-300 ease-in cursor-pointer;
+}
+
+.pay-banner {
+    @apply grid grid-rows-2 gap-4;
+}
+
+.pay-banner img {
+    @apply h-full;
+}
+
+/* ==================================== End =================================== */
+
+/* =========================== Product Catalog Area =========================== */
+.product-catalog .title-content {
+    @apply grid grid-cols-[0.5fr_9.5fr] gap-4 p-5 border-b-1;
+}
+
+.catalog-detail {
+    @apply grid grid-cols-8 gap-4;
+}
+
+.catalog-detail a {
+    @apply grid grid-rows-[5fr_2fr] p-5 gap-2 hover:opacity-80 transition text-center text-xl;
+}
+
+/* ==================================== End =================================== */
+
+/* =========================== Gift Card Area =========================== */
+.gift-card {
+    @apply relative grid grid-cols-3 gap-5 overflow-hidden px-5 pb-5;
+}
+
+.auto-slide {
+    @apply flex transition-all duration-300;
+}
+
+.card {
+    @apply grid grid-cols-3 gap-3 w-full flex-shrink-0 px-2;
+}
+
+/* ==================================== End =================================== */
+
+/* ================================== Trending ================================ */
+.trending {
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[1fr_7fr] px-5 rounded-xl;
+}
+
+.title-trending {
+    @apply grid grid-cols-[0.5fr_9.5fr] gap-4 p-5; 
+}
+
+.title-trending .icon-title {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2;
+}
+
+.trend-detail {
+    @apply grid grid-cols-5 gap-4 pb-4;
+}
+
+.label-price {
+    @apply px-10 pt-2;
+}
+
+.special-price {
+    @apply pt-2;
+}
+
+.label-price .price-new {
+    @apply text-xl font-bold text-[var(--primary-color)];
+}
+
+.label-price .percent-discount {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2 mx-3;
+}
+
+.label-price .price-old {
+    @apply line-through;
+}
+
+.combo-trending {
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[2fr_7fr] px-5 rounded-xl;
+}
+
+.combo-slide {
+    @apply relative overflow-hidden;
+}
+
+.combo-transform {
+    @apply flex transition-transform duration-800;
+}
+
+.combo-detail {
+    @apply flex shrink-0 w-[25%] pb-4;
+}
+
+/* ======================= End ========================= */
+
+.recommend {
+    @apply relative mx-30 grid gap-4 rounded-2xl;
+}
+
+.recommend img {
+    @apply w-full h-auto rounded-2xl;
+}
+
+.recommend-detail {
+    @apply absolute grid grid-cols-5 gap-4 mt-50 py-5 bg-[var(--components-color)] rounded-2xl; /* 5 cột ảnh */
+}
+
+
+
