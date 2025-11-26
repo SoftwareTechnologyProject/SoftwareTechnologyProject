@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./BookDetail.css";
+import "./ProductDetail.css";
 
 export default function BookDetail() {
   const [quantity, setQuantity] = useState(1);
