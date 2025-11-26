@@ -1,6 +1,6 @@
 package com.bookstore.backend.model;
 
-//import com.bookstore.backend.model.enums.BookStatus;
+import com.bookstore.backend.model.enums.BookStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;

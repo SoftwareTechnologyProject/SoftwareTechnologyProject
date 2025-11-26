@@ -6,6 +6,7 @@ import com.bookstore.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashSet;
 
 import java.util.Optional;
 
@@ -22,7 +23,7 @@ public class CartService {
     private Cart getOrCreateCart(Long userId) {
         return cartRepo.findByUserId(userId)
                 .orElseGet(() -> {
-                    User user = userRepo.findById(userId)
+                    Users user = userRepo.findById(userId)
                             .orElseThrow(() -> new RuntimeException("User không tồn tại"));
                     Cart newCart = new Cart();
                     newCart.setUser(user);
@@ -35,19 +36,23 @@ public class CartService {
     public void addToCart(Long userId, AddToCartRequest request) {
         Cart cart = getOrCreateCart(userId);
 
-        BookVariant variant = bookVariantRepo.findById(request.getBookVariantId())
+        if (cart.getCartItems() == null) {
+            cart.setCartItems(new HashSet<>());
+        }
+
+        BookVariants variant = bookVariantRepo.findById(request.getBookVariantId())
                 .orElseThrow(() -> new RuntimeException("Sách không tồn tại"));
 
-        Optional<CartItem> existingItem = cart.getItems().stream()
+        Optional<CartItems> existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getBookVariant().getId().equals(variant.getId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            CartItem item = existingItem.get();
+            CartItems item = existingItem.get();
             item.setQuantity(item.getQuantity() + request.getQuantity());
             cartItemRepo.save(item);
         } else {
-            CartItem newItem = new CartItem();
+            CartItems newItem = new CartItems();
             newItem.setCart(cart);
             newItem.setBookVariant(variant);
             newItem.setQuantity(request.getQuantity());
@@ -57,7 +62,7 @@ public class CartService {
 
     // Update item quantity in cart
     public void updateItemQuantity(Long userId, Long cartItemId, int newQuantity) {
-        CartItem item = cartItemRepo.findById(cartItemId)
+        CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm không có trong giỏ"));
 
         // Check if the cart item belongs to the user's cart
@@ -76,7 +81,7 @@ public class CartService {
 
     // Remove item from cart
     public void removeItem(Long userId, Long cartItemId) {
-        CartItem item = cartItemRepo.findById(cartItemId)
+        CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Mục này không tồn tại"));
 
         if (item.getCart().getUser().getId().equals(userId)) {
