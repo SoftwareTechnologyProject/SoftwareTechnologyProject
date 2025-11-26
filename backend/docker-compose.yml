@@ -8,6 +8,7 @@ services:
       - "${SERVER_PORT}:8080"
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      # - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
@@ -16,7 +17,7 @@ services:
       - db
 
   db:
-    image: postgres:15
+    image: postgres:14
     container_name: bookstore_db
     restart: always
     environment:
@@ -25,10 +26,20 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ../db/fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+      - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: bookstore_pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8085:80"
+    depends_on:
+      - db
 volumes:
   db_data:
