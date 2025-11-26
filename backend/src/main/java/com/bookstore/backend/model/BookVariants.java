@@ -1,7 +1,9 @@
 package com.bookstore.backend.model;
 
-import com.bookstore.backend.model.enums.BookStatus;
+// import com.bookstore.backend.model.enums.BookStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.util.Set;
 
@@ -21,15 +23,21 @@ public class BookVariants {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    @NotNull(message = "Giá không được trống")
+    @Min(value = 0, message = "Giá phải lớn hơn hoặc bằng 0")
     @Column(nullable = false)
     private Double price;
 
+    @Min(value = 0, message = "Số lượng phải lớn hơn hoặc bằng 0")
     @Builder.Default
     private Integer quantity = 0;
 
+    @Min(value = 0, message = "Số lượng đã bán phải lớn hơn hoặc bằng 0")
     @Builder.Default
     private Integer sold = 0;
 
+    @NotNull(message = "Trạng thái không được trống")
+    // @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String status;
 

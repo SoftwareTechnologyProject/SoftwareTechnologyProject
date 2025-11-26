@@ -1,7 +1,10 @@
 package com.bookstore.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,10 +20,12 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên thể loại không được trống")
     @Column(nullable = false)
     private String name;
 
     @ManyToMany(mappedBy = "categories")
+    @JsonIgnore
     @Builder.Default
     private Set<Book> books = new HashSet<>();
 
