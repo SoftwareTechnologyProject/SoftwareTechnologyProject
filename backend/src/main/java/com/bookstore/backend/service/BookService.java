@@ -1,7 +1,7 @@
 package com.bookstore.backend.service;
 
-import com.bookstore.backend.dto.BookDTO;
-import com.bookstore.backend.dto.BookDTO.BookVariantDTO;
+import com.bookstore.backend.DTO.BookDTO;
+import com.bookstore.backend.DTO.BookDTO.BookVariantDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.BookRepository;

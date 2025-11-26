@@ -1,6 +1,6 @@
 package com.bookstore.backend.service;
 
-import com.bookstore.backend.dto.NotificationDTO;
+import com.bookstore.backend.DTO.NotificationDTO;
 import com.bookstore.backend.model.Notification;
 import lombok.AllArgsConstructor;
 import lombok.Data;

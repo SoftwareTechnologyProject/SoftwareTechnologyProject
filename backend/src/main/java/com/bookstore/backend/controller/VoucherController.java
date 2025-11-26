@@ -1,6 +1,6 @@
 package com.bookstore.backend.controller;
 
-import com.bookstore.backend.dto.VoucherDTO;
+import com.bookstore.backend.DTO.VoucherDTO;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.service.impl.VoucherServiceImpl;
 import jakarta.validation.Valid;
