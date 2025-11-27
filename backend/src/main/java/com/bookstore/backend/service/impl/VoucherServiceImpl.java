@@ -1,6 +1,6 @@
 package com.bookstore.backend.service.impl;
 
-import com.bookstore.backend.dto.VoucherDTO;
+import com.bookstore.backend.DTO.VoucherDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.repository.VoucherRepository;

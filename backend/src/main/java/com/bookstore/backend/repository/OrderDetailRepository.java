@@ -1,11 +1,11 @@
 package com.bookstore.backend.repository;
 
-import com.bookstore.backend.model.OrderDetail;
+import com.bookstore.backend.model.OrderDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-public interface OrderDetailRepository extends JpaRepository<OrderDetail, Integer> {
+public interface OrderDetailRepository extends JpaRepository<OrderDetails, Integer> {
 
     // Lấy danh sách OrderDetail theo orderId
-    List<OrderDetail> findByOrders_Id(int orderId);
+    List<OrderDetails> findByOrders_Id(int orderId);
 }

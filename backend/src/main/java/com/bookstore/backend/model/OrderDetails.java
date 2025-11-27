@@ -17,7 +17,9 @@ public class OrderDetails {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Orders order;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Orders orders;
 
     @ManyToOne
     @JoinColumn(name = "book_variant_id")
