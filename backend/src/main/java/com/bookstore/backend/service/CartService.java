@@ -1,6 +1,6 @@
 package com.bookstore.backend.service;
 
-import com.bookstore.backend.DTO.AddToCartRequest;
+import com.bookstore.backend.DTO.CartItemsDTO;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class CartService {
 
     // Add to cart
     @Transactional
-    public void addToCart(Long userId, AddToCartRequest request) {
+    public void addToCart(Long userId, CartItemsDTO request) {
         Cart cart = getOrCreateCart(userId);
 
         if (cart.getCartItems() == null) {
