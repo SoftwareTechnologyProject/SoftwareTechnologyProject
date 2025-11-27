@@ -1,4 +1,4 @@
-package com.bookstore.backend.dto;
+package com.bookstore.backend.DTO;
 
 import jakarta.validation.constraints.*;
 import java.util.Set;
