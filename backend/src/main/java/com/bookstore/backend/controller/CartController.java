@@ -1,8 +1,6 @@
 package com.bookstore.backend.controller;
 
-import com.bookstore.backend.model.Cart;
-import com.bookstore.backend.repository.CartRepository;
-import com.bookstore.backend.DTO.AddToCartRequest;
+import com.bookstore.backend.DTO.CartItemsDTO;
 import com.bookstore.backend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +15,7 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@RequestParam Long userId,
-                                            @RequestBody AddToCartRequest request) {
+                                            @RequestBody CartItemsDTO request) {
         cartService.addToCart(userId, request);
         return ResponseEntity.ok("Đã thêm sản phẩm vào giỏ hàng thành công!");
     }
