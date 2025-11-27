@@ -1,8 +1,19 @@
-# Book Management Module - Database Schema
+# Book Management Module - Tổng quan Database Schema
 
-## Mục đích
+## Mục lục
+- [Giới thiệu](#giới-thiệu)
+- [Cấu trúc Database](#cấu-trúc-database)
+- [API Endpoints](#api-endpoints)
+- [Cấu trúc Code](#cấu-trúc-code)
+- [Hướng dẫn chạy](#hướng-dẫn-chạy)
 
-Module này quản lý sách trong hệ thống Bookstore với **normalized database schema** - tách riêng thông tin tác giả, nhà xuất bản, thể loại, giá cả và hình ảnh thành các bảng độc lập để tránh trùng lặp dữ liệu.
+## Giới thiệu
+
+Module này quản lý sách trong hệ thống Bookstore sử dụng **normalized database schema** - tách riêng thông tin tác giả, nhà xuất bản, thể loại, giá cả và hình ảnh thành các bảng độc lập để:
+- **Tránh trùng lặp dữ liệu**: Mỗi tác giả chỉ lưu 1 lần
+- **Dễ cập nhật**: Sửa tên tác giả 1 lần, tất cả sách đều cập nhật
+- **Hỗ trợ nhiều variants**: 1 sách có nhiều giá (bìa cứng, bìa mềm...)
+- **Hỗ trợ nhiều hình ảnh**: Mỗi variant có nhiều hình riêng
 
 ## Cấu trúc Database
 
@@ -44,25 +55,37 @@ book_category: Liên kết Book ↔ Category
 ### Mối quan hệ:
 
 ```
-Book ──┬── N:1 ──> Publisher
-       ├── M:N ──> Author
-       ├── M:N ──> Category
-       └── 1:N ──> BookVariants ──1:N──> BookImages
+Book ──┬── N:1 ──> Publisher (1 sách có 1 nhà xuất bản)
+       ├── M:N ──> Author (1 sách có nhiều tác giả)
+       ├── M:N ──> Category (1 sách thuộc nhiều thể loại)
+       └── 1:N ──> BookVariants (1 sách có nhiều variants)
+                   └── 1:N ──> BookImages (1 variant có nhiều hình)
 ```
 
-**Giải thích:**
-- 1 sách có **1 nhà xuất bản** (N:1)
-- 1 sách có **nhiều tác giả** (M:N) - VD: sách do nhiều người cùng viết
-- 1 sách thuộc **nhiều thể loại** (M:N) - VD: vừa là "Programming" vừa là "Java"
-- 1 sách có **nhiều variants** (1:N) - VD: bìa cứng 500k, bìa mềm 350k
-- 1 variant có **nhiều hình** (1:N) - VD: ảnh bìa, ảnh mặt sau, ảnh chi tiết
+**Ví dụ thực tế:**
+- Sách "Clean Code" của Robert C. Martin:
+  - 1 nhà xuất bản: Prentice Hall
+  - 1 tác giả: Robert C. Martin
+  - 2 thể loại: Programming, Software Engineering
+  - 2 variants: Bìa cứng (450k), Bìa mềm (350k)
+  - Mỗi variant có 2-3 hình ảnh (ảnh bìa, ảnh lưng, ảnh chi tiết)
+
+---
 
 ## API Endpoints
 
-### GET /books
-Lấy danh sách tất cả sách với đầy đủ thông tin
+### Tổng quan
 
-**Response Example:**
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/books` | Lấy danh sách sách (có phân trang) |
+| GET | `/books/{id}` | Chi tiết 1 sách |
+| POST | `/books` | Tạo sách mới |
+| PUT | `/books/{id}` | Cập nhật sách |
+| DELETE | `/books/{id}` | Xóa sách |
+| GET | `/books/search` | Tìm kiếm theo title/category/author/publisher |
+
+### Chi tiết Response Format
 ```json
 [
   {
@@ -88,78 +111,124 @@ Lấy danh sách tất cả sách với đầy đủ thông tin
       }
     ]
   }
-]
-```
+### Chi tiết Response Format
 
-### GET /books/{id}
-Lấy thông tin chi tiết 1 cuốn sách
-
-### POST /books
-Tạo sách mới
-
-**Request Body:**
+**GET /books hoặc GET /books/{id} trả về:**
 ```json
 {
-  "title": "Effective Java",
-  "description": "Best practices for Java programming",
-  "publisherYear": 2018,
-  "publisherName": "Addison-Wesley",
-  "authorNames": ["Joshua Bloch"],
-  "categoryNames": ["Java", "Programming"]
+  "id": 1,
+  "title": "Clean Code",
+  "description": "A Handbook of Agile Software Craftsmanship",
+  "publisherYear": 2008,
+  "publisherId": 1,
+  "publisherName": "Prentice Hall",
+  "authorNames": ["Robert C. Martin"],
+  "categoryNames": ["Programming", "Software Engineering"],
+  "variants": [
+    {
+      "id": 1,
+      "price": 450000,
+      "quantity": 100,
+      "sold": 25,
+      "status": "AVAILABLE",
+      "imageUrls": [
+        "https://example.com/clean-code-1.jpg",
+        "https://example.com/clean-code-2.jpg"
+      ]
+    }
+  ]
 }
 ```
 
-**Lưu ý:** 
-- Hệ thống tự động tạo Author/Publisher/Category nếu chưa tồn tại
-- BookVariants và BookImages cần tạo riêng sau
+**Giải thích các field:**
+- `publisherId`, `publisherName`: Thông tin nhà xuất bản
+- `authorNames`: Mảng tên tác giả (có thể có nhiều người)
+- `categoryNames`: Mảng thể loại (có thể thuộc nhiều thể loại)
+- `variants`: Mảng các phiên bản giá khác nhau
+  - `price`: Giá bán (VND)
+  - `quantity`: Số lượng tồn kho
+  - `sold`: Số lượng đã bán
+  - `status`: Trạng thái (AVAILABLE/OUT_OF_STOCK)
+  - `imageUrls`: Mảng URL hình ảnh của variant này
 
-### PUT /books/{id}
-Cập nhật thông tin sách
-
-### DELETE /books/{id}
-Xóa sách (cascade xóa luôn variants và images)
-
-### GET /books/category/{categoryName}
-Lọc sách theo thể loại
+---
 
 ## Cấu trúc Code
 
-### Models (Entity classes)
-```
-model/
-  ├── Book.java - Entity chính
-  ├── Author.java - Tác giả
-  ├── Publisher.java - Nhà xuất bản
-  ├── Category.java - Thể loại
-  ├── BookVariants.java - Phiên bản sách
-  └── BookImages.java - Hình ảnh
-```
+### 1. Models (Entity classes)
+### 1. Models (Entity classes)
 
-### Repositories (Data Access)
-```
-repository/
-  ├── BookRepository.java
-  ├── AuthorRepository.java
-  ├── PublisherRepository.java
-  ├── CategoryRepository.java
-  ├── BookVariantsRepository.java
-  └── BookImagesRepository.java
-```
+**Vị trí:** `src/main/java/com/bookstore/backend/model/`
 
-### DTOs (Data Transfer Objects)
-```
-dto/
-  └── BookDTO.java - Định dạng dữ liệu cho API
-       └── BookVariantDTO (nested class)
-```
+| File | Mô tả | Validation |
+|------|-------|------------|
+| `Book.java` | Entity chính quản lý sách | @NotBlank trên title |
+| `Author.java` | Tác giả | @NotBlank trên name |
+| `Publisher.java` | Nhà xuất bản | @NotBlank trên name |
+| `Category.java` | Thể loại | @NotBlank trên name |
+| `BookVariants.java` | Phiên bản sách (giá, tồn kho) | @NotNull price, @Min(0) price/quantity/sold |
+| `BookImages.java` | Hình ảnh | @NotBlank trên imageUrl |
 
-### Services & Controllers
-```
-service/impl/BookServiceImpl.java - Business logic + DTO conversion
-controller/BookController.java - REST API endpoints
-```
+**Đặc điểm kỹ thuật:**
+- Dùng Lombok (@Data, @Builder, @NoArgsConstructor, @AllArgsConstructor) để giảm boilerplate
+- Dùng Bean Validation (@NotBlank, @NotNull, @Min) để validate dữ liệu
+- Relationships sử dụng JPA annotations (@ManyToMany, @OneToMany, @ManyToOne)
+- Cascade operations để tự động xóa dữ liệu liên quan
 
-## Cách chạy
+### 2. Repositories (Data Access)
+
+**Vị trí:** `src/main/java/com/bookstore/backend/repository/`
+
+| Repository | Mô tả |
+|------------|-------|
+| `BookRepository.java` | JPA repository với derived query methods |
+| `AuthorRepository.java` | Tìm Author theo name |
+| `PublisherRepository.java` | Tìm Publisher theo name |
+| `CategoryRepository.java` | Tìm Category theo name |
+
+**Đặc điểm:**
+- 100% JPA derived query methods (không có @Query thủ công)
+- Ví dụ: `findByCategoriesNameIgnoreCase(String, Pageable)`
+- Hỗ trợ Pagination với Spring Data Pageable
+
+### 3. DTOs (Data Transfer Objects)
+
+**Vị trí:** `src/main/java/com/bookstore/backend/dto/`
+### 3. DTOs (Data Transfer Objects)
+
+**Vị trí:** `src/main/java/com/bookstore/backend/dto/`
+
+| File | Mô tả |
+|------|-------|
+| `BookDTO.java` | Định dạng dữ liệu cho API response |
+| `BookVariantDTO` | Nested class trong BookDTO cho variants |
+
+**Tại sao cần DTO?**
+- Tránh infinite recursion khi serialize Entity (Book → Author → Book → ...)
+- Flatten nested relationships thành format dễ đọc
+- Ẩn các field không cần thiết (createdAt, updatedAt...)
+- Frontend nhận được nested objects thay vì chỉ IDs
+
+### 4. Services & Controllers
+
+**Vị trí:** `src/main/java/com/bookstore/backend/`
+
+| File | Mô tả | Trách nhiệm |
+|------|-------|-------------|
+| `service/BookService.java` | Business logic | CRUD operations, Entity ↔ DTO conversion |
+| `controller/BookController.java` | REST API endpoints | Nhận HTTP requests, trả về Response |
+
+**Flow xử lý:**
+1. Frontend gọi API → `BookController`
+2. Controller validate request → gọi `BookService`
+3. Service xử lý logic → gọi `Repository`
+4. Repository query database → trả Entity
+5. Service convert Entity → DTO
+6. Controller trả DTO về Frontend
+
+---
+
+## Hướng dẫn chạy
 
 ### 1. Khởi động PostgreSQL
 ```bash
@@ -175,12 +244,18 @@ mvn spring-boot:run
 ### 3. Truy cập Swagger UI
 http://localhost:8080/swagger-ui/index.html
 
-## Ví dụ sử dụng
+**Chú ý:** Backend đã sẵn sàng khi thấy log `Started BackendApplication in X.XXX seconds`
 
-### Tạo sách mới qua Swagger:
+---
 
-1. Mở Swagger UI → `/books` → `POST`
-2. Nhập dữ liệu:
+## Ví dụ sử dụng thực tế
+
+### Kịch bản 1: Tạo sách mới qua Swagger
+
+**Bước 1:** Mở Swagger UI → `/books` → `POST`
+
+**Bước 2:** Click "Try it out" và nhập:
+**Bước 2:** Click "Try it out" và nhập:
 ```json
 {
   "title": "Head First Java",
@@ -190,11 +265,38 @@ http://localhost:8080/swagger-ui/index.html
   "categoryNames": ["Java", "Beginner"]
 }
 ```
-3. Execute → Sách được tạo với ID mới
 
-### Xem kết quả:
+**Bước 3:** Click "Execute"
 
-`GET /books/{id}` sẽ trả về sách với đầy đủ thông tin author, publisher, category đã được liên kết.
+**Kết quả:**
+- Response có `id: 1` (sách vừa tạo)
+- Database tự động tạo:
+  - 1 Publisher: O'Reilly
+  - 2 Authors: Kathy Sierra, Bert Bates
+  - 2 Categories: Java, Beginner
+  - Liên kết trong bảng `book_author` và `book_category`
+
+### Kịch bản 2: Xem chi tiết sách
+
+**Bước 1:** Gọi `GET /books/1`
+
+**Kết quả:**
+
+**Kết quả:**
+```json
+{
+  "id": 1,
+  "title": "Head First Java",
+  "publisherName": "O'Reilly",
+  "authorNames": ["Kathy Sierra", "Bert Bates"],
+  "categoryNames": ["Java", "Beginner"],
+  "variants": []
+}
+```
+
+Frontend nhận được **nested objects** thay vì chỉ IDs → Dễ hiển thị UI
+
+---
 
 ## Cấu hình quan trọng
 
@@ -204,26 +306,71 @@ File: `src/main/resources/application.yaml`
 spring:
   jpa:
     hibernate:
-      ddl-auto: create-drop  # ⚠️ XÓA data mỗi lần restart
+      ddl-auto: update  # ⚠️ QUAN TRỌNG
 ```
 
-**Lưu ý:** 
-- `create-drop`: Xóa và tạo lại schema mỗi lần chạy -> Dùng khi dev/test
-- `update`: Giữ nguyên data, chỉ update schema -> Dùng khi production
+**Các giá trị có thể:**
+- `create-drop`: Xóa + tạo lại schema mỗi lần restart → **Chỉ dùng khi dev/test ban đầu**
+- `update`: Giữ data, chỉ update schema → **Khuyến nghị dùng khi development**
+- `validate`: Chỉ kiểm tra schema, không sửa gì → **Dùng khi production**
 
-Sau khi test xong, **đổi lại thành `update`** để không mất dữ liệu!
+**Lưu ý:** Sau khi test xong, **BẮT BUỘC** đổi thành `update` để không mất dữ liệu!
+
+---
+
+## So sánh với schema cũ
+
+### Trước (Flat structure):
+```
+book: id, title, author, publisher, price, quantity, image_url
+```
+
+**Vấn đề:**
+- Sách có nhiều tác giả → Lưu trùng lặp
+- Sách có nhiều giá → Phải tạo nhiều records
+- Không thể tìm tất cả sách của 1 tác giả hiệu quả
+
+### Sau (Normalized structure):
+```
+book: id, title, description, publisherId, publisherYear
+author: id, name
+book_author: book_id, author_id
+bookvariants: id, bookId, price, quantity
+bookimages: id, bookVariantsId, imageUrl
+```
+
+**Lợi ích:**
+- Mỗi tác giả chỉ lưu 1 lần
+- 1 sách có nhiều variants (giá khác nhau)
+- Mỗi variant có nhiều hình riêng
+- Dễ query: "Tìm tất cả sách của Robert C. Martin"
+
+---
 
 ## Ghi chú kỹ thuật
 
-### Tại sao dùng Normalized Schema?
+### Ưu điểm của Normalized Schema:
+- **Không lưu trùng lặp**: "Robert C. Martin" chỉ lưu 1 lần trong bảng `author`
+- **Dễ cập nhật**: Sửa tên tác giả 1 lần, tất cả sách đều update
+- **Hỗ trợ nhiều variants**: 1 sách nhiều giá (bìa cứng, bìa mềm...)
+- **Hỗ trợ nhiều hình ảnh**: Mỗi variant có riêng nhiều hình
+- **Query linh hoạt**: Dễ dàng "Tìm tất cả sách của 1 tác giả/thể loại"
 
-Ưu điểm:
-- Không lưu trùng lặp (VD: "Robert C. Martin" chỉ lưu 1 lần trong bảng Author)
-- Dễ cập nhật (sửa tên tác giả 1 lần, tất cả sách đều update)
-- Hỗ trợ nhiều variants (1 sách nhiều giá)
-- Hỗ trợ nhiều hình ảnh
+### Nhược điểm (trade-offs):
+- **Query phức tạp hơn**: Nhiều JOIN giữa các bảng
+- **Cần DTO**: API phải convert Entity → DTO để gộp dữ liệu
+- **Frontend phải xử lý nested objects**: Không phải flat JSON đơn giản
 
-Nhược điểm:
-- Query phức tạp hơn (nhiều JOIN)
-- API cần DTO để gộp dữ liệu
-- Frontend phải xử lý nested objects
+### Khi nào nên dùng?
+- ✅ Khi có nhiều sách cùng tác giả/nhà xuất bản
+- ✅ Khi 1 sách có nhiều phiên bản giá
+- ✅ Khi cần tìm kiếm/filter theo tác giả/thể loại
+- ❌ Khi chỉ có ít sách và không có relationships phức tạp
+
+---
+
+## Tài liệu liên quan
+
+- **MIGRATION_GUIDE.md**: Hướng dẫn chi tiết test API với Swagger
+- **Swagger UI**: http://localhost:8080/swagger-ui/index.html (khi backend đang chạy)
+- **PostgreSQL**: Port 5433, username `postgres`, database `bookstore`
