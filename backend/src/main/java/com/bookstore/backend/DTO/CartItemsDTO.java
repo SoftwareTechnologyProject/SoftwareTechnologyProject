@@ -3,7 +3,7 @@ package com.bookstore.backend.DTO;
 import lombok.Data;
 
 @Data
-public class AddToCartRequest {
+public class CartItemsDTO {
     private Long bookVariantId;
     private int quantity;
 }

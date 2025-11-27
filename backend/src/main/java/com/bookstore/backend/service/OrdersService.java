@@ -7,13 +7,11 @@ import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
-import com.bookstore.backend.repository.BookVariantsRepository;
 import com.bookstore.backend.repository.OrdersRepository;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.repository.VoucherRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
