@@ -1,6 +1,5 @@
 package com.bookstore.backend.model;
 
-import com.bookstore.backend.model.enums.ReviewStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

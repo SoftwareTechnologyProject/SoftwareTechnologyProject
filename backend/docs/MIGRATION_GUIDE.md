@@ -1,14 +1,21 @@
 # Hướng dẫn sử dụng Book API
 
+## Mục lục
+- [Giới thiệu](#giới-thiệu)
+- [Khởi động hệ thống](#khởi-động-hệ-thống)
+- [Danh sách API](#danh-sách-api)
+- [Hướng dẫn test API](#hướng-dẫn-test-api)
+- [Troubleshooting](#troubleshooting)
+
 ## Giới thiệu
 
 API này quản lý sách trong hệ thống Bookstore với các tính năng:
-- CRUD sách (Tạo, Đọc, Cập nhật, Xóa)
-- Tự động quản lý tác giả, nhà xuất bản, thể loại
-- Hỗ trợ nhiều phiên bản giá cho 1 cuốn sách
-- Hỗ trợ nhiều hình ảnh cho mỗi phiên bản
+- **CRUD sách**: Tạo, Đọc, Cập nhật, Xóa
+- **Tự động quản lý**: Tác giả, nhà xuất bản, thể loại (không cần tạo trước)
+- **Hỗ trợ nhiều phiên bản giá**: 1 cuốn sách có thể có nhiều giá (bìa cứng, bìa mềm...)
+- **Hỗ trợ nhiều hình ảnh**: Mỗi phiên bản có nhiều hình ảnh riêng
 
-## Chạy Project
+## Khởi động hệ thống
 
 ### Bước 1: Khởi động PostgreSQL
 
@@ -37,11 +44,40 @@ Hoặc nếu có Maven Wrapper:
 
 Truy cập: **http://localhost:8080/swagger-ui/index.html**
 
+Backend đã sẵn sàng khi thấy log:
+```
+Started BackendApplication in X.XXX seconds
+```
+
+---
+
+## Danh sách API
+
+| Method | Endpoint | Mục đích |
+|--------|----------|----------|
+| GET | `/books` | Lấy tất cả sách (có phân trang) |
+| GET | `/books/{id}` | Lấy chi tiết 1 sách |
+| POST | `/books` | Tạo sách mới |
+| PUT | `/books/{id}` | Cập nhật sách |
+| DELETE | `/books/{id}` | Xóa sách |
+| GET | `/books/search` | Tìm kiếm sách theo title/category/author/publisher |
+
+---
+
 ## Chi tiết API Endpoints
 
 ### 1. GET /books - Lấy tất cả sách
 
 **Mục đích:** Hiển thị danh sách sách trên trang chủ/catalog
+
+**URL:** `GET http://localhost:8080/books`
+
+**Parameters (tùy chọn):**
+- `page`: Số trang (mặc định 0)
+- `size`: Số sách mỗi trang (mặc định 10)
+- `sortBy`: Sắp xếp theo trường (title, publisherYear...)
+
+**Ví dụ:** `GET http://localhost:8080/books?page=0&size=20&sortBy=title`
 
 **Response Example:**
 ```json
@@ -127,20 +163,13 @@ Truy cập: **http://localhost:8080/swagger-ui/index.html**
    - Endpoint này chỉ tạo thông tin cơ bản của sách
    - Giá, số lượng, hình ảnh cần tạo riêng sau (sẽ có API riêng)
 
-**Ví dụ test qua Swagger:**
-1. Mở Swagger UI
-2. Chọn `POST /books`
-3. Click "Try it out"
-4. Paste JSON vào Request body
-5. Click "Execute"
-
 ---
 
 ### 4. PUT /books/{id} - Cập nhật sách
 
 **Mục đích:** Sửa thông tin sách (tiêu đề, mô tả, tác giả...)
 
-**Example:** `PUT /books/1`
+**URL:** `PUT http://localhost:8080/books/{id}`
 
 **Request Body:**
 ```json
@@ -165,7 +194,7 @@ Truy cập: **http://localhost:8080/swagger-ui/index.html**
 
 **Mục đích:** Admin xóa sách khỏi hệ thống
 
-**Example:** `DELETE /books/1`
+**URL:** `DELETE http://localhost:8080/books/{id}`
 
 **Response:** `204 No Content` (thành công)
 
@@ -178,25 +207,44 @@ Truy cập: **http://localhost:8080/swagger-ui/index.html**
 
 ---
 
-### 6. GET /books/category/{categoryName} - Lọc theo thể loại
+### 6. GET /books/search - Tìm kiếm sách
 
-**Mục đích:** Hiển thị sách theo danh mục
+**Mục đích:** Tìm kiếm sách theo nhiều tiêu chí
 
-**Example:** `GET /books/category/Programming`
+**URL:** `GET http://localhost:8080/books/search`
 
-**Response:** Array các sách thuộc category "Programming"
+**Parameters (chọn 1 trong các tùy chọn):**
+- `title`: Tìm theo tên sách (VD: `title=Clean Code`)
+- `category`: Tìm theo thể loại (VD: `category=Programming`)
+- `author`: Tìm theo tác giả (VD: `author=Robert Martin`)
+- `publisher`: Tìm theo nhà xuất bản (VD: `publisher=Prentice Hall`)
+
+**Kết hợp với phân trang:**
+- `page`: Số trang (mặc định 0)
+- `size`: Số kết quả mỗi trang (mặc định 10)
+
+**Ví dụ:**
+```
+GET /books/search?category=Java&page=0&size=20
+GET /books/search?author=Joshua Bloch
+GET /books/search?title=Effective
+```
+
+**Response:** Array các sách phù hợp với điều kiện tìm kiếm
 
 **Use case:** 
-- User click vào category "Java" → Hiện tất cả sách Java
-- Sidebar filter categories
+- User gõ tìm kiếm → Frontend gọi `/books/search?title=...`
+- User click vào category "Java" → Frontend gọi `/books/search?category=Java`
+- Sidebar filter theo tác giả/thể loại
 
 ---
 
-## Kịch bản Test đầy đủ
+## Hướng dẫn test API
 
-### Test Case 1: Tạo sách đầu tiên
+#### Test Case 1: Tạo sách đầu tiên
 
-```bash
+**Request:**
+```json
 POST /books
 {
   "title": "Head First Java",
@@ -207,6 +255,12 @@ POST /books
 }
 ```
 
+**Cách test qua Swagger:**
+1. Mở Swagger UI → Chọn `POST /books`
+2. Click "Try it out"
+3. Copy JSON trên vào Request body
+4. Click "Execute"
+
 **Kết quả mong đợi:**
 - Response có `id: 1`
 - Bảng `author` có 2 records: Kathy Sierra, Bert Bates
@@ -215,61 +269,115 @@ POST /books
 - Bảng `book_author` có 2 records (liên kết book 1 với 2 authors)
 - Bảng `book_category` có 2 records (liên kết book 1 với 2 categories)
 
-### Test Case 2: Tạo sách thứ 2 cùng publisher
+#### Test Case 2: Tạo sách thứ 2 cùng publisher
 
-```bash
+**Request:**
+```json
 POST /books
 {
   "title": "Learning Python",
-  "publisherName": "O'Reilly Media",  # Trùng với sách trước
+  "publisherName": "O'Reilly Media",
   "publisherYear": 2021,
   "authorNames": ["Mark Lutz"],
-  "categoryNames": ["Python", "Beginner"]  # "Beginner" đã tồn tại
+  "categoryNames": ["Python", "Beginner"]
 }
 ```
+
+**Lưu ý:** "O'Reilly Media" và "Beginner" đã tồn tại từ Test Case 1
 
 **Kết quả mong đợi:**
 - Response có `id: 2`
 - Bảng `publisher` **VẪN CHỈ CÓ 1 record** (không tạo trùng "O'Reilly Media")
 - Bảng `category` thêm 1 record "Python", giữ nguyên "Beginner"
 
-### Test Case 3: Update sách
+#### Test Case 3: Update sách
 
-```bash
+**Request:**
+```json
 PUT /books/1
 {
   "title": "Head First Java (3rd Edition)",
   "publisherName": "O'Reilly Media",
   "publisherYear": 2023,
-  "authorNames": ["Kathy Sierra"],  # Xóa "Bert Bates"
-  "categoryNames": ["Java"]  # Xóa "Beginner"
+  "authorNames": ["Kathy Sierra"],
+  "categoryNames": ["Java"]
 }
 ```
+
+**Lưu ý:** Xóa "Bert Bates" và "Beginner" khỏi sách này
 
 **Kết quả mong đợi:**
 - Title đổi thành "3rd Edition"
 - `book_author` chỉ còn 1 record (Kathy Sierra)
 - Bert Bates vẫn tồn tại trong bảng `author` (có thể sách khác dùng)
 
-### Test Case 4: Lọc theo category
+#### Test Case 4: Tìm kiếm sách
 
-```bash
-GET /books/category/Java
+**Request:**
 ```
+GET /books/search?category=Java
+```
+
+**Cách test qua Swagger:**
+1. Mở Swagger UI → Chọn `GET /books/search`
+2. Click "Try it out"
+3. Nhập "Java" vào ô `category`
+4. Click "Execute"
 
 **Kết quả mong đợi:**
 - Response có 1 sách: "Head First Java (3rd Edition)"
 
-### Test Case 5: Xóa sách
+#### Test Case 5: Xóa sách
 
-```bash
+**Request:**
+```
 DELETE /books/1
 ```
 
+**Cách test qua Swagger:**
+1. Mở Swagger UI → Chọn `DELETE /books/{id}`
+2. Click "Try it out"
+3. Nhập "1" vào ô `id`
+4. Click "Execute"
+
 **Kết quả mong đợi:**
+- Response status code: `204 No Content`
 - Bảng `book` xóa record id=1
 - Bảng `book_author`, `book_category` xóa liên kết của sách 1
 - Bảng `author`, `publisher`, `category` **KHÔNG BỊ XÓA**
+
+---
+
+## Kiểm tra kết quả test
+
+### Cách 1: Qua Swagger UI
+Sau mỗi test case, gọi `GET /books` hoặc `GET /books/{id}` để xem kết quả
+
+### Cách 2: Qua Database (psql)
+```bash
+docker exec -it bookstore_db psql -U postgres -d bookstore
+```
+
+Các câu lệnh hữu ích:
+```sql
+-- Xem tất cả sách
+SELECT * FROM book;
+
+-- Xem tác giả
+SELECT * FROM author;
+
+-- Xem liên kết sách-tác giả
+SELECT b.title, a.name 
+FROM book b
+JOIN book_author ba ON b.id = ba.book_id
+JOIN author a ON ba.author_id = a.id;
+
+-- Thoát psql
+\q
+```
+
+### Cách 3: Qua log của Backend
+Kiểm tra terminal đang chạy `mvn spring-boot:run` để xem SQL queries
 
 ---
 
@@ -325,6 +433,23 @@ docker ps | grep bookstore_db
 **Nguyên nhân:** `ddl-auto: create-drop`
 
 **Giải pháp:** Đổi thành `update`
+
+### Lỗi: 400 Bad Request khi tạo sách
+
+**Nguyên nhân:** Thiếu trường bắt buộc hoặc format JSON sai
+
+**Giải pháp:**
+- Kiểm tra `title` không được trống
+- Kiểm tra JSON format đúng (có dấu ngoặc kép, dấu phẩy...)
+- Xem thông báo lỗi chi tiết trong Response body
+
+### Lỗi: 404 Not Found khi GET /books/{id}
+
+**Nguyên nhân:** Sách với ID đó không tồn tại
+
+**Giải pháp:**
+- Gọi `GET /books` trước để xem danh sách ID có sẵn
+- Tạo sách mới với `POST /books` rồi dùng ID được trả về
 
 ---
 
