@@ -1,6 +1,7 @@
 package com.bookstore.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ public class Publisher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên nhà xuất bản không được trống")
     @Column(nullable = false)
     private String name;
 
