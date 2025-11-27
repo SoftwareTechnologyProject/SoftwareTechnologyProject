@@ -1,6 +1,6 @@
 package com.bookstore.backend.controller;
 
-import com.bookstore.backend.dto.BookDTO;
+import com.bookstore.backend.DTO.BookDTO;
 import com.bookstore.backend.model.Book;
 import com.bookstore.backend.service.impl.BookServiceImpl;
 
