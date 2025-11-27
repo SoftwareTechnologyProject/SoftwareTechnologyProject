@@ -1,15 +1,15 @@
 package com.bookstore.backend.DTO;
 
 public class OrderDetailDTO {
-    private int bookVariantsId;
+    private long bookVariantsId;
     private int quantity;
     private double pricePurchased;
 
-    public int getBookVariantsId() {
+    public long getBookVariantsId() {
         return bookVariantsId;
     }
 
-    public void setBookVariantsId(int bookVariantsId) {
+    public void setBookVariantsId(long bookVariantsId) {
         this.bookVariantsId = bookVariantsId;
     }
 

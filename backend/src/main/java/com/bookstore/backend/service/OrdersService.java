@@ -1,8 +1,9 @@
 package com.bookstore.backend.service;
 
 import com.bookstore.backend.DTO.OrderDetailDTO;
-import com.bookstore.backend.model.OrderDetail;
+import com.bookstore.backend.model.OrderDetails;
 import com.bookstore.backend.model.Orders;
+import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
@@ -13,7 +14,10 @@ import com.bookstore.backend.repository.VoucherRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdersService {
@@ -39,31 +43,32 @@ public class OrdersService {
         Orders order = new Orders();
 
         // Lấy User từ repository
-        User user = userRepository.findById((long) userId)
+        Users user = userRepository.findById((long) userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        order.setUser(user); // set user vào order
+        order.setUsers(user); // set user vào order
 
-        order.setShipping_address(shippingAddress);
-        order.setPhone_number(phoneNumber);
+        order.setShippingAddress(shippingAddress);
+        order.setPhoneNumber(phoneNumber);
         order.setPaymentType(paymentType);
         order.setStatus(StatusOrder.PENDING);
-        order.setOrderDate(java.sql.Date.valueOf(LocalDate.now())); // chuyển LocalDate → Date
+        order.setOrderDate(LocalDateTime.now());
 
         if (voucherCode != null) {
-            Voucher voucher = voucherRepository.findById(voucherCode).orElse(null);
+            Voucher voucher = voucherRepository.findByCode(voucherCode).orElse(null);
             order.setVoucher(voucher);
         }
 
-        List<OrderDetail> orderDetails = details.stream().map(d -> {
-            OrderDetail od = new OrderDetail();
+        Set<OrderDetails> orderDetails = details.stream().map(d -> {
+            OrderDetails od = new OrderDetails();
             od.setOrders(order);
-            od.setBookVariants(bookVariantsRepository.findById(d.getBookVariantsId()).orElse(null));
+            od.setBookVariant(bookVariantsRepository.findById(d.getBookVariantsId()).orElse(null));
             od.setQuantity(d.getQuantity());
             od.setPricePurchased(d.getPricePurchased());
             return od;
-        }).toList();
+        }).collect(Collectors.toSet());
 
         order.setOrderDetails(orderDetails);
+
         return ordersRepository.save(order);
     }
 
