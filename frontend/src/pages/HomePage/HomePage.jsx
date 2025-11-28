@@ -90,8 +90,6 @@ const HomePage = () => {
 
     return (
         <>
-            <Header />
-
             <main>
                 <div className="banner-container">
                     <div className="elite-banner">
@@ -312,8 +310,6 @@ const HomePage = () => {
                     </div>
                 </div>
             </main>
-
-            <Footer />
         </>
     );
 };

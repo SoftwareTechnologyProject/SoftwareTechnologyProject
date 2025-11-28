@@ -57,8 +57,6 @@ const Account = () => {
 
     return (
         <>
-            <Header />
-            
             <main>
                 <div className="account-container">
                     <div className="account-nav">
@@ -277,8 +275,6 @@ const Account = () => {
                     </div>
                 </div>
             </main>
-
-            <Footer />
         </>
     )
 }
