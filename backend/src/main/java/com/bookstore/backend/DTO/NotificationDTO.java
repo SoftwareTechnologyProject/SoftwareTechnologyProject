@@ -18,7 +18,7 @@ public class NotificationDTO {
 
     public static NotificationDTO from(Notification notification){
         return NotificationDTO.builder().content(notification.getContent())
-                .createAt(notification.getCreateAt()).isRead(notification.getIsRead()).url(notification.getUrl())
+                .createAt(notification.getCreateAt()).isRead(notification.isRead()).url(notification.getUrl())
                 .build();
     }
 }

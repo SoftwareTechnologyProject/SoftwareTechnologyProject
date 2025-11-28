@@ -2,6 +2,8 @@ package com.bookstore.backend.model;
 
 //import com.bookstore.backend.model.enums.StatusOrder;
 //import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.model.enums.StatusOrder;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -21,7 +23,7 @@ public class Orders {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private Users user;
+    private Users users;
 
     @Column(nullable = false)
     private String shippingAddress;
@@ -29,11 +31,13 @@ public class Orders {
     @Column(nullable = false)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private StatusOrder status;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String paymentType;
+    private PaymentType paymentType;
 
     @ManyToOne
     @JoinColumn(name = "voucher_code")
@@ -41,7 +45,9 @@ public class Orders {
 
     private LocalDateTime orderDate;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<OrderDetails> orderDetails;
 
     @PrePersist
