@@ -2,6 +2,8 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.DTO.NotificationDTO;
 import com.bookstore.backend.model.Notification;
+import com.bookstore.backend.model.Users;
+import com.bookstore.backend.utils.SecurityUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,8 +20,10 @@ public class NotificationService {
         messagingTemplate.convertAndSend("/topic/notifications", notificationDTO);
     }
 
-    public void sendToUser(Integer userId, Notification notification){
+    public void sendToUser(Notification notification){
+        Users user = SecurityUtils.getCurrentUser();
+        String email = user.getEmail();
         NotificationDTO notificationDTO = NotificationDTO.from(notification);
-        messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", notificationDTO);
+        messagingTemplate.convertAndSendToUser(email, "/queue/notifications", notificationDTO);
     }
 }

@@ -9,8 +9,10 @@ import { FiShoppingCart } from "react-icons/fi";
 import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
 import { RiCoupon3Line } from "react-icons/ri";
+import userNotifications from "../../hooks/UserNotification";
 
 const Header = () => {
+    const notifications = userNotifications();
     return (
         <div className="bg-[var(--components-color)]">
             <header>
@@ -44,11 +46,26 @@ const Header = () => {
                         <span>Voucher</span>
                     </div>
 
-                    <div className="mx-4">
-                        <Link to="/notifications" className="flex flex-col items-center">
-                            <GoBell className="nav-icons" />
-                        </Link>
-                        <span>Thông báo</span>
+{/*                     <div className="mx-4"> */}
+{/*                         <Link to="/notifications" className="flex flex-col items-center"> */}
+{/*                             <GoBell className="nav-icons" /> */}
+{/*                         </Link> */}
+{/*                         <span>Thông báo</span> */}
+{/*                     </div> */}
+                    <div className="mx-4 relative">
+                      <button className="flex flex-col items-center">
+                        <GoBell className="nav-icons" />
+                      </button>
+                      {notifications.length > 0 && (
+                        <div className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-md z-50">
+                          {notifications.map((noti, index) => (
+                            <div key={index} className={`p-2 border-b ${noti.isRead ? "" : "bg-blue-100"}`}>
+                              <a href={noti.url}>{noti.content}</a>
+                              <div className="text-xs text-gray-500">{new Date(noti.createAt).toLocaleString()}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div>
