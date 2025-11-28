@@ -7,6 +7,7 @@ import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.repository.BookVariantRepository;
 import com.bookstore.backend.repository.OrdersRepository;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.repository.VoucherRepository;
@@ -21,12 +22,12 @@ import java.util.stream.Collectors;
 public class OrdersService {
 
     private final OrdersRepository ordersRepository;
-    private final BookVariantsRepository bookVariantsRepository;
+    private final BookVariantRepository bookVariantsRepository;
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
 
     public OrdersService(OrdersRepository ordersRepository,
-                         BookVariantsRepository bookVariantsRepository,
+                         BookVariantRepository bookVariantsRepository,
                          VoucherRepository voucherRepository,UserRepository userRepository) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
