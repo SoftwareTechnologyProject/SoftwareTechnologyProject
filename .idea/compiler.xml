@@ -2,6 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+<<<<<<< HEAD
       <profile name="Annotation profile for backend" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -18,4 +19,9 @@
       <module name="backend" options="-parameters" />
     </option>
   </component>
+=======
+      <profile default="true" name="Default" enabled="true" />
+    </annotationProcessing>
+  </component>
+>>>>>>> 6c71411a8c949be7d694e55efc40d6b4104ae1cc
 </project>
