@@ -20,7 +20,8 @@ import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 import { Link } from "react-router-dom";
 
-const API_URL = 'http://localhost:8081/vouchers';
+const API_URL = 'http://localhost:8080/vouchers';
+// const API_URL = 'http://localhost:8081/vouchers';
 
 const Account = () => {
     const [activeTab, setActiveTab] = useState('profile'); // profile, vouchers, orders, notifications, reviews
