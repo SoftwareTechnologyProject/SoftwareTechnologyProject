@@ -1,19 +1,43 @@
 @import "tailwindcss";
 
+.account-container {
+  @apply grid grid-cols-[2fr_7fr] mx-30 my-4;
+}
+
+.account-nav {
+    @apply bg-[var(--components-color)] py-4 rounded-xl;
+}
+
+.top-nav {
+    @apply mx-auto;
+}
+
+.top-nav .content {
+    @apply grid grid-rows-3 text-center p-3 mx-auto w-fit;
+}
+
+.top-nav h2 {
+    @apply py-3 my-2 font-normal;
+}
+
+.main-nav {
+    @apply grid grid-rows-5;
+}
+
 .account-main {
-  @apply grid-rows-2 ml-3;
+    @apply grid-rows-2 ml-3;
 }
 
 .account-rank {
-  @apply bg-[var(--components-color)] rounded-xl;
+    @apply bg-[var(--components-color)] rounded-xl;
 }
 
 .account-rank img {
-  @apply rounded-xl;
+    @apply rounded-xl;
 }
 
 .account-info {
-  @apply bg-[var(--components-color)] mt-2 p-5 rounded-xl;
+    @apply bg-[var(--components-color)] mt-2 p-5 rounded-xl;
 }
 
 .account-nav .main-nav .nav-link {
