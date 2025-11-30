@@ -38,14 +38,7 @@ const Header = () => {
                     </div>
 
                     <div className="mx-4">
-                        <Link to="/vouchers" className="flex flex-col items-center">
-                            <RiCoupon3Line className="nav-icons" />
-                        </Link>
-                        <span>Voucher</span>
-                    </div>
-
-                    <div className="mx-4">
-                        <Link to="/notifications" className="flex flex-col items-center">
+                        <Link to="/account/notifications" className="flex flex-col items-center">
                             <GoBell className="nav-icons" />
                         </Link>
                         <span>Thông báo</span>
@@ -59,7 +52,7 @@ const Header = () => {
                     </div>
 
                     <div className="mx-4">
-                        <Link to="/account" className="flex flex-col items-center">
+                        <Link to="/account/accountInf" className="flex flex-col items-center">
                             <CiUser className="nav-icons" />
                         </Link>
                         <span>Tài khoản</span>
