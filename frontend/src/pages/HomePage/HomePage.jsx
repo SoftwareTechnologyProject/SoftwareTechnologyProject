@@ -6,7 +6,6 @@ import banner2 from "../../assets/banner/banner-3.png";
 import banner3 from "../../assets/banner/banner-5.png";
 import bannerMomo from "../../assets/banner/banner-momo.png";
 import bannerVnpay from "../../assets/banner/banner-vnpay.png";
-import recommendBanner from "../../assets/banner/recommend-banner.png";
 
 import child from "../../assets/logo/child.png";
 import foreign from "../../assets/logo/foreign.png";
@@ -19,9 +18,6 @@ import paper from "../../assets/logo/paper.png";
 
 import card1 from "../../assets/gift-card/card-1.jpg";
 import ex1 from "../../assets/ex1.jpg";
-
-import Header from '../../components/Header/Header';
-import Footer from '../../components/Footer/Footer';
 
 import { BsGrid } from "react-icons/bs";
 import { IoGiftOutline } from "react-icons/io5";
@@ -90,8 +86,6 @@ const HomePage = () => {
 
     return (
         <>
-            <Header />
-
             <main>
                 <div className="banner-container">
                     <div className="elite-banner">
@@ -284,36 +278,7 @@ const HomePage = () => {
                         <Link to="#">Xem Thêm</Link>
                     </div>
                 </div>
-
-                {/* ====================== Recommend =================== */}
-                <div className="recommend">
-                    <img src={recommendBanner} alt="recommend banner" />
-
-                    <div className="recommend-detail">
-                        {listTrend.map((item, index) => (
-                            <Link key={index} to={item.link}>
-                                <img src={item.img} alt="" className="w-full h-auto" />
-                                <div className="label-price">
-                                    <h3>{item.title}</h3>
-                                    <p className="special-price">
-                                        <span className="price-new">{item.newPrice}</span>
-                                        <span className="percent-discount">{item.discount}</span>
-                                    </p>
-                                    <span className="price-old">{item.oldPrice}</span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="button-more mt-65">
-                        <Link to="#" className="flex gap-2">
-                            Xem Tất Cả
-                        </Link>
-                    </div>
-                </div>
             </main>
-
-            <Footer />
         </>
     );
 };
