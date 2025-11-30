@@ -84,6 +84,12 @@
             <version>2.7.0</version>
         </dependency>
 
+        <!-- Spring Boot Actuator (for health checks) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- DevTools (optional for hot reload) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

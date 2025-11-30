@@ -5,7 +5,14 @@ import rank from "../../assets/banner/rank-banner.png"
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 
+const API_URL = 'http://localhost:8080/vouchers';
+// const API_URL = 'http://localhost:8081/vouchers';
+
 const Account = () => {
+    const [activeTab, setActiveTab] = useState('profile'); // profile, vouchers, orders, notifications, reviews
+    const [vouchers, setVouchers] = useState([]);
+    const [loadingVouchers, setLoadingVouchers] = useState(false);
+    const [copiedCode, setCopiedCode] = useState(null);
 
     const [formData, setFormData] = useState({
         ho: 'Nguyễn',
@@ -30,6 +37,60 @@ const Account = () => {
         e.preventDefault();
         console.log('Dữ liệu đã lưu:', formData);
         alert('Đã lưu thay đổi!');
+    };
+
+    // Fetch vouchers when voucher tab is active
+    useEffect(() => {
+        if (activeTab === 'vouchers') {
+            fetchVouchers();
+        }
+    }, [activeTab]);
+
+    const fetchVouchers = async () => {
+        try {
+            setLoadingVouchers(true);
+            const response = await fetch(API_URL);
+            if (!response.ok) {
+                throw new Error('Không thể tải danh sách voucher');
+            }
+            const data = await response.json();
+            setVouchers(data);
+        } catch (err) {
+            console.error('Error fetching vouchers:', err);
+            alert('Lỗi khi tải voucher: ' + err.message);
+        } finally {
+            setLoadingVouchers(false);
+        }
+    };
+
+    const copyVoucherCode = (code) => {
+        navigator.clipboard.writeText(code).then(() => {
+            setCopiedCode(code);
+            setTimeout(() => setCopiedCode(null), 2000);
+        });
+    };
+
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const isVoucherExpired = (endDate) => {
+        return new Date(endDate) < new Date();
+    };
+
+    const isVoucherAvailable = (voucher) => {
+        return voucher.quantity > voucher.usedCount && !isVoucherExpired(voucher.endDate);
     };
 
     return (
