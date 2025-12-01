@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from 'react-dom';
 import { Link } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
 import logo from '../../assets/logo/logo.png';
@@ -9,10 +10,30 @@ import { FiShoppingCart } from "react-icons/fi";
 import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
 import { RiCoupon3Line } from "react-icons/ri";
-import userNotifications from "../../hooks/UserNotification";
+import useUserNotifications from "../../hook/useUserNotifications";
+import axios from "axios";
 
 const Header = () => {
-    const notifications = userNotifications();
+    const [open, setOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [page, setPage] = useState(0);
+
+    useEffect(() => {
+        const fetchLatest = async () => {
+            try {
+                const res = await axios.get(`/api/notifications?page=0&size=6`);
+                setNotifications(res.data);
+            } catch (e) {
+                console.error("Lỗi load thông báo", e);
+            }
+        };
+        fetchLatest();
+    }, []);
+
+    useUserNotifications((newNoti) => {
+            setNotifications(prev => [newNoti, ...prev]);
+        });
+
     return (
         <div className="bg-[var(--components-color)]">
             <header>
@@ -46,24 +67,55 @@ const Header = () => {
                         <span>Voucher</span>
                     </div>
 
-{/*                     <div className="mx-4"> */}
+{/*                    <div className="mx-4"> */}
 {/*                         <Link to="/notifications" className="flex flex-col items-center"> */}
 {/*                             <GoBell className="nav-icons" /> */}
 {/*                         </Link> */}
 {/*                         <span>Thông báo</span> */}
-{/*                     </div> */}
-                    <div className="mx-4 relative">
-                      <button className="flex flex-col items-center">
+{/*                    </div> */}
+                    <div className="mx-4 relative flex flex-col items-center">
+                      <button
+                        className="flex flex-col items-center"
+                        onClick={() => setOpen(!open)}
+                      >
                         <GoBell className="nav-icons" />
                       </button>
-                      {notifications.length > 0 && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-md z-50">
-                          {notifications.map((noti, index) => (
-                            <div key={index} className={`p-2 border-b ${noti.isRead ? "" : "bg-blue-100"}`}>
-                              <a href={noti.url}>{noti.content}</a>
-                              <div className="text-xs text-gray-500">{new Date(noti.createAt).toLocaleString()}</div>
+                      <span>Thông báo</span>
+
+                      {open && (
+                        <div className="absolute top-full mt-2 w-80 bg-white shadow-xl rounded-lg z-[9999] notification-dropdown">
+
+                          {notifications.length > 0 ? (
+                            <>
+                              {notifications.map((noti, index) => (
+                                <div key={index} className={`p-3 border-b last:border-b-0 notification-item ${noti.isRead ? "" : "bg-blue-50"}`}>
+                                  <a href={noti.url} className="font-medium hover:underline">
+                                    {noti.content}
+                                  </a>
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    {new Date(noti.createAt).toLocaleString()}
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* Nút xem thêm */}
+                              <button
+                                className="w-full py-2 text-blue-500 hover:underline"
+                                onClick={async () => {
+                                  const next = page + 1;
+                                  const res = await axios.get(`/api/notifications?page=${next}&size=6`);
+                                  setNotifications(prev => [...prev, ...res.data]);
+                                  setPage(next);
+                                }}
+                              >
+                                Xem thêm
+                              </button>
+                            </>
+                          ) : (
+                            <div className="p-3 text-center text-gray-400">
+                              Không có thông báo nào
                             </div>
-                          ))}
+                          )}
                         </div>
                       )}
                     </div>
