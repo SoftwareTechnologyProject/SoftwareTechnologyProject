@@ -14,7 +14,6 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
->>>>>>> origin/develop
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
