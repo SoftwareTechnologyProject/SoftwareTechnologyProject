@@ -132,7 +132,7 @@ const Header = () => {
                     </div>
 
                     <div className="mx-4">
-                        <Link to="/account" className="flex flex-col items-center">
+                        <Link to="/account/accountInf" className="flex flex-col items-center">
                             <CiUser className="nav-icons" />
                         </Link>
                         <span>Tài khoản</span>
