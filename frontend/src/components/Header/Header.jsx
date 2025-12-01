@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from 'react-dom';
 import { Link } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
@@ -15,24 +15,30 @@ import axios from "axios";
 
 const Header = () => {
     const [open, setOpen] = useState(false);
-    const [notifications, setNotifications] = useState([]);
-    const [page, setPage] = useState(0);
+      const [notifications, setNotifications] = useState([]);
+      const [page, setPage] = useState(0);
 
-    useEffect(() => {
+      // Callback để nhận notification mới từ WebSocket
+      const handleNewNotification = useCallback((newNoti) => {
+        setNotifications(prev => [newNoti, ...prev]);
+      }, []);
+
+      // Hook WebSocket
+      useUserNotifications(handleNewNotification);
+
+      // Load notifications từ API khi component mount
+      useEffect(() => {
         const fetchLatest = async () => {
-            try {
-                const res = await axios.get(`/api/notifications?page=0&size=6`);
-                setNotifications(res.data);
-            } catch (e) {
-                console.error("Lỗi load thông báo", e);
-            }
+          try {
+            const res = await axios.get(`/api/notifications?page=0&size=6`);
+            const list = Array.isArray(res.data) ? res.data : [];
+            setNotifications(list);
+          } catch (e) {
+            console.error("Lỗi load thông báo", e);
+          }
         };
         fetchLatest();
-    }, []);
-
-    useUserNotifications((newNoti) => {
-            setNotifications(prev => [newNoti, ...prev]);
-        });
+      }, []);
 
     return (
         <div className="bg-[var(--components-color)]">
@@ -84,8 +90,7 @@ const Header = () => {
 
                       {open && (
                         <div className="absolute top-full mt-2 w-80 bg-white shadow-xl rounded-lg z-[9999] notification-dropdown">
-
-                          {notifications.length > 0 ? (
+                          {Array.isArray(notifications) && notifications.length > 0 ? (
                             <>
                               {notifications.map((noti, index) => (
                                 <div key={index} className={`p-3 border-b last:border-b-0 notification-item ${noti.isRead ? "" : "bg-blue-50"}`}>
@@ -97,14 +102,13 @@ const Header = () => {
                                   </div>
                                 </div>
                               ))}
-
-                              {/* Nút xem thêm */}
                               <button
                                 className="w-full py-2 text-blue-500 hover:underline"
                                 onClick={async () => {
                                   const next = page + 1;
                                   const res = await axios.get(`/api/notifications?page=${next}&size=6`);
-                                  setNotifications(prev => [...prev, ...res.data]);
+                                  const list = Array.isArray(res.data) ? res.data : [];
+                                  setNotifications(prev => [...prev, ...list]);
                                   setPage(next);
                                 }}
                               >

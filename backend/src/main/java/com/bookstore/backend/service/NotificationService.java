@@ -25,7 +25,7 @@ public class NotificationService {
     public List<NotificationDTO> getAllNotification(int page, int size){
         var user = SecurityUtils.getCurrentUser();
         if (user == null){
-            return null;
+            return List.of();
         }
         List<Notification> result = notificationRepository.findByUsers_IdOrderByCreateAtDesc(user.getId(), PageRequest.of(page, size)).getContent();
         return result.stream()
