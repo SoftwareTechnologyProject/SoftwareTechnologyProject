@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage';
 import ProductDetail from './pages/productDetails/ProductDetail';
 import Account from './pages/Account/Account';
+import Order from './pages/Order/Order';
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/books/:id" element={<ProductDetail />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/order" element={<Order />} />      {/* Order */}
         </Routes>
       </div>
     </Router>
