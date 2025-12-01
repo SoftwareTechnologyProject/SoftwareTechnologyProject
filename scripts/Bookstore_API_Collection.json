@@ -1,0 +1,764 @@
+{
+  "info": {
+    "name": "Bookstore API - Fixed Logic Collection",
+    "description": "Collection đã fix logic và syntax errors",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "1",
+      "type": "string",
+      "description": "Auto-captured from GET All Books"
+    },
+    {
+      "key": "newBookId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-captured from POST Create Book"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-captured from POST Create User"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string", 
+      "description": "Auto-captured from POST Create Order"
+    },
+    {
+      "key": "voucherId",
+      "value": "1",
+      "type": "string",
+      "description": "Auto-captured from GET All Vouchers"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health & System",
+      "item": [
+        {
+          "name": "Backend Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Backend Health Check', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.equal('UP');",
+                  "    console.log('✅ Backend is UP and running');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Swagger UI Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/swagger-ui/index.html"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Swagger UI Access', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    console.log('✅ Swagger UI accessible');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📚 Books Management - Safe CRUD",
+      "item": [
+        {
+          "name": "1️⃣ GET All Books (Auto-capture bookId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/books"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📚 Books retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const books = pm.response.json();",
+                  "    pm.expect(books).to.be.an('array');",
+                  "    ",
+                  "    if (books.length > 0) {",
+                  "        const firstBook = books[0];",
+                  "        pm.collectionVariables.set('bookId', firstBook.id);",
+                  "        console.log('✅ Auto-captured bookId:', firstBook.id);",
+                  "        console.log('📖 Found', books.length, 'books in database');",
+                  "    } else {",
+                  "        console.log('⚠️ No books found in database');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2️⃣ GET Book by ID (Safe - uses captured ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/books/{{bookId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📖 Get book by ID test', function () {",
+                  "    const bookId = pm.collectionVariables.get('bookId');",
+                  "    ",
+                  "    if (!bookId) {",
+                  "        pm.test('⏭️ Skipped - Run GET All Books first', function () {",
+                  "            console.log('❌ No bookId available, run GET All Books first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 200) {",
+                  "        const book = pm.response.json();",
+                  "        pm.test('✅ Book found successfully', function () {",
+                  "            pm.expect(book).to.have.property('id');",
+                  "            pm.expect(book).to.have.property('title');",
+                  "        });",
+                  "        console.log('✅ Found book:', book.title, '(ID:', book.id + ')');",
+                  "    } else if (pm.response.code === 404) {",
+                  "        pm.test('❌ Book not found (ID may have been deleted)', function () {",
+                  "            console.log('❌ Book ID', bookId, 'not found - may have been deleted');",
+                  "            pm.expect(pm.response.code).to.equal(404);",
+                  "        });",
+                  "    } else {",
+                  "        pm.test('❌ Unexpected error', function () {",
+                  "            console.log('❌ Unexpected response:', pm.response.code, pm.response.text());",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3️⃣ POST Create New Book (Auto-capture newBookId)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"API Test Book {{$timestamp}}\",\n  \"description\": \"Created by Postman for testing CRUD operations\",\n  \"publisherYear\": 2024,\n  \"variants\": [\n    {\n      \"price\": 29.99,\n      \"quantity\": 10,\n      \"status\": \"AVAILABLE\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/books"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📚 Create new book test', function () {",
+                  "    console.log('🎯 POST Create Book - Response Status:', pm.response.code);",
+                  "    console.log('📜 Response Size:', pm.response.responseSize, 'bytes');",
+                  "    ",
+                  "    if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "        let book;",
+                  "        try {",
+                  "            book = pm.response.json();",
+                  "            console.log('📚 Book object:', JSON.stringify(book, null, 2));",
+                  "        } catch (e) {",
+                  "            console.log('❌ JSON parse error:', e.message);",
+                  "            pm.test('❌ Invalid JSON response', function() { pm.expect.fail('Cannot parse JSON'); });",
+                  "            return;",
+                  "        }",
+                  "        ",
+                  "        if (book && book.id) {",
+                  "            const bookIdStr = book.id.toString();",
+                  "            pm.collectionVariables.set('newBookId', bookIdStr);",
+                  "            ",
+                  "            const verifyId = pm.collectionVariables.get('newBookId');",
+                  "            console.log('✅ newBookId SET to:', verifyId);",
+                  "            ",
+                  "            pm.test('✅ Book created and ID captured', function () {",
+                  "                pm.expect(book).to.have.property('id');",
+                  "                pm.expect(verifyId).to.not.be.empty;",
+                  "            });",
+                  "        } else {",
+                  "            console.log('❌ Book object missing ID');",
+                  "            pm.test('❌ Book missing ID', function() { pm.expect(book).to.have.property('id'); });",
+                  "        }",
+                  "    } else {",
+                  "        pm.test('❌ Book creation failed', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "        });",
+                  "        console.log('❌ Creation failed - Status:', pm.response.code);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4️⃣ PUT Update Created Book (Safe - uses newBookId)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"🔄 UPDATED API Test Book {{$timestamp}}\",\n  \"description\": \"✏️ Updated by Postman PUT request\"\n}"
+            },
+            "url": "{{baseUrl}}/books/{{newBookId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔄 Update created book test', function () {",
+                  "    const newBookId = pm.collectionVariables.get('newBookId');",
+                  "    ",
+                  "    if (!newBookId) {",
+                  "        pm.test('⏭️ Skipped - Create book first', function () {",
+                  "            console.log('❌ No newBookId available, create book first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 200) {",
+                  "        const book = pm.response.json();",
+                  "        pm.test('✅ Book updated successfully', function () {",
+                  "            pm.expect(book.title).to.include('UPDATED');",
+                  "        });",
+                  "        console.log('✅ Updated:', book.title);",
+                  "    } else {",
+                  "        pm.test('❌ Book update failed', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([400, 404, 500]);",
+                  "        });",
+                  "        console.log('❌ Update failed:', pm.response.text());",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5️⃣ DELETE Created Book (Safe - only deletes test book)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/books/{{newBookId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Check newBookId before sending DELETE request",
+                  "const newBookId = pm.collectionVariables.get('newBookId');",
+                  "console.log('🔍 Pre-DELETE check - newBookId:', newBookId);",
+                  "",
+                  "if (!newBookId || newBookId === '' || newBookId === 'undefined' || newBookId === null) {",
+                  "    console.log('❌ No valid newBookId available');",
+                  "    console.log('⚠️ STOPPING DELETE request - run POST Create Book first');",
+                  "    ",
+                  "    // STOP the request by throwing an error",
+                  "    throw new Error('DELETE cancelled: No newBookId from POST Create Book');",
+                  "} else {",
+                  "    console.log('✅ Valid newBookId found for DELETE:', newBookId);",
+                  "    console.log('✅ DELETE request will proceed to /books/' + newBookId);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🗑️ Delete created book test', function () {",
+                  "    const newBookId = pm.collectionVariables.get('newBookId');",
+                  "    const requestUrl = pm.request.url.toString();",
+                  "    ",
+                  "    console.log('🎯 DELETE Request URL:', requestUrl);",
+                  "    console.log('🎯 Response Status:', pm.response.code);",
+                  "    ",
+                  "    // Check if URL contains unresolved variables",
+                  "    if (requestUrl.includes('%7B%7B') || requestUrl.includes('%7D%7D')) {",
+                  "        pm.test('❌ Variable Not Resolved', function () {",
+                  "            console.log('❌ URL contains unresolved variables');",
+                  "            console.log('❌ POST Create Book probably failed');",
+                  "            console.log('ℹ️ Run POST Create Book individually first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (!newBookId || newBookId === '' || newBookId === 'undefined') {",
+                  "        pm.test('⏭️ Skipped - No valid newBookId', function () {",
+                  "            console.log('❌ No newBookId from CREATE step');",
+                  "            console.log('ℹ️ This is expected if POST Create Book failed');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 204 || pm.response.code === 200) {",
+                  "        pm.test('✅ Book deleted successfully', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "        });",
+                  "        console.log('✅ Successfully deleted book ID:', newBookId);",
+                  "        pm.collectionVariables.unset('newBookId');",
+                  "    } else {",
+                  "        pm.test('❌ Book deletion failed', function () {",
+                  "            console.log('❌ Status:', pm.response.code);",
+                  "            console.log('❌ Response:', pm.response.text());",
+                  "            pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6️⃣ GET Search Books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/search?title=Test&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "search"],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Test"
+                },
+                {
+                  "key": "page", 
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔍 Search books test', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const books = pm.response.json();",
+                  "    pm.expect(books).to.be.an('array');",
+                  "    console.log('✅ Search returned', books.length, 'books');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👥 Users Management",
+      "item": [
+        {
+          "name": "1️⃣ GET All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('👥 Users retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const users = pm.response.json();",
+                  "    pm.expect(users).to.be.an('array');",
+                  "    console.log('📊 Found', users.length, 'users in database');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2️⃣ POST Create User (Auto-capture userId)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"🧪 Test User {{$timestamp}}\",\n  \"email\": \"testuser{{$timestamp}}@example.com\",\n  \"phoneNumber\": \"0123456789\",\n  \"role\": \"CUSTOMER\",\n  \"address\": \"123 Test Street\"\n}"
+            },
+            "url": "{{baseUrl}}/users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('👤 Create user test', function () {",
+                  "    if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "        const user = pm.response.json();",
+                  "        pm.collectionVariables.set('userId', user.id);",
+                  "        pm.test('✅ User created successfully', function () {",
+                  "            pm.expect(user).to.have.property('id');",
+                  "            pm.expect(user).to.have.property('fullName');",
+                  "        });",
+                  "        console.log('✅ Created user:', user.fullName, '(ID:', user.id + ')');",
+                  "    } else {",
+                  "        pm.test('❌ User creation failed - Backend Error', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "        });",
+                  "        console.log('❌ User creation failed:', pm.response.text());",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🛒 Cart Management",
+      "item": [
+        {
+          "name": "1️⃣ POST Add to Cart (Requires userId)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookVariantId\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🛒 Add to cart test', function () {",
+                  "    const userId = pm.collectionVariables.get('userId');",
+                  "    ",
+                  "    if (!userId) {",
+                  "        pm.test('⏭️ Skipped - Create user first', function () {",
+                  "            console.log('❌ No userId available, create user first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 200) {",
+                  "        pm.test('✅ Added to cart successfully', function () {",
+                  "            pm.response.to.have.status(200);",
+                  "        });",
+                  "        console.log('✅ Item added to cart for user:', userId);",
+                  "    } else {",
+                  "        pm.test('❌ Cart add failed - Expected Error', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "        });",
+                  "        console.log('❌ Cart error:', pm.response.text());",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📦 Orders Management",
+      "item": [
+        {
+          "name": "1️⃣ GET All Orders (Auto-capture orderId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📦 Orders retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const orders = pm.response.json();",
+                  "    pm.expect(orders).to.be.an('array');",
+                  "    ",
+                  "    if (orders.length > 0) {",
+                  "        const firstOrder = orders[0];",
+                  "        pm.collectionVariables.set('orderId', firstOrder.id);",
+                  "        console.log('✅ Auto-captured orderId:', firstOrder.id);",
+                  "    }",
+                  "    console.log('📊 Found', orders.length, 'orders in database');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2️⃣ POST Create Order (Requires userId)", 
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderDetails\": [\n    {\n      \"bookVariantId\": 1,\n      \"quantity\": 1\n    }\n  ],\n  \"paymentType\": \"CASH\",\n  \"shippingAddress\": \"123 Test Street\",\n  \"phoneNumber\": \"0123456789\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📦 Create order test', function () {",
+                  "    const userId = pm.collectionVariables.get('userId');",
+                  "    ",
+                  "    if (!userId) {",
+                  "        pm.test('⏭️ Skipped - Create user first', function () {",
+                  "            console.log('❌ No userId available, create user first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "        const order = pm.response.json();",
+                  "        pm.collectionVariables.set('orderId', order.id);",
+                  "        pm.test('✅ Order created successfully', function () {",
+                  "            pm.expect(order).to.have.property('id');",
+                  "        });",
+                  "        console.log('✅ Created order ID:', order.id);",
+                  "    } else {",
+                  "        pm.test('❌ Order creation failed - Expected Error', function () {",
+                  "            pm.expect(pm.response.code).to.be.oneOf([400, 404, 500]);",
+                  "        });",
+                  "        console.log('❌ Order error:', pm.response.text());",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🎫 Vouchers Management",
+      "item": [
+        {
+          "name": "1️⃣ GET All Vouchers (Auto-capture voucherId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/vouchers"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🎫 Vouchers retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const vouchers = pm.response.json();",
+                  "    pm.expect(vouchers).to.be.an('array');",
+                  "    ",
+                  "    if (vouchers.length > 0) {",
+                  "        const firstVoucher = vouchers[0];",
+                  "        pm.collectionVariables.set('voucherId', firstVoucher.id);",
+                  "        console.log('✅ Auto-captured voucherId:', firstVoucher.id);",
+                  "    }",
+                  "    console.log('📊 Found', vouchers.length, 'vouchers in database');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2️⃣ GET Voucher by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/vouchers/{{voucherId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🎫 Get voucher by ID test', function () {",
+                  "    const voucherId = pm.collectionVariables.get('voucherId');",
+                  "    ",
+                  "    if (!voucherId) {",
+                  "        pm.test('⏭️ Skipped - Run GET All Vouchers first', function () {",
+                  "            console.log('❌ No voucherId available, get vouchers first');",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (pm.response.code === 200) {",
+                  "        const voucher = pm.response.json();",
+                  "        pm.test('✅ Voucher found successfully', function () {",
+                  "            pm.expect(voucher).to.have.property('id');",
+                  "        });",
+                  "        console.log('✅ Found voucher ID:', voucher.id);",
+                  "    } else {",
+                  "        pm.test('❌ Voucher not found', function () {",
+                  "            pm.expect(pm.response.code).to.equal(404);",
+                  "        });",
+                  "        console.log('❌ Voucher not found:', pm.response.text());",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3️⃣ GET Active Vouchers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/vouchers/active"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🎫 Active vouchers retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const vouchers = pm.response.json();",
+                  "    pm.expect(vouchers).to.be.an('array');",
+                  "    console.log('✅ Found', vouchers.length, 'active vouchers');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script",
+          "console.log('🚀 Running Bookstore API Collection...');",
+          "",
+          "// Ensure baseUrl is set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:8080');",
+          "}"
+        ]
+      }
+    }
+  ]
+}

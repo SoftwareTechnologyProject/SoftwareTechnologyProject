@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 header {
-  @apply w-full h-[50px] overflow-hidden;
+  @apply w-full h-[50px];
 }
 
 header img {
@@ -9,7 +9,7 @@ header img {
 }
 
 nav {
-  @apply grid grid-cols-3 h-full overflow-hidden mx-30;
+  @apply grid grid-cols-3 h-full mx-30;
 }
 
 .nav-left {
@@ -26,6 +26,23 @@ nav {
 
 .nav-icons {
   @apply w-7 h-7 cursor-pointer;
+}
+
+.notification-dropdown {
+  max-height: 350px; /* tăng chiều cao dropdown */
+  overflow-y: auto;
+  min-width: 320px; /* đảm bảo rộng hơn button */
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-item {
+  transition: background-color 0.2s, transform 0.1s;
+  border-radius: 0.375rem; /* rounded-md */
+}
+
+.notification-item:hover {
+  background-color: #DBEAFE; /* light blue hover */
+  transform: translateX(2px);
 }
 
 .nav-search {
