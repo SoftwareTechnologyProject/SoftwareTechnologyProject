@@ -28,14 +28,9 @@ public class OrdersService {
     private final UserRepository userRepository;
 
     public OrdersService(OrdersRepository ordersRepository,
-<<<<<<< HEAD
-                         BookVariantRepository bookVariantsRepository,
+                         BookVariantsRepository bookVariantsRepository,
                          VoucherRepository voucherRepository,
                          UserRepository userRepository) {
-=======
-                         BookVariantsRepository bookVariantsRepository,
-                         VoucherRepository voucherRepository,UserRepository userRepository) {
->>>>>>> origin/develop
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
