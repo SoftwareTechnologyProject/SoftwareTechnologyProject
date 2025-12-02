@@ -20,10 +20,9 @@ createRoot(document.getElementById("root")).render(
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountLayout />}>
           <Route path="accountInf" element={<Account />} />        
-          <Route path="voucher" element={<VoucherManagement />} />    
+          <Route path="voucher-wallet" element={<VoucherWallet />} />    
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/voucher-wallet" element={<VoucherWallet />} />
       </Routes>
       <Recommend />
       <Footer />
