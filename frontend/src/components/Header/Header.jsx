@@ -66,6 +66,13 @@ const Header = () => {
                         <span>Danh mục</span>
                     </div>
 
+                    <div className="mx-4">
+                        <Link to="/vouchers" className="flex flex-col items-center">
+                            <RiCoupon3Line className="nav-icons" />
+                        </Link>
+                        <span>Voucher</span>
+                    </div>
+
 {/*                    <div className="mx-4"> */}
 {/*                         <Link to="/notifications" className="flex flex-col items-center"> */}
 {/*                             <GoBell className="nav-icons" /> */}
