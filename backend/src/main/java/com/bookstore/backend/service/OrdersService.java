@@ -1,6 +1,7 @@
 package com.bookstore.backend.service;
 
 import com.bookstore.backend.DTO.OrderDetailDTO;
+import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.model.OrderDetails;
 import com.bookstore.backend.model.Orders;
 import com.bookstore.backend.model.Users;
@@ -28,23 +29,24 @@ public class OrdersService {
 
     public OrdersService(OrdersRepository ordersRepository,
                          BookVariantsRepository bookVariantsRepository,
-                         VoucherRepository voucherRepository,UserRepository userRepository) {
+                         VoucherRepository voucherRepository,
+                         UserRepository userRepository) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
         this.userRepository = userRepository;
     }
 
-    // Customer: tạo đơn hàng với nhiều orderDetail
-    public Orders createOrder(int userId, List<OrderDetailDTO> details, String voucherCode,
-                              PaymentType paymentType, String shippingAddress, String phoneNumber) {
+    // ------------------- CREATE ORDER -------------------
+    public OrdersDTO createOrder(Long userId, List<OrderDetailDTO> details, String voucherCode,
+                                 PaymentType paymentType, String shippingAddress, String phoneNumber) {
 
         Orders order = new Orders();
 
         // Lấy User từ repository
-        Users user = userRepository.findById((long) userId)
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        order.setUsers(user); // set user vào order
+        order.setUsers(user);
 
         order.setShippingAddress(shippingAddress);
         order.setPhoneNumber(phoneNumber);
@@ -52,15 +54,17 @@ public class OrdersService {
         order.setStatus(StatusOrder.PENDING);
         order.setOrderDate(LocalDateTime.now());
 
+        // Voucher
         if (voucherCode != null) {
             Voucher voucher = voucherRepository.findByCode(voucherCode).orElse(null);
             order.setVoucher(voucher);
         }
 
+        // Mapping OrderDetails
         Set<OrderDetails> orderDetails = details.stream().map(d -> {
             OrderDetails od = new OrderDetails();
             od.setOrders(order);
-            od.setBookVariant(bookVariantsRepository.findById(d.getBookVariantsId()).orElse(null));
+            od.setBookVariant(bookVariantsRepository.findById(d.getBookVariantId()).orElse(null));
             od.setQuantity(d.getQuantity());
             od.setPricePurchased(d.getPricePurchased());
             return od;
@@ -68,28 +72,81 @@ public class OrdersService {
 
         order.setOrderDetails(orderDetails);
 
-        return ordersRepository.save(order);
+        Orders savedOrder = ordersRepository.save(order);
+        return mapToDTO(savedOrder);
     }
 
 
-    public List<Orders> getOrdersByUser(int userId) {
-        return ordersRepository.findByUsers_Id(userId);
+    // ------------------- GET ORDERS BY USER -------------------
+    public List<OrdersDTO> getOrdersByUser(int userId) {
+        return ordersRepository.findByUsers_Id(userId)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Orders updateOrderStatus(int orderId, StatusOrder status) {
+
+    // ------------------- UPDATE STATUS -------------------
+    public OrdersDTO updateOrderStatus(int orderId, StatusOrder status) {
         Orders order = ordersRepository.findById(orderId).orElse(null);
-        if(order != null) {
-            order.setStatus(status);
-            ordersRepository.save(order);
+        if (order == null) return null;
+
+        order.setStatus(status);
+        Orders updated = ordersRepository.save(order);
+
+        return mapToDTO(updated);
+    }
+
+
+    // ------------------- GET ORDER BY ID -------------------
+    public OrdersDTO getOrderById(int orderId) {
+        return ordersRepository.findById(orderId)
+                .map(this::mapToDTO)
+                .orElse(null);
+    }
+
+
+    // ------------------- GET ALL ORDERS -------------------
+    public List<OrdersDTO> getAllOrders() {
+        return ordersRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    // ------------------- MAPPER: Orders -> OrdersDTO -------------------
+    private OrdersDTO mapToDTO(Orders order) {
+        if (order == null) return null;
+
+        OrdersDTO dto = new OrdersDTO();
+
+        dto.setId(order.getId());
+        dto.setUserId(order.getUsers() != null ? order.getUsers().getId() : null);
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setPhoneNumber(order.getPhoneNumber());
+        dto.setPaymentType(order.getPaymentType());
+        dto.setStatus(order.getStatus());
+        dto.setOrderDate(order.getOrderDate());
+
+        if (order.getVoucher() != null) {
+            dto.setVoucherCode(order.getVoucher().getCode());
         }
-        return order;
-    }
 
-    public Orders getOrderById(int orderId) {
-        return ordersRepository.findById(orderId).orElse(null);
-    }
+        // Mapping order details
+        dto.setOrderDetails(
+                order.getOrderDetails()
+                        .stream()
+                        .map(od -> new OrderDetailDTO(
+                                od.getId(),
+                                od.getBookVariant().getId(),
+                                od.getBookVariant().getBook().getTitle(),
+                                od.getQuantity(),
+                                od.getPricePurchased()
+                        ))
+                        .collect(Collectors.toList())
+        );
 
-    public List<Orders> getAllOrders() {
-        return ordersRepository.findAll();
+        return dto;
     }
 }
