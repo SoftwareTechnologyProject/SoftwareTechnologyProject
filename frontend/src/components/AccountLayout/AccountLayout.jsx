@@ -37,7 +37,7 @@ const AccountLayout = () => {
                             </NavLink>
 
                             <NavLink
-                                to="/orders"
+                                to="/account/order"
                                 className={({ isActive }) =>
                                     `nav-link ${isActive ? "active" : ""}`
                                 }
@@ -47,7 +47,7 @@ const AccountLayout = () => {
                             </NavLink>
 
                             <NavLink
-                                to="/account/voucher"
+                                to="/account/voucher-wallet"
                                 className={({ isActive }) =>
                                     `nav-link ${isActive ? "active" : ""}`
                                 }
