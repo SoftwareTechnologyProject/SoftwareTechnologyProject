@@ -11,9 +11,6 @@ import ProductDetail from "./pages/productDetails/ProductDetail";
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import Recommend from './components/Recommend/Recommend.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
-import Order from './pages/Order/Order';
-import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
-import OrderDetail from './pages/OrderDetail/OrderDetail';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -22,17 +19,11 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountLayout />}>
-          <Route path="accountInf" element={<Account />} />
-          <Route path="voucher-wallet" element={<VoucherWallet />} />
-          <Route path="order" element={<Order />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
-
-
+          <Route path="accountInf" element={<Account />} />        
+          <Route path="voucher" element={<VoucherManagement />} />    
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/order/:id" element={<OrderDetail />} />
-
-
+        <Route path="/voucher-wallet" element={<VoucherWallet />} />
       </Routes>
       <Recommend />
       <Footer />
