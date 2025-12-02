@@ -1,8 +1,11 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.DTO.CreateOrderRequestDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
+import com.bookstore.backend.DTO.UpdateOrderStatusDTO;
+import com.bookstore.backend.model.Orders;
+import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.service.OrdersService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,10 +20,10 @@ public class OrdersController {
         this.ordersService = ordersService;
     }
 
-    // Customer: tạo đơn hàng -> trả về OrdersDTO
+    // Customer: tạo đơn hàng
     @PostMapping
-    public ResponseEntity<OrdersDTO> createOrder(@RequestParam Long userId, @RequestBody OrdersDTO dto) {
-        OrdersDTO createdOrder = ordersService.createOrder(
+    public Orders createOrder(@RequestParam int userId, @RequestBody CreateOrderRequestDTO dto) {
+        return ordersService.createOrder(
                 userId,
                 dto.getOrderDetails(),
                 dto.getVoucherCode(),
@@ -28,34 +31,32 @@ public class OrdersController {
                 dto.getShippingAddress(),
                 dto.getPhoneNumber()
         );
-        return ResponseEntity.ok(createdOrder);
     }
 
-    // Customer: xem đơn hàng của mình -> trả về List<OrdersDTO>
+//     Customer: xem đơn hàng của mình
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrdersDTO>> getOrdersByUser(@PathVariable int userId) {
-        List<OrdersDTO> orders = ordersService.getOrdersByUser(userId);
-        return ResponseEntity.ok(orders);
+    public List<Orders> getOrdersByUser(@PathVariable int userId) {
+        return ordersService.getOrdersByUser(userId);
     }
 
-    // Admin: cập nhật trạng thái đơn hàng -> trả về DTO
+
+    // Admin: cập nhật trạng thái đơn hàng
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<OrdersDTO> updateOrderStatus(@PathVariable int orderId, @RequestBody OrdersDTO dto) {
-        OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
-        return ResponseEntity.ok(updatedOrder);
+    public Orders updateOrderStatus(@PathVariable int orderId, @RequestBody UpdateOrderStatusDTO dto) {
+        return ordersService.updateOrderStatus(orderId, dto.getStatus());
     }
 
-    // Admin: lấy tất cả đơn hàng -> trả về DTO
+    // Admin: lấy tất cả đơn hàng
     @GetMapping
-    public ResponseEntity<List<OrdersDTO>> getAllOrders() {
-        List<OrdersDTO> orders = ordersService.getAllOrders();
-        return ResponseEntity.ok(orders);
+    public List<Orders> getAllOrders() {
+        return ordersService.getAllOrders();
     }
 
-    // Xem chi tiết đơn hàng -> trả về DTO
+    // Xem đơn hàng bằng id
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable int orderId) {
-        OrdersDTO order = ordersService.getOrderById(orderId);
-        return ResponseEntity.ok(order);
+    public Orders getOrderById(@PathVariable int orderId) {
+        return ordersService.getOrderById(orderId);
     }
+
 }
+

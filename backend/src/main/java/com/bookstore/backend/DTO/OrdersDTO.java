@@ -4,77 +4,42 @@ import com.bookstore.backend.model.OrderDetails;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
-import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-@Data
 public class OrdersDTO {
-    private Long id;
-    private Long userId;
-    private String shippingAddress;
-    private String phoneNumber;
-    private PaymentType paymentType;
+    private int id;
+    private String shipping_address;
+    private String phone_number;
     private StatusOrder status;
-    private LocalDateTime orderDate;
-    private String voucherCode;
-    private List<OrderDetailDTO> orderDetails;
+    private PaymentType paymentType;
+    private Date orderDate;
+    private List<OrderDetails> orderDetails;
+    private Voucher voucher;
 
-    public OrdersDTO(long id, Long userId, String shippingAddress, String phoneNumber, PaymentType paymentType, StatusOrder status, LocalDateTime orderDate, String voucherCode, List<OrderDetailDTO> orderDetails) {
-        this.id = id;
-        this.userId = userId;
-        this.shippingAddress = shippingAddress;
-        this.phoneNumber = phoneNumber;
-        this.paymentType = paymentType;
-        this.status = status;
-        this.orderDate = orderDate;
-        this.voucherCode = voucherCode;
-        this.orderDetails = orderDetails;
-    }
-
-    public OrdersDTO() {
-    }
-
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getShipping_address() {
+        return shipping_address;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setShipping_address(String shipping_address) {
+        this.shipping_address = shipping_address;
     }
 
-    public String getShippingAddress() {
-        return shippingAddress;
+    public String getPhone_number() {
+        return phone_number;
     }
 
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public PaymentType getPaymentType() {
-        return paymentType;
-    }
-
-    public void setPaymentType(PaymentType paymentType) {
-        this.paymentType = paymentType;
+    public void setPhone_number(String phone_number) {
+        this.phone_number = phone_number;
     }
 
     public StatusOrder getStatus() {
@@ -85,27 +50,35 @@ public class OrdersDTO {
         this.status = status;
     }
 
-    public LocalDateTime getOrderDate() {
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDateTime orderDate) {
+    public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
     }
 
-    public String getVoucherCode() {
-        return voucherCode;
-    }
-
-    public void setVoucherCode(String voucherCode) {
-        this.voucherCode = voucherCode;
-    }
-
-    public List<OrderDetailDTO> getOrderDetails() {
+    public List<OrderDetails> getOrderDetails() {
         return orderDetails;
     }
 
-    public void setOrderDetails(List<OrderDetailDTO> orderDetails) {
+    public void setOrderDetails(List<OrderDetails> orderDetails) {
         this.orderDetails = orderDetails;
+    }
+
+    public Voucher getVoucher() {
+        return voucher;
+    }
+
+    public void setVoucher(Voucher voucher) {
+        this.voucher = voucher;
     }
 }
