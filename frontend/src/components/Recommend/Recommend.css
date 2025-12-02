@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.recommend {
+    @apply relative mx-30 grid gap-4 rounded-2xl;
+}
+
+.recommend img {
+    @apply w-full h-auto rounded-2xl;
+}
+
+.recommend-detail {
+    @apply absolute grid grid-cols-5 gap-4 mt-50 py-5 bg-[var(--components-color)] rounded-2xl; /* 5 cột ảnh */
+}
