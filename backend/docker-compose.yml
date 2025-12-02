@@ -25,11 +25,20 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
+      # Control sample data loading (default: true)
+      - LOAD_SAMPLE_DATA=${LOAD_SAMPLE_DATA:-true}
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+      # Database initialization scripts (run in order)
+      - ./init-scripts/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./init-scripts/02-seed-data.sh:/docker-entrypoint-initdb.d/02-seed-data.sh
+      # Sample data files
+      - ../datas/categories.csv:/docker-entrypoint-initdb.d/categories.csv
+      - ../datas/data.csv:/docker-entrypoint-initdb.d/data.csv
+      # Legacy script (kept for compatibility)
+      - ./fix_region.sql:/docker-entrypoint-initdb.d/99-fix-region.sql
 
   pgadmin:
     image: dpage/pgadmin4
