@@ -22,14 +22,17 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountLayout />}>
-          <Route path="accountInf" element={<Account />} />        
-          <Route path="voucher" element={<VoucherManagement />} />
-          <Route path="/order" element={<Order />} />
-          <Route path="/orderAdmin" element={<OrderAdmin />} />
-          <Route path="/order/:id" element={<OrderDetail />} />
+          <Route path="accountInf" element={<Account />} />
+          <Route path="voucher-wallet" element={<VoucherWallet />} />
+          <Route path="order" element={<Order />} />
+          <Route path="orderAdmin" element={<OrderAdmin />} />
+
+
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/voucher-wallet" element={<VoucherWallet />} />
+        <Route path="/order/:id" element={<OrderDetail />} />
+
+
       </Routes>
       <Recommend />
       <Footer />
