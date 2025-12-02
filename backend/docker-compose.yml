@@ -15,6 +15,8 @@ services:
       - SPRING_JPA_SHOW_SQL=${SPRING_JPA_SHOW_SQL}
     depends_on:
       - db
+    volumes:
+      - images_data:/app/public/images
 
   db:
     image: postgres:14
@@ -26,10 +28,23 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+
+  data-seeder:
+    build: ./seeder
+    container_name: bookstore_seeder
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
+    depends_on:
+      - db
+    volumes:
+      - images_data:/shared_data/images
 
   pgadmin:
     image: dpage/pgadmin4
@@ -43,3 +58,4 @@ services:
       - db
 volumes:
   db_data:
+  images_data:
