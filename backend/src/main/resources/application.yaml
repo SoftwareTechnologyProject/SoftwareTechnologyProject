@@ -17,7 +17,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
-
 springdoc:
   api-docs:
     path: /v3/api-docs
