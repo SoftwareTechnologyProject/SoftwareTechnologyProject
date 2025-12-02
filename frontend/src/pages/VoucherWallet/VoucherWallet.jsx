@@ -78,7 +78,6 @@ const VoucherWallet = () => {
 
     return (
         <>
-            <Header />
             
             <main className="voucher-wallet-container">
                 <div className="wallet-header">
@@ -249,7 +248,6 @@ const VoucherWallet = () => {
                 </div>
             </main>
 
-            <Footer />
         </>
     );
 };
