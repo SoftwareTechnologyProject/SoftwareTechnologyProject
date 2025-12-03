@@ -25,20 +25,27 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
-      # Control sample data loading (default: true)
-      - LOAD_SAMPLE_DATA=${LOAD_SAMPLE_DATA:-true}
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      # Database initialization scripts (run in order)
-      - ./init-scripts/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./init-scripts/02-seed-data.sh:/docker-entrypoint-initdb.d/02-seed-data.sh
-      # Sample data files
-      - ../datas/categories.csv:/docker-entrypoint-initdb.d/categories.csv
-      - ../datas/data.csv:/docker-entrypoint-initdb.d/data.csv
-      # Legacy script (kept for compatibility)
-      - ./fix_region.sql:/docker-entrypoint-initdb.d/99-fix-region.sql
+      - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+
+  data-seeder:
+    build: ./seeder
+    container_name: bookstore_seeder
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=db
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+    depends_on:
+      - db
 
   pgadmin:
     image: dpage/pgadmin4
