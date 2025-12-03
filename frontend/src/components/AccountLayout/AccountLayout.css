@@ -5,7 +5,7 @@
 }
 
 .account-nav {
-    @apply bg-[var(--components-color)] py-4 rounded-xl;
+    @apply bg-[var(--components-color)] py-4 rounded-xl h-fit;
 }
 
 .top-nav {
@@ -50,18 +50,4 @@
 
 .account-nav .main-nav .nav-link.active {
   @apply bg-[#c74d4d] text-white font-semibold;
-}
-
-/* Radio button gender */
-.account-info input[type="radio"] {
-  @apply accent-red-600;
-}
-
-/* Birthday input */
-.account-info .birthday-input {
-  @apply border border-gray-300 rounded px-2 py-2 text-center outline-none;
-}
-
-.account-info .birthday-input:focus {
-  @apply border-blue-500;
 }

@@ -26,12 +26,9 @@ createRoot(document.getElementById("root")).render(
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
           <Route path="orderAdmin" element={<OrderAdmin />} />
-
-
+          <Route path="order/:id" element={<OrderDetail />} />
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/order/:id" element={<OrderDetail />} />
-
 
       </Routes>
       <Recommend />

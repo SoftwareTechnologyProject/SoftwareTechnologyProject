@@ -59,7 +59,7 @@ export default function Order() {
             <div className="info">
               <h4
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate(`/order/${order.id}`)}
+                onClick={() => navigate(`/account/order/${order.id}`)}
               >
                 {order.title}
               </h4>
