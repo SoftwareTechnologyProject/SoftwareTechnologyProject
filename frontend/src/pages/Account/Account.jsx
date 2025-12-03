@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react"
-
 import rank from "../../assets/banner/rank-banner.png"
-
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 
@@ -9,7 +7,7 @@ const API_URL = 'http://localhost:8080/vouchers';
 // const API_URL = 'http://localhost:8081/vouchers';
 
 const Account = () => {
-    const [activeTab, setActiveTab] = useState('profile'); // profile, vouchers, orders, notifications, reviews
+    const [activeTab, setActiveTab] = useState('profile');
     const [vouchers, setVouchers] = useState([]);
     const [loadingVouchers, setLoadingVouchers] = useState(false);
     const [copiedCode, setCopiedCode] = useState(null);
@@ -39,7 +37,6 @@ const Account = () => {
         alert('Đã lưu thay đổi!');
     };
 
-    // Fetch vouchers when voucher tab is active
     useEffect(() => {
         if (activeTab === 'vouchers') {
             fetchVouchers();
@@ -94,165 +91,218 @@ const Account = () => {
     };
 
     return (
-        <>
-            <main>
-                <div className="account-main">
+        <main>
+            <div className="account-main">
+                <div className="bg-[var(--components-color)] rounded-xl">
                     <div className="account-rank">
                         <img src={rank} alt="rank customer" />
                     </div>
-                    <div className="account-info">
-                        <h1 className="text-xl md:text-2xl text-gray-700 font-medium mb-8">
-                            Hồ sơ cá nhân
-                        </h1>
+                </div>
+                <div className="account-info">
+                    <h1 className="account-title">
+                        Hồ sơ cá nhân
+                    </h1>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="account-form">
+                        {/* Field: Họ */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Họ<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <input
+                                    type="text"
+                                    name="ho"
+                                    value={formData.ho}
+                                    onChange={handleChange}
+                                    className="form-input"
+                                />
+                            </div>
+                        </div>
 
-                            {/* Field: Họ */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Họ<span className="text-red-500">*</span>
-                                </label>
-                                <div className="md:col-span-8">
-                                    <input
-                                        type="text"
-                                        name="ho"
-                                        value={formData.ho}
-                                        onChange={handleChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-gray-700"
-                                    />
+                        {/* Field: Tên */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Tên<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <input
+                                    type="text"
+                                    name="ten"
+                                    value={formData.ten}
+                                    onChange={handleChange}
+                                    className="form-input"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Field: Số điện thoại */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Số điện thoại
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="readonly-field">
+                                    <span>{formData.phone}</span>
+                                    <button type="button" className="change-btn">
+                                        Thay đổi
+                                    </button>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Field: Tên */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Tên<span className="text-red-500">*</span>
-                                </label>
-                                <div className="md:col-span-8">
-                                    <input
-                                        type="text"
-                                        name="ten"
-                                        value={formData.ten}
-                                        onChange={handleChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-gray-700"
-                                    />
+                        {/* Field: Email */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Email
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="readonly-field">
+                                    <span className="email-placeholder">
+                                        {formData.email || 'Chưa có email'}
+                                    </span>
+                                    <button type="button" className="change-btn">
+                                        Thêm mới
+                                    </button>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Field: Số điện thoại */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Số điện thoại
-                                </label>
-                                <div className="md:col-span-8 relative">
-                                    <div className="flex items-center justify-between w-full border border-gray-300 rounded px-3 py-2">
-                                        <span className="text-gray-700">{formData.phone}</span>
-                                        <button type="button" className="text-blue-500 hover:underline text-sm">
-                                            Thay đổi
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Field: Email */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Email
-                                </label>
-                                <div className="md:col-span-8">
-                                    <div className="flex items-center justify-between w-full border border-gray-300 rounded px-3 py-2">
-                                        <span className="text-gray-400">
-                                            {formData.email || 'Chưa có email'}
-                                        </span>
-                                        <button type="button" className="text-blue-500 hover:underline text-sm">
-                                            Thêm mới
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Field: Giới tính */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Giới tính<span className="text-red-500">*</span>
-                                </label>
-                                <div className="md:col-span-8 flex items-center space-x-6">
-                                    <label className="flex items-center space-x-2 cursor-pointer">
+                        {/* Field: Giới tính */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Giới tính<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="radio-group">
+                                    <label className="radio-label">
                                         <input
                                             type="radio"
                                             name="gender"
                                             value="Nam"
                                             checked={formData.gender === 'Nam'}
                                             onChange={handleChange}
-                                            className="form-radio text-red-600 focus:ring-red-500 h-4 w-4 accent-red-600"
+                                            className="radio-input"
                                         />
-                                        <span className="text-gray-700">Nam</span>
+                                        <span>Nam</span>
                                     </label>
-                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                    <label className="radio-label">
                                         <input
                                             type="radio"
                                             name="gender"
                                             value="Nữ"
                                             checked={formData.gender === 'Nữ'}
                                             onChange={handleChange}
-                                            className="form-radio text-red-600 focus:ring-red-500 h-4 w-4 accent-red-600"
+                                            className="radio-input"
                                         />
-                                        <span className="text-gray-700">Nữ</span>
+                                        <span>Nữ</span>
                                     </label>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Field: Birthday */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-4">
-                                <label className="md:col-span-2 text-gray-600">
-                                    Birthday<span className="text-red-500">*</span>
-                                </label>
-                                <div className="md:col-span-8 grid grid-cols-3 gap-4">
-                                    <div className="border border-gray-300 rounded px-3 py-2 flex justify-center">
-                                        <input
-                                            type="text"
-                                            name="day"
-                                            value={formData.day}
-                                            onChange={handleChange}
-                                            className="w-full text-center outline-none text-gray-700"
-                                        />
-                                    </div>
-                                    <div className="border border-gray-300 rounded px-3 py-2 flex justify-center">
-                                        <input
-                                            type="text"
-                                            name="month"
-                                            value={formData.month}
-                                            onChange={handleChange}
-                                            className="w-full text-center outline-none text-gray-700"
-                                        />
-                                    </div>
-                                    <div className="border border-gray-300 rounded px-3 py-2 flex justify-center">
-                                        <input
-                                            type="text"
-                                            name="year"
-                                            value={formData.year}
-                                            onChange={handleChange}
-                                            className="w-full text-center outline-none text-gray-700"
-                                        />
-                                    </div>
+                        {/* Field: Birthday */}
+                        <div className="form-row">
+                            <label className="form-label">
+                                Birthday<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="birthday-group">
+                                    <input
+                                        type="text"
+                                        name="day"
+                                        value={formData.day}
+                                        onChange={handleChange}
+                                        placeholder="DD"
+                                        className="birthday-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        name="month"
+                                        value={formData.month}
+                                        onChange={handleChange}
+                                        placeholder="MM"
+                                        className="birthday-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        name="year"
+                                        value={formData.year}
+                                        onChange={handleChange}
+                                        placeholder="YYYY"
+                                        className="birthday-input"
+                                    />
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Submit Button */}
-                            <div className="pt-4 flex justify-center">
-                                <button
-                                    type="submit"
-                                    className="bg-red-700 hover:bg-red-800 text-white font-medium py-2 px-8 rounded shadow-sm transition-colors"
-                                >
-                                    Lưu thay đổi
-                                </button>
-                            </div>
-
-                        </form>
-                    </div>
+                        {/* Submit Button */}
+                        <div className="form-submit">
+                            <button type="submit" className="btn-submit">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </main >
-        </>
+                <div className="account-info">
+                    <h1 className="account-title">
+                        Đổi Mật Khẩu
+                    </h1>
+
+                    <form onSubmit={handleSubmit} className="account-form">
+                        <div className="form-row">
+                            <label className="form-label">
+                                Mật Khẩu Hiện Tại<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <input
+                                    type="text"
+                                    name="ho"
+                                    value={formData.ho}
+                                    onChange={handleChange}
+                                    className="form-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <label className="form-label">
+                                Mật Khẩu Mới<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="readonly-field">
+                                    <span>{formData.phone}</span>
+                                    <button type="button" className="change-btn">
+                                        Thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <label className="form-label">
+                                Nhập Lại Mật Khẩu Mới<span className="required">*</span>
+                            </label>
+                            <div className="form-input-wrapper">
+                                <div className="readonly-field">
+                                    <span>{formData.phone}</span>
+                                    <button type="button" className="change-btn">
+                                        Thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="form-submit">
+                            <button type="submit" className="btn-submit">
+                                Xác Nhận
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
     )
 }
 
