@@ -47,7 +47,8 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      <button onClick={() => navigate(-1)} style={{ marginTop: "20px" }}>Quay lại</button>
+      <button onClick={() => navigate("/account/order")}>Quay lại</button>
+
     </div>
   );
 }
