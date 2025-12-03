@@ -77,7 +77,8 @@ const VoucherWallet = () => {
     });
 
     return (
-        <>  
+        <>
+            
             <main className="voucher-wallet-container">
                 <div className="wallet-header">
                     <div className="header-content">
@@ -246,6 +247,7 @@ const VoucherWallet = () => {
                     <Link to="/account">← Quay lại tài khoản</Link>
                 </div>
             </main>
+
         </>
     );
 };

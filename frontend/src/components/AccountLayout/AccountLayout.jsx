@@ -37,7 +37,7 @@ const AccountLayout = () => {
                             </NavLink>
 
                             <NavLink
-                                to="/orders"
+                                to="/account/order"
                                 className={({ isActive }) =>
                                     `nav-link ${isActive ? "active" : ""}`
                                 }
