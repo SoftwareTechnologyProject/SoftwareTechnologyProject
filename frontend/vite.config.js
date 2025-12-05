@@ -13,6 +13,8 @@ export default defineConfig({
       },
     },
   server: {
+    port: 5173,
+    strictPort: true, // Fail if port is unavailable instead of trying another port
     proxy: {
       "/ws": {
         target: "http://localhost:8080",
