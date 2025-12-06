@@ -1,5 +1,7 @@
 server:
   port: 8080
+  servlet: # Thêm Context Path
+    context-path: /api/auth
 
 spring:
   datasource:
@@ -17,11 +19,29 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+  
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          from: ndtoan.work@gmail.com
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+jwt:
+  secret:
+    key: thisisthesecretkeyievercreatedinmydevelopmentcareer
 
 # Spring Boot Actuator configuration
 management:
@@ -68,4 +88,6 @@ management:
 #   endpoint:
 #     health:
 #       show-details: when-authorized
+
+
 

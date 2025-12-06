@@ -41,7 +41,7 @@ public class Users {
     @Column(name = "role", nullable = false)
     private String role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user") 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Account account;
