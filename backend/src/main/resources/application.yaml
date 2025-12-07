@@ -1,25 +1,33 @@
 ﻿server:
-  port: 8080
+    port: 8080
 
 spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/bookstore}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:123456}
-    driver-class-name: org.postgresql.Driver
+    datasource:
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/bookstore}
+        username: ${SPRING_DATASOURCE_USERNAME:postgres}
+        password: ${SPRING_DATASOURCE_PASSWORD:123456}
+        driver-class-name: org.postgresql.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-    show-sql: ${SPRING_JPA_SHOW_SQL:true}
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          time_zone: Asia/Ho_Chi_Minh
+    jpa:
+        hibernate:
+            ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+        show-sql: ${SPRING_JPA_SHOW_SQL:true}
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                jdbc:
+                    time_zone: Asia/Ho_Chi_Minh
 
 springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
+    api-docs:
+        path: /v3/api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+
+vnpay:
+    pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    return-url: http://localhost:8080/payment/vnpay-return
+    tmn-code: Y7ALQVWN
+    hash-secret: HP25LZ25TGFXN1X98S515TWW30PPH6KP
+    api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+    api-version: 2.1.0
