@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Loading Placeholders */
+.book-loading-placeholder {
+    @apply animate-pulse;
+}
+
+.loading-img {
+    @apply w-full h-48 bg-gray-300 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-300 rounded mt-2 w-3/4;
+}
+
 /* ========== Common ================= */
 .product-catalog {
     @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[3fr_7fr] px-5 rounded-xl;
