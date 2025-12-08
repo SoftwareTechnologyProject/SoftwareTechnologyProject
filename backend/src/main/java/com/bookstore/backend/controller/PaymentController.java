@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -30,8 +31,54 @@ public class PaymentController {
     }
 
     /**
+     * Endpoint GET cho browser - Tự động redirect đến VNPay
+     * Dùng khi muốn paste link vào browser: http://localhost:8080/payment/create
+     */
+    @GetMapping("/create")
+    public RedirectView createPaymentRedirect(
+            @RequestParam(value = "cart_item_ids", required = false) String cartItemIdsStr,
+            @RequestParam(value = "voucher_code", required = false) String voucherCode,
+            @RequestParam(value = "user_id", required = false) Long userId,
+            HttpServletRequest request) {
+        
+        try {
+            // TEST MODE: Dùng dữ liệu giả lập nếu không có tham số
+            if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
+                cartItemIdsStr = "1,2,3";
+            }
+            if (userId == null) {
+                userId = 1L;
+            }
+            
+            // TODO: Khi ráp vào project, uncomment validation này
+            // if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
+            //     return new RedirectView("/payment-error?message=Missing+cart+items");
+            // }
+
+            List<Long> cartItemIds = Arrays.stream(cartItemIdsStr.split(","))
+                    .map(String::trim)
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+
+            // TODO: Khi ráp vào project, uncomment dòng dưới
+            // String paymentKey = paymentService.initiatePaymentTransaction(cartItemIds, voucherCode, userId);
+            
+            // TEST MODE: Tạo paymentKey giả
+            String paymentKey = "payment_test_" + System.currentTimeMillis();
+            
+            // Tạo URL thanh toán VNPay và redirect
+            String paymentUrl = vnPayService.createPaymentUrl(paymentKey, request);
+            return new RedirectView(paymentUrl);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new RedirectView("/payment-error?message=" + e.getMessage());
+        }
+    }
+
+    /**
      * Xử lý yêu cầu POST để tạo giao dịch thanh toán từ các sản phẩm được chọn.
-     * Trả về JSON với URL thanh toán VNPay.
+     * Trả về JSON với URL thanh toán VNPay - Dùng cho API call từ frontend.
      */
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createPayment(
