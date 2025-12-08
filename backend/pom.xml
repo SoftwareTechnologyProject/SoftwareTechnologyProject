@@ -84,6 +84,13 @@
             <version>2.7.0</version>
         </dependency>
 
+        <!-- AWS S3 SDK -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.20.26</version>
+        </dependency>
+
         <!-- Spring Boot Actuator (for health checks) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

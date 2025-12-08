@@ -3,8 +3,8 @@ import rank from "../../assets/banner/rank-banner.png"
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 
-const API_URL = 'http://localhost:8080/vouchers';
-// const API_URL = 'http://localhost:8081/vouchers';
+//const API_URL = 'http://localhost:8080/vouchers';
+const API_URL = 'http://localhost:8081/vouchers';
 
 const Account = () => {
     const [activeTab, setActiveTab] = useState('profile');

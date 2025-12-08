@@ -1,5 +1,5 @@
 .voucher-wallet-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 30px 20px;
     min-height: 70vh;
@@ -144,8 +144,15 @@
 /* Vouchers Grid */
 .vouchers-grid {
     display: grid;
+    grid-template-columns: 1fr;
     gap: 20px;
     margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+    .vouchers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Voucher Card */

@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
 .account-container {
-  @apply grid grid-cols-[2fr_7fr] mx-30 my-4;
+  @apply grid grid-cols-[2fr_7fr] my-4;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .account-nav {

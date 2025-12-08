@@ -14,25 +14,42 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
+import BlogList from './pages/Blog/BlogList';
+import BlogDetail from './pages/Blog/BlogDetail';
+import BlogAbout from './pages/Blog/BlogAbout';
+import BlogAdmin from './pages/Blog/BlogAdmin';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <Header />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/account" element={<AccountLayout />}>
-          <Route path="accountInf" element={<Account />} />
-          <Route path="voucher-wallet" element={<VoucherWallet />} />
-          <Route path="order" element={<Order />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
-          <Route path="order/:id" element={<OrderDetail />} />
-        </Route>
-        <Route path="/books/:id" element={<ProductDetail />} />
+        {/* Blog routes - standalone without Header/Footer */}
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        <Route path="/blog/about" element={<BlogAbout />} />
+        <Route path="/blog/admin" element={<BlogAdmin />} />
 
+        {/* Bookstore routes - with Header/Footer */}
+        <Route path="/*" element={
+          <>
+            <Header />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/voucher-management" element={<VoucherManagement />} />
+              <Route path="/account" element={<AccountLayout />}>
+                <Route path="accountInf" element={<Account />} />
+                <Route path="voucher-wallet" element={<VoucherWallet />} />
+                <Route path="order" element={<Order />} />
+                <Route path="orderAdmin" element={<OrderAdmin />} />
+                <Route path="order/:id" element={<OrderDetail />} />
+              </Route>
+              <Route path="/books/:id" element={<ProductDetail />} />
+            </Routes>
+            <Recommend />
+            <Footer />
+          </>
+        } />
       </Routes>
-      <Recommend />
-      <Footer />
     </BrowserRouter>
   </StrictMode>
 );

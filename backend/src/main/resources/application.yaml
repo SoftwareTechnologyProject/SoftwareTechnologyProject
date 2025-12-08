@@ -1,4 +1,4 @@
-server:
+﻿server:
   port: 8080
 
 spring:
@@ -32,6 +32,14 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+# AWS S3 configuration
+aws:
+  s3:
+    access-key: ${AWS_ACCESS_KEY_ID:your-access-key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key}
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET_NAME:blogadmin-s3}
 
 # ﻿server:
 #   port: 8081
