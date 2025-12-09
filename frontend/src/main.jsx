@@ -14,10 +14,12 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
+import Login from './pages/login.jsx';
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
+// Component Layout chung cho các trang có Header/Footer
+function MainLayout() {
+  return (
+    <>
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -29,10 +31,23 @@ createRoot(document.getElementById("root")).render(
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-
       </Routes>
       <Recommend />
       <Footer />
+    </>
+  );
+}
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Routes>
+        {/* Trang LOGIN riêng biệt - không có Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Tất cả các trang khác có Layout chung */}
+        <Route path="*" element={<MainLayout />} />
+      </Routes>
     </BrowserRouter>
   </StrictMode>
 );
