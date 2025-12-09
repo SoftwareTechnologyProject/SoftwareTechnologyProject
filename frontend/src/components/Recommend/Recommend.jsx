@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { NavLink } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import ex1 from "../../assets/ex1.jpg";
 import recommendBanner from "../../assets/banner/recommend-banner.png";
@@ -8,6 +9,9 @@ import "../../pages/HomePage/HomePage.css";
 import "../../components/Recommend/Recommend.css";
 
 const Recommend = () => {
+    const { pathname } = useLocation();
+
+    if (pathname.startsWith("/admin")) return null;
 
     const listTrend = [
         { id: 1, img: ex1, link: "/books/1", title: "Doraemon - Movie Story Màu - Nobita Và Những Hiệp Sĩ Không Gian", oldPrice: "40.000 đ", newPrice: "36.000 đ", discount: "-10%" },

@@ -33,7 +33,7 @@ public class OrdersController {
 
     // Customer: xem đơn hàng của mình -> trả về List<OrdersDTO>
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrdersDTO>> getOrdersByUser(@PathVariable int userId) {
+    public ResponseEntity<List<OrdersDTO>> getOrdersByUser(@PathVariable Long userId) {
         List<OrdersDTO> orders = ordersService.getOrdersByUser(userId);
         return ResponseEntity.ok(orders);
     }

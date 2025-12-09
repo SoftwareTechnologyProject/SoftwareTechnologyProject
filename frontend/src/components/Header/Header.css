@@ -25,7 +25,8 @@ nav {
 }
 
 .nav-icons {
-  @apply w-7 h-7 cursor-pointer;
+  @apply w-7 h-7
+         hover:text-[var(--primary-color)] transition-colors;
 }
 
 .notification-dropdown {
@@ -51,4 +52,57 @@ nav {
 
 .input-search {
   @apply px-4 py-2 outline-none;
+}
+
+
+.account-menu-container {
+  @apply relative mx-4;
+}
+
+.account-menu-link {
+  @apply flex flex-col items-center text-inherit 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+.account-menu-icon {
+  @apply text-[1.5rem] mb-1;
+}
+
+.account-popup {
+  @apply absolute top-full left-1/2 -translate-x-7/10 mt-2
+         bg-white  shadow-xl rounded-lg p-2
+         z-50 min-w-[10rem]
+         opacity-0 invisible group-hover:opacity-100 group-hover:visible;
+}
+
+.account-popup-link {
+  @apply block text-center py-2 px-4 rounded-md w-2xs
+         text-lg font-medium transition;
+}
+
+.login {
+  @apply bg-[var(--primary-color)] text-[var(--components-color)];
+}
+
+.register {
+  @apply bg-[var(--components-color)] border-2 text-[var(--primary-color)];
+}
+
+.account-popup-link + .account-popup-link {
+  @apply mt-1;
+}
+
+@media (max-width: 768px) {
+  .account-menu-container {
+    @apply mx-2;
+  }
+  .account-menu-icon {
+    @apply text-[1.25rem];
+  }
+  .account-menu-text {
+    @apply text-xs;
+  }
+  .account-popup {
+    @apply min-w-[8rem];
+  }
 }

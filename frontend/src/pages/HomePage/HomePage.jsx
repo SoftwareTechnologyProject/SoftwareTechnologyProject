@@ -27,7 +27,7 @@ import { RiBook3Line } from "react-icons/ri";
 
 import "./HomePage.css";
 
-const banners = [banner1, banner2, banner3];
+const banners = [banner3, banner2, banner1];
 
 const catalog = [
     { img: paper, link: "/paper", content: "Giấy Photo" },
@@ -244,17 +244,16 @@ const HomePage = () => {
                                 const oldPrice = price * 1.1; // Mock old price
                                 
                                 return (
-                                    <Link key={book.id || index} to={`/books/${book.id}`}>
+                                    <Link className="book-view" key={book.id || index} to={`/books/${book.id}`}>
                                         <img 
                                             src={imageUrl} 
-                                            alt={book.title} 
-                                            className="w-full h-auto"
+                                            alt={book.title}
                                             onError={(e) => {
                                                 e.target.src = ex1;
                                             }}
                                         />
                                         <div className="label-price">
-                                            <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
+                                            <h3>{book.title}</h3>
                                             <p className="special-price">
                                                 <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
                                                 <span className="percent-discount">-10%</span>
@@ -298,7 +297,7 @@ const HomePage = () => {
                                             const oldPrice = price * 1.15;
                                             
                                             return (
-                                                <Link key={book.id || idx} to={`/books/${book.id}`}>
+                                                <Link className="w-[70%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
                                                     <img 
                                                         src={imageUrl} 
                                                         alt={book.title}
@@ -307,7 +306,7 @@ const HomePage = () => {
                                                         }}
                                                     />
                                                     <div className="label-price">
-                                                        <h3>{book.title?.substring(0, 40) + (book.title?.length > 40 ? '...' : '')}</h3>
+                                                        <h3>{book.title}</h3>
                                                         <p className="special-price">
                                                             <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
                                                             <span className="percent-discount">-15%</span>
