@@ -78,7 +78,7 @@ public class OrdersService {
 
 
     // ------------------- GET ORDERS BY USER -------------------
-    public List<OrdersDTO> getOrdersByUser(int userId) {
+    public List<OrdersDTO> getOrdersByUser(Long userId) {
         return ordersRepository.findByUsers_Id(userId)
                 .stream()
                 .map(this::mapToDTO)
