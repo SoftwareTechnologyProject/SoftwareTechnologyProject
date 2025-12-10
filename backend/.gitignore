@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment and config files
+.env
+backend/src/main/resources/application.yaml

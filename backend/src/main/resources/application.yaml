@@ -17,55 +17,26 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+  
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          from: ndtoan.work@gmail.com
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
 
-# Spring Boot Actuator configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: when-authorized
-
-# ﻿server:
-#   port: 8081
-
-# spring:
-#   datasource:
-#     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bookstore}
-#     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-#     password: ${SPRING_DATASOURCE_PASSWORD:123456}
-#     driver-class-name: org.postgresql.Driver
-
-#   jpa:
-#     hibernate:
-#       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-#     show-sql: ${SPRING_JPA_SHOW_SQL:true}
-#     properties:
-#       hibernate:
-#         dialect: org.hibernate.dialect.PostgreSQLDialect
-#         jdbc:
-#           time_zone: Asia/Ho_Chi_Minh
-
-# springdoc:
-#   api-docs:
-#     path: /v3/api-docs
-#   swagger-ui:
-#     path: /swagger-ui.html
-
-# # Spring Boot Actuator configuration
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: health,info,metrics
-#   endpoint:
-#     health:
-#       show-details: when-authorized
-
+jwt:
+  secret:
+    key: ${KEY_JWT}
