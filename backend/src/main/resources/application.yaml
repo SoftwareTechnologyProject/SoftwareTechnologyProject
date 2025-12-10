@@ -1,5 +1,12 @@
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  http2:
+    enabled: true
 
 spring:
   datasource:
@@ -23,7 +30,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-# Spring Boot Actuator configuration
 management:
   endpoints:
     web:
@@ -32,40 +38,3 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-
-# ﻿server:
-#   port: 8081
-
-# spring:
-#   datasource:
-#     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bookstore}
-#     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-#     password: ${SPRING_DATASOURCE_PASSWORD:123456}
-#     driver-class-name: org.postgresql.Driver
-
-#   jpa:
-#     hibernate:
-#       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-#     show-sql: ${SPRING_JPA_SHOW_SQL:true}
-#     properties:
-#       hibernate:
-#         dialect: org.hibernate.dialect.PostgreSQLDialect
-#         jdbc:
-#           time_zone: Asia/Ho_Chi_Minh
-
-# springdoc:
-#   api-docs:
-#     path: /v3/api-docs
-#   swagger-ui:
-#     path: /swagger-ui.html
-
-# # Spring Boot Actuator configuration
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: health,info,metrics
-#   endpoint:
-#     health:
-#       show-details: when-authorized
-
