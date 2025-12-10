@@ -1,7 +1,9 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.DTO.MessageRequestDTO;
 import com.bookstore.backend.DTO.MessageResponseDTO;
 import com.bookstore.backend.model.Messages;
+import com.bookstore.backend.service.ChatService;
 import com.bookstore.backend.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,8 +18,10 @@ import java.util.List;
 @RequestMapping("/api/chat")
 public class ChatController {
     private final MessageService messageService;
+    private final ChatService chatService;
     @MessageMapping("/chat.send")
-    public void sendTo(Messages messages){
+    public void sendTo(MessageRequestDTO messageRequestDTO){
+        chatService.sendMessage(messageRequestDTO);
     }
 
     @PutMapping("/mark-read/{id}")

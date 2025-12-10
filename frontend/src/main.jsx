@@ -14,6 +14,7 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")).render(
       </Routes>
       <Recommend />
       <Footer />
+      <ChatFloating />
     </BrowserRouter>
   </StrictMode>
 );
