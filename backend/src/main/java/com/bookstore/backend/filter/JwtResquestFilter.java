@@ -1,7 +1,6 @@
 package com.bookstore.backend.filter;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,33 +27,17 @@ public class JwtResquestFilter extends OncePerRequestFilter {
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtils jwtUtils;
 
-    // Danh sách các đường dẫn public (không cần JWT)
-    private static final List<String> PUBLIC_URLS = List.of(
-            "/login", 
-    "/register", 
-    "/send-reset-otp", 
-    "/reset-password", 
-    "/logout",
-    "/api/auth/**"
-    );
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
-
-        String path = request.getServletPath();
-
-        // Bỏ qua các URL public
-        if (PUBLIC_URLS.contains(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String jwt = null;
         String email = null;
 
         // 1️⃣ Lấy JWT từ header Authorization
-        final String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
         }
@@ -72,7 +55,7 @@ public class JwtResquestFilter extends OncePerRequestFilter {
             }
         }
 
-        // 3️⃣ Validate JWT và set SecurityContext
+        // 3️⃣ Validate JWT nếu có
         if (jwt != null) {
             try {
                 email = jwtUtils.extractEmail(jwt);
@@ -86,18 +69,16 @@ public class JwtResquestFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
                 }
+
             } catch (ExpiredJwtException e) {
-                // Nếu request tới public URL → bỏ qua, không ném lỗi
-                if (!PUBLIC_URLS.contains(path)) {
-                    throw e; // request private → ném lỗi JWT expired
-                }
-                // request public → token expired → chỉ bỏ qua
+                // Token hết hạn → chỉ log, Spring Security sẽ xử lý response 401/403
+                logger.warn("JWT expired: {}");
             } catch (Exception e) {
-                // Các lỗi khác (token invalid, signature, ...) → bỏ qua hoặc log
-                System.err.println("JWT processing error: " + e.getMessage());
+                logger.error("JWT processing error: {}", e);
             }
         }
 
+        // Tiếp tục chain
         filterChain.doFilter(request, response);
     }
 }

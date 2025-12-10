@@ -67,7 +67,7 @@ public class Users implements UserDetails{
     private UserRole role;
 
     // ✅ Users giờ là owner của relationship
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 

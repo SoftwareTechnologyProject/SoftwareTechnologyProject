@@ -7,7 +7,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor; // <<< THÊM IMPORT NÀY
+import lombok.RequiredArgsConstructor; 
 
 @Service
 @RequiredArgsConstructor

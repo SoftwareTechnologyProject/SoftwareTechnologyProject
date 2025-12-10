@@ -1,5 +1,3 @@
-
-
 package com.bookstore.backend.config;
 
 import org.springframework.context.annotation.Bean;
@@ -38,19 +36,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                    // CẬP NHẬT: Thêm đường dẫn /api/auth/** vào permitAll()
-                    .requestMatchers("/register", "/login", "/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
-                    .requestMatchers("/profile", "/is-authenticated", "/send-otp", "/verify-otp").authenticated()
-                    .requestMatchers("/api/books/**", "/api/products/**").permitAll()
-                    .requestMatchers("/api/orders/my-orders").hasAnyRole("USER", "STAFF", "ADMIN")
-                    .requestMatchers("/api/orders/**").hasAnyRole("STAFF", "ADMIN")
-                    .requestMatchers("/api/vouchers/my-vouchers").hasAnyRole("USER", "STAFF", "ADMIN")
-                    .requestMatchers("/api/vouchers/**").hasAnyRole("STAFF", "ADMIN")
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/users/**").hasRole("ADMIN")
-                    .requestMatchers("/api/reports/**").hasAnyRole("STAFF", "ADMIN")
+                    // Public endpoints
+                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
+                    .requestMatchers("/api/books/**").permitAll()
+                    
+                    .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_ADMIN")
+                    .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
+                    
+                    .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
+                    
                     .anyRequest().authenticated()
-                
                 )
                 .addFilterBefore(jwtResquestFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -59,15 +55,14 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(){
-        return email -> userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User Not found"));
+        return email -> userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
     }
 
-    // Mã hóa mật khẩu
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-    
 
     @Bean
     public AuthenticationProvider authenticationProvider(){

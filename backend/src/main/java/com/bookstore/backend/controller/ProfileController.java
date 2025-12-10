@@ -29,7 +29,7 @@ public class ProfileController {
 
     // Xử lý các yêu cầu đăng ký
     // Endpoint này sẽ tạo user và ngay lập tức gửi OTP xác thực.
-    @PostMapping("/register")
+    @PostMapping("/api/auth/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse register(@Valid @RequestBody ProfileRequest request){
         ProfileResponse response = profileService.createProfile(request);
@@ -50,7 +50,7 @@ public class ProfileController {
     }
 
     // Truy xuất thông tin hồ sơ của người dùng hiện đang đăng nhập
-    @GetMapping("/profile")
+    @GetMapping("/api/profile")
     public ProfileResponse getProfile(@CurrentSecurityContext(expression= "authentication?.name") String email) {
         return profileService.getProfile(email);
     }
