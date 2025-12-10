@@ -26,10 +26,26 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+
+  data-seeder:
+    build: ./seeder
+    container_name: bookstore_seeder
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=db
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+    depends_on:
+      - db
 
   pgadmin:
     image: dpage/pgadmin4

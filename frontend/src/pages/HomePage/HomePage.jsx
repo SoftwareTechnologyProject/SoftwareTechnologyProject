@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 import banner1 from "../../assets/banner/banner-1.png";
 import banner2 from "../../assets/banner/banner-3.png";
 import banner3 from "../../assets/banner/banner-5.png";
 import bannerMomo from "../../assets/banner/banner-momo.png";
 import bannerVnpay from "../../assets/banner/banner-vnpay.png";
-import recommendBanner from "../../assets/banner/recommend-banner.png";
 
 import child from "../../assets/logo/child.png";
 import foreign from "../../assets/logo/foreign.png";
@@ -19,9 +19,6 @@ import paper from "../../assets/logo/paper.png";
 
 import card1 from "../../assets/gift-card/card-1.jpg";
 import ex1 from "../../assets/ex1.jpg";
-
-import Header from '../../components/Header/Header';
-import Footer from '../../components/Footer/Footer';
 
 import { BsGrid } from "react-icons/bs";
 import { IoGiftOutline } from "react-icons/io5";
@@ -65,12 +62,40 @@ const comboTrend = Array(20).fill({
 
 
 const HomePage = () => {
-
     const [index, setIndex] = useState(0);
     const [giftIndex, setGiftIndex] = useState(0);
     const totalGiftSlides = Math.ceil(giftCard.length / 3);
     const [comboIndex, setComboIndex] = useState(0);
     const totalComboTrendSlides = Math.ceil(comboTrend.length / 5);
+    
+    // State for real book data
+    const [trendingBooks, setTrendingBooks] = useState([]);
+    const [featuredBooks, setFeaturedBooks] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch books from API
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/books?page=0&size=10');
+                const books = response.data || [];
+                
+                // Use first 10 books for trending
+                setTrendingBooks(books.slice(0, 10));
+                // Use first 20 books for combo trending
+                setFeaturedBooks(books.slice(0, 20));
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                // Keep static data as fallback
+                setTrendingBooks(listTrend);
+                setFeaturedBooks(comboTrend);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBooks();
+    }, []);
 
     // Auto slide
     useEffect(() => {
@@ -90,8 +115,6 @@ const HomePage = () => {
 
     return (
         <>
-            <Header />
-
             <main>
                 <div className="banner-container">
                     <div className="elite-banner">
@@ -205,19 +228,43 @@ const HomePage = () => {
                     </div>
 
                     <div className="trend-detail">
-                        {listTrend.map((item, index) => (
-                            <Link key={index} to={item.link}>
-                                <img src={item.img} alt="" className="w-full h-auto" />
-                                <div className="label-price">
-                                    <h3>{item.title}</h3>
-                                    <p className="special-price">
-                                        <span className="price-new">{item.newPrice}</span>
-                                        <span className="percent-discount">{item.discount}</span>
-                                    </p>
-                                    <span className="price-old">{item.oldPrice}</span>
+                        {loading ? (
+                            // Loading placeholder
+                            Array(10).fill(0).map((_, index) => (
+                                <div key={index} className="book-loading-placeholder">
+                                    <div className="loading-img"></div>
+                                    <div className="loading-text"></div>
                                 </div>
-                            </Link>
-                        ))}
+                            ))
+                        ) : (
+                            trendingBooks.map((book, index) => {
+                                const variant = book.variants?.[0];
+                                const imageUrl = variant?.imageUrls?.[0] || ex1;
+                                const price = variant?.price || 0;
+                                const oldPrice = price * 1.1; // Mock old price
+                                
+                                return (
+                                    <Link key={book.id || index} to={`/books/${book.id}`}>
+                                        <img 
+                                            src={imageUrl} 
+                                            alt={book.title} 
+                                            className="w-full h-auto"
+                                            onError={(e) => {
+                                                e.target.src = ex1;
+                                            }}
+                                        />
+                                        <div className="label-price">
+                                            <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
+                                            <p className="special-price">
+                                                <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                                                <span className="percent-discount">-10%</span>
+                                            </p>
+                                            <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                                        </div>
+                                    </Link>
+                                );
+                            })
+                        )}
                     </div>
 
                     <div className="button-more">
@@ -240,23 +287,36 @@ const HomePage = () => {
                                 transform: `translateX(-${comboIndex * 25}%)`,
                             }}
                         >
-                            {Array.from({ length: totalComboTrendSlides }).map((_, groupIdx) => (
+                            {Array.from({ length: Math.ceil(featuredBooks.length / 5) }).map((_, groupIdx) => (
                                 <div key={groupIdx} className="combo-detail">
-                                    {comboTrend
+                                    {featuredBooks
                                         .slice(groupIdx * 5, groupIdx * 5 + 5)
-                                        .map((item, idx) => (
-                                            <Link key={idx} to={item.link}>
-                                                <img src={item.img} alt="" />
-                                                <div className="label-price">
-                                                    <h3>{item.title}</h3>
-                                                    <p className="special-price">
-                                                        <span className="price-new">{item.newPrice}</span>
-                                                        <span className="percent-discount">{item.discount}</span>
-                                                    </p>
-                                                    <span className="price-old">{item.oldPrice}</span>
-                                                </div>
-                                            </Link>
-                                        ))}
+                                        .map((book, idx) => {
+                                            const variant = book.variants?.[0];
+                                            const imageUrl = variant?.imageUrls?.[0] || ex1;
+                                            const price = variant?.price || 0;
+                                            const oldPrice = price * 1.15;
+                                            
+                                            return (
+                                                <Link key={book.id || idx} to={`/books/${book.id}`}>
+                                                    <img 
+                                                        src={imageUrl} 
+                                                        alt={book.title}
+                                                        onError={(e) => {
+                                                            e.target.src = ex1;
+                                                        }}
+                                                    />
+                                                    <div className="label-price">
+                                                        <h3>{book.title?.substring(0, 40) + (book.title?.length > 40 ? '...' : '')}</h3>
+                                                        <p className="special-price">
+                                                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                                                            <span className="percent-discount">-15%</span>
+                                                        </p>
+                                                        <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
                                 </div>
                             ))}
                         </div>
@@ -284,36 +344,7 @@ const HomePage = () => {
                         <Link to="#">Xem Thêm</Link>
                     </div>
                 </div>
-
-                {/* ====================== Recommend =================== */}
-                <div className="recommend">
-                    <img src={recommendBanner} alt="recommend banner" />
-
-                    <div className="recommend-detail">
-                        {listTrend.map((item, index) => (
-                            <Link key={index} to={item.link}>
-                                <img src={item.img} alt="" className="w-full h-auto" />
-                                <div className="label-price">
-                                    <h3>{item.title}</h3>
-                                    <p className="special-price">
-                                        <span className="price-new">{item.newPrice}</span>
-                                        <span className="percent-discount">{item.discount}</span>
-                                    </p>
-                                    <span className="price-old">{item.oldPrice}</span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="button-more mt-65">
-                        <Link to="#" className="flex gap-2">
-                            Xem Tất Cả
-                        </Link>
-                    </div>
-                </div>
             </main>
-
-            <Footer />
         </>
     );
 };
