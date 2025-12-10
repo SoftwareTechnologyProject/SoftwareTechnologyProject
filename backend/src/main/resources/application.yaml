@@ -1,7 +1,5 @@
 server:
   port: 8080
-  servlet: # Thêm Context Path
-    context-path: /api/auth
 
 spring:
   datasource:

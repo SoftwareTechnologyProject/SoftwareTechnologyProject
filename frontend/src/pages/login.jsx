@@ -70,7 +70,7 @@ const Login = () => {
         }
       } else {
         // Login logic
-        const response = await axios.post(`${backendURL}/login`, { email, password });
+        const response = await axios.post(`${backendURL}/api/auth/login`, { email, password });
         if (response.status === 200) {
           setIsLoggedIn(true);
           setUserData(response.data.user);

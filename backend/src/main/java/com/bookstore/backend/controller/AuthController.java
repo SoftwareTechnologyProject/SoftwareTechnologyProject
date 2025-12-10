@@ -1,38 +1,40 @@
 package com.bookstore.backend.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import com.bookstore.backend.DTO.AuthRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.CurrentSecurityContext;
-import java.util.Map;
+import java.time.Duration;
 import java.util.HashMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import java.util.Map;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.time.Duration;
-import com.bookstore.backend.DTO.AuthResponse;
-import com.bookstore.backend.service.AppUserDetailsService;
-
-import com.bookstore.backend.utils.JwtUtils;
-import org.springframework.http.ResponseCookie;
-import com.bookstore.backend.service.ProfileService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.bookstore.backend.DTO.AuthRequest;
+import com.bookstore.backend.DTO.AuthResponse;
 import com.bookstore.backend.DTO.ResetPasswordRequest;
+import com.bookstore.backend.service.AppUserDetailsService;
+import com.bookstore.backend.service.ProfileService;
+import com.bookstore.backend.utils.JwtUtils;
+
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
