@@ -1,10 +1,13 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import './main.css';
-import Header from './components/Header/Header';
-import Footer from './components/Footer/Footer';
-import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import './main.css'
+
+// Components
+import Header from './components/Header/Header'
+import Footer from './components/Footer/Footer'
+
+// Pages
 import HomePage from "./pages/HomePage/HomePage";
 import Account from "./pages/Account/Account.jsx";
 import ProductDetail from "./pages/productDetails/ProductDetail";
@@ -22,6 +25,7 @@ createRoot(document.getElementById("root")).render(
       <Header />
 
       <Routes>
+        {/* Routes cũ */}
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountLayout />}>
           <Route path="accountInf" element={<Account />} />
@@ -36,11 +40,14 @@ createRoot(document.getElementById("root")).render(
           <Route path="books" element={<Account />} />
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
-        
+        <Route path="/:categorySlug" element={<CategoryPage />} />
+
+        {/* Routes mới */}
+        <Route path="/vouchers" element={<VoucherManagement />} />
       </Routes>
 
       <Recommend />
       <Footer />
     </BrowserRouter>
   </StrictMode>
-);
+)
