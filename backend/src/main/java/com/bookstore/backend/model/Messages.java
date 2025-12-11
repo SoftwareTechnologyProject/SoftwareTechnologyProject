@@ -1,5 +1,6 @@
 package com.bookstore.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class Messages {
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
+    @JsonIgnore
     private Users sender;
 
     @Column(columnDefinition = "TEXT")

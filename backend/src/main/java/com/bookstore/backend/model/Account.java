@@ -46,8 +46,7 @@ public class Account {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
     private Users user;
 
 

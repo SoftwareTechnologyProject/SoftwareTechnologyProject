@@ -14,7 +14,8 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
-import Login from './pages/login.jsx';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import Login from "./pages/login.jsx"
 
 // Component Layout chung cho các trang có Header/Footer
 function MainLayout() {
@@ -34,6 +35,7 @@ function MainLayout() {
       </Routes>
       <Recommend />
       <Footer />
+      <ChatFloating />
     </>
   );
 }

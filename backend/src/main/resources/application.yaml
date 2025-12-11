@@ -39,4 +39,4 @@ springdoc:
 
 jwt:
   secret:
-    key: ${KEY_JWT}
+    key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}

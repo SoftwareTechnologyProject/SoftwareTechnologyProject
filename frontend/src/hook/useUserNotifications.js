@@ -1,72 +1,81 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
-const useUserNotifications = (onMessage) => {
-  useEffect(() => {
-    console.log("🔹 Initializing STOMP client...");
+const useUserNotifications = (onNotification, onChatMessage) => {
+  const clientRef = useRef(null);
 
+  useEffect(() => {
+    if (clientRef.current) {
+      console.log("⚠ WS already initialized → skip reinit");
+      return; // 👈 Không tạo client mới nữa
+    }
+
+    console.log("🔹 Initializing WebSocket...");
     const stompClient = new Client({
-      webSocketFactory: () => {
-        console.log("🔹 Creating SockJS connection to /ws");
-        return new SockJS("http://localhost:8080/ws");
-      },
-      reconnectDelay: 5000, // tự reconnect nếu mất kết nối
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      reconnectDelay: 5000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
-      onConnect: (frame) => {
-        console.log("✅ STOMP connected!", frame);
+      onConnect: () => {
+        console.log("✅ STOMP connected!");
 
-        // Subscribe global notifications
+        // === Notification Channels ===
         stompClient.subscribe("/topic/notifications", (msg) => {
-          console.log("📨 Received /topic/notifications:", msg.body);
-          safeNotify(msg.body, onMessage);
+          safeNotify(msg.body, onNotification);
         });
 
-        // Subscribe user-specific notifications
         stompClient.subscribe("/user/queue/notifications", (msg) => {
-          console.log("📨 Received /user/queue/notifications:", msg.body);
-          safeNotify(msg.body, onMessage);
+          safeNotify(msg.body, onNotification);
+        });
+
+        // === Chat Channels ===
+        stompClient.subscribe("/topic/chat", (msg) => {
+          safeNotify(msg.body, onChatMessage);
+        });
+
+        stompClient.subscribe("/user/queue/chat", (msg) => { // 👈 match backend
+          safeNotify(msg.body, onChatMessage);
         });
       },
       onStompError: (frame) => {
-        console.error("❌ STOMP error:", frame.headers["message"], frame.body);
+        console.error("❌ STOMP Error:", frame.headers["message"]);
       },
-      onWebSocketClose: (evt) => {
-        console.warn("⚠️ WebSocket closed:", evt);
-      },
-      onWebSocketError: (evt) => {
-        console.error("❌ WebSocket error:", evt);
-      }
+      onWebSocketClose: () => console.warn("⚠ WebSocket closed!"),
+      onWebSocketError: (err) => console.error("❌ WS Error:", err),
     });
 
+    clientRef.current = stompClient;
     stompClient.activate();
-    console.log("🔹 STOMP client activated");
+    console.log("🚀 WebSocket Activated");
 
     return () => {
-      if (stompClient.active) {
-        console.log("🔹 Deactivating STOMP client...");
-        stompClient.deactivate();
-      }
+      // Không deactivate trong dev StrictMode để tránh disconnect spam
+      console.log("🔹 WS client alive until unload page");
     };
-  }, []); // chỉ chạy 1 lần khi mount
+  }, []); // 👈 chỉ chạy 1 lần duy nhất
+
+  const sendChatMessage = (chatBody) => {
+    if (!clientRef.current?.active) {
+      console.warn("⛔ WS not ready to send yet");
+      return;
+    }
+    clientRef.current.publish({
+      destination: "/app/chat.send",
+      body: JSON.stringify(chatBody),
+    });
+  };
+
+  return { sendChatMessage };
 };
 
-// Xử lý dữ liệu an toàn từ WebSocket
-function safeNotify(body, onMessage) {
+// Helper: JSON safe parser
+function safeNotify(body, callback) {
+  if (!callback) return;
   try {
-    const data = JSON.parse(body);
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        if (item && typeof item === "object") onMessage(item);
-      });
-    } else if (data && typeof data === "object") {
-      onMessage(data);
-    } else {
-      console.warn("WS data invalid:", data);
-    }
-  } catch (err) {
-    console.error("❌ Failed to parse WS message:", body, err);
+    callback(JSON.parse(body));
+  } catch (e) {
+    console.error("❌ Parsing WS body failed:", body, e);
   }
 }
 
