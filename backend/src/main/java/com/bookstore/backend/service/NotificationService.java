@@ -1,19 +1,20 @@
 package com.bookstore.backend.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
 import com.bookstore.backend.DTO.NotificationDTO;
 import com.bookstore.backend.model.Notification;
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.NotificationRepository;
 import com.bookstore.backend.utils.SecurityUtils;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -34,6 +35,8 @@ public class NotificationService {
     }
 
     public void broadcastNotification(Notification notification){
+        var user = SecurityUtils.getCurrentUser();
+        System.out.println("thông tin user " + user.getEmail());
         NotificationDTO notificationDTO = NotificationDTO.from(notification);
         messagingTemplate.convertAndSend("/topic/notifications", notificationDTO);
     }
