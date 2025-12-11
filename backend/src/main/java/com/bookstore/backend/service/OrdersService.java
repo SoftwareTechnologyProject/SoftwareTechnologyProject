@@ -2,16 +2,10 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.DTO.OrderDetailDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
-import com.bookstore.backend.model.OrderDetails;
-import com.bookstore.backend.model.Orders;
-import com.bookstore.backend.model.Users;
-import com.bookstore.backend.model.Voucher;
+import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
-import com.bookstore.backend.repository.BookVariantsRepository;
-import com.bookstore.backend.repository.OrdersRepository;
-import com.bookstore.backend.repository.UserRepository;
-import com.bookstore.backend.repository.VoucherRepository;
+import com.bookstore.backend.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,15 +20,14 @@ public class OrdersService {
     private final BookVariantsRepository bookVariantsRepository;
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
-    public OrdersService(OrdersRepository ordersRepository,
-                         BookVariantsRepository bookVariantsRepository,
-                         VoucherRepository voucherRepository,
-                         UserRepository userRepository) {
+    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
         this.userRepository = userRepository;
+        this.orderDetailRepository = orderDetailRepository;
     }
 
     // ------------------- CREATE ORDER -------------------
@@ -87,11 +80,24 @@ public class OrdersService {
 
 
     // ------------------- UPDATE STATUS -------------------
-    public OrdersDTO updateOrderStatus(int orderId, StatusOrder status) {
+    public OrdersDTO updateOrderStatus(int orderId, StatusOrder newStatus ) {
         Orders order = ordersRepository.findById(orderId).orElse(null);
         if (order == null) return null;
 
-        order.setStatus(status);
+        StatusOrder oldStatus = order.getStatus(); // trạng thái cũ
+
+        // ------------------ 1. DELIVERY → trừ kho ------------------
+        if (oldStatus != StatusOrder.DELIVERY && newStatus == StatusOrder.DELIVERY) {
+            deductVariantStock(orderId);
+        }
+
+        // ------------------ 2. DELIVERY → RESTORE → hoàn kho ------------------
+        if (oldStatus == StatusOrder.DELIVERY && newStatus == StatusOrder.RESTORE) {
+            restoreVariantStock(orderId);
+        }
+
+        // ------------------ 3. Update trạng thái ------------------
+        order.setStatus(newStatus);
         Orders updated = ordersRepository.save(order);
 
         return mapToDTO(updated);
@@ -142,11 +148,57 @@ public class OrdersService {
                                 od.getBookVariant().getId(),
                                 od.getBookVariant().getBook().getTitle(),
                                 od.getQuantity(),
-                                od.getPricePurchased()
+                                od.getPricePurchased(),
+
+                                // total price
+                                od.getQuantity() * od.getPricePurchased(),
+
+                                // imageUrl (ảnh đầu tiên)
+                                (od.getBookVariant().getImages() != null
+                                        && !od.getBookVariant().getImages().isEmpty())
+                                        ? od.getBookVariant().getImages().iterator().next().getImageUrl()
+                                        : null
                         ))
                         .collect(Collectors.toList())
         );
-
         return dto;
     }
+    private void deductVariantStock(int orderId) {
+
+        List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
+
+        for (OrderDetails detail : details) {
+            BookVariants variant = detail.getBookVariant();
+
+            int qty = detail.getQuantity();
+
+            if (variant.getQuantity() < qty) {
+                throw new RuntimeException("Không đủ hàng cho biến thể: " + variant.getId());
+            }
+
+            variant.setQuantity(variant.getQuantity() - qty);
+
+            variant.setSold(variant.getSold() + qty);
+
+            bookVariantsRepository.save(variant);
+        }
+    }
+    private void restoreVariantStock(int orderId) {
+
+        List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
+
+        for (OrderDetails detail : details) {
+            BookVariants variant = detail.getBookVariant();
+
+            int qty = detail.getQuantity();
+
+            variant.setQuantity(variant.getQuantity() + qty);
+
+            variant.setSold(variant.getSold() - qty);
+
+            bookVariantsRepository.save(variant);
+        }
+    }
+
+
 }
