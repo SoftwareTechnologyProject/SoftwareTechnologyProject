@@ -43,7 +43,11 @@ function MainLayout() {
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-        <Route path="/books/:id" element={<ProductDetail />} />
+
+        {/* Admin (placeholder) */}
+        <Route path="/admin" element={<HeaderAdmin />} >
+          <Route path="books" element={<Account />} />
+        </Route>
       </Routes>
 
       <Recommend />

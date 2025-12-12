@@ -52,6 +52,7 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
 jwt:
   secret:
     key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
