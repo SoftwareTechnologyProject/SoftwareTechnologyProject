@@ -1,26 +1,51 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import useUserNotifications from "../../hook/useUserNotifications";
+import axiosClient from "../../api/axiosClient";
 
-const ChatBox = () => {
+const ChatBox = ({ setUnreadCount }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [page, setPage] = useState(0);
+  const size = 50; // load 50 tin nhắn gần nhất
 
   const { sendChatMessage } = useUserNotifications(
     null,
     (msg) => {
+      // Thêm tin nhắn nhận được từ WebSocket
       setMessages((prev) => [...prev, msg]);
+      // Tăng số tin nhắn chưa đọc
+      setUnreadCount((count) => count + 1);
     }
   );
+
+  // Load tin nhắn cũ từ API
+  const loadMessages = async () => {
+    try {
+      const res = await axiosClient.get("/chat", { params: { page, size } });
+      const newMessages = res.data.content; // đảo để hiển thị từ cũ -> mới
+      setMessages(newMessages);
+
+      // Lấy id các tin nhắn chưa đọc và đánh dấu đã đọc
+      const unreadIds = newMessages.filter((m) => !m.isRead).map((m) => m.id);
+      if (unreadIds.length > 0) {
+        await axiosClient.put("/chat/mark-read", unreadIds);
+        setUnreadCount(0); // reset số tin nhắn chưa đọc
+      }
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadMessages();
+  }, []);
 
   const handleSend = () => {
     if (!input.trim()) return;
 
-    const chatMsg = {
-      content: input,
-    };
-
+    const chatMsg = { content: input };
     sendChatMessage(chatMsg);
-    setInput("");
+    setInput(""); // reset input, không thêm tin nhắn tạm thời
   };
 
   return (

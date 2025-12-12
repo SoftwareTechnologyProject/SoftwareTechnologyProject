@@ -54,7 +54,7 @@ public class AuthController {
                 .maxAge(Duration.ofDays(1))
                 .sameSite("Strict")
                 .build();
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+            return ResponseEntity.ok()
                 .body(new AuthResponse(request.getEmail(), jwtToken));
 
         }catch(BadCredentialsException ex){
