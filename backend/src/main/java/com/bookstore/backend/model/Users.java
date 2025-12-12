@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.bookstore.backend.model.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -60,18 +61,17 @@ public class Users implements UserDetails{
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
 
-    // ✅ SỬ DỤNG ENUM: Thay vì String, dùng UserRole enum
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "role", nullable = false)
     private UserRole role;
 
-    // ✅ Users giờ là owner của relationship
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
+    @JsonManagedReference
+
     private Account account;
 
-    // ✅ Helper methods để kiểm tra role dễ dàng
     public boolean isAdmin() {
         return role == UserRole.ADMIN;
     }

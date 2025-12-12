@@ -44,6 +44,12 @@ public class SecurityConfig {
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**").permitAll()
                     
+                    // Swagger UI
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                    
+                    // Temporarily allow /users for testing (remove after adding proper registration endpoint)
+                    .requestMatchers("/users/**").permitAll()
+                    
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     

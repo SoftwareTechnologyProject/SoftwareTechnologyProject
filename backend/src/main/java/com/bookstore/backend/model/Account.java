@@ -22,6 +22,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+import com.fasterxml.jackson.annotation.JsonBackReference; // tui test thay vong lap JSON o day
 @Entity
 @Table(name = "accounts")
 @Data
@@ -47,6 +49,7 @@ public class Account {
     private String status;
 
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
+    @JsonBackReference
     private Users user;
 
 
