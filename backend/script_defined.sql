@@ -1,51 +1,73 @@
-INSERT INTO account (
+-- =========================
+-- 1️⃣ Tạo tài khoản STAFF (ID account = 1)
+-- =========================
+INSERT INTO accounts (
     id,
-    created_at,
-    email,
-    is_account_verified,
-    password,
-    reset_otp_expired_at,
-    reset_password_otp,
-    status,
-    updated_at,
     username,
-    verify_otp,
-    verify_otp_expired_at,
-    user_id
-)
-VALUES (
+    password,
+    status,
+    is_account_verified,
+    email,
+    created_at,
+    updated_at
+) VALUES (
     1,
-    '2025-12-11 09:10:41.506649',
-    NULL,
-    'f',
-    '$2a$10$1DoZ5zv7eSd.BBQtrydEdeYR/DmSyx.CphNNX9CkJMAN/bxQiY54.',
-    0,
-    NULL,
+    'admin',
+    '$2a$10$kyKpu7ujjptlAKj7TSrM0.Cae/bbktadVYDNBFFj5jyTW0MipPLb.', -- mật khẩu hash
     'ACTIVE',
-    '2025-12-11 09:10:41.638088',
-    'Luong Ngoc Huy',
-    '660931',
-    1765505441631,
-    1
+    true,
+    'admin@gmail.com',
+    now(),
+    now()
 );
 
 INSERT INTO users (
     id,
-    address,
-    date_of_birth,
-    email,
     full_name,
-    phone_number,
+    email,
     role,
     account_id
-)
-VALUES (
+) VALUES (
     1,
-    'HCm',
-    '1999-03-03 07:00:00',
-    'mamatqlee1903@gmail.com',
-    'Luong Ngoc Huy',
-    '0941516362',
-    'USER',
+    'Admin Staff',
+    'admin@gmail.com',
+    'STAFF',
     1
+);
+
+-- =========================
+-- 2️⃣ Tạo tài khoản USER (ID account = 2)
+-- =========================
+INSERT INTO accounts (
+    id,
+    username,
+    password,
+    status,
+    is_account_verified,
+    email,
+    created_at,
+    updated_at
+) VALUES (
+    2,
+    'mamatqlee',
+    '$2a$10$kyKpu7ujjptlAKj7TSrM0.Cae/bbktadVYDNBFFj5jyTW0MipPLb.', -- mật khẩu hash
+    'ACTIVE',
+    true,
+    'mamatqlee1903@gmail.com',
+    now(),
+    now()
+);
+
+INSERT INTO users (
+    id,
+    full_name,
+    email,
+    role,
+    account_id
+) VALUES (
+    2,
+    'Luong Ngoc Huy',
+    'mamatqlee1903@gmail.com',
+    'USER',
+    2
 );

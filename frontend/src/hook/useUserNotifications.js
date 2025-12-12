@@ -4,44 +4,50 @@ import { Client } from "@stomp/stompjs";
 
 const useUserNotifications = (onNotification, onChatMessage) => {
   const clientRef = useRef(null);
+  const callbacksRef = useRef({ onNotification, onChatMessage });
+
+  // Luôn update callbacks mới nhất
+  useEffect(() => {
+    callbacksRef.current = { onNotification, onChatMessage };
+  }, [onNotification, onChatMessage]);
 
   useEffect(() => {
     if (clientRef.current) {
       console.log("⚠ WS already initialized → skip reinit");
-      return; // 👈 Không tạo client mới nữa
+      return;
     }
 
-    console.log("🔹 Initializing WebSocket...");
+    const token = localStorage.getItem("accessToken");
     const stompClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      connectHeaders: { Authorization: "Bearer " + token },
       reconnectDelay: 5000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
-      onConnect: () => {
-        console.log("✅ STOMP connected!");
+      onConnect: (frame) => {
+        console.log("✅ STOMP connected");
+        console.log("Connected user:", frame.headers["user-name"] || "unknown");
 
-        // === Notification Channels ===
-        stompClient.subscribe("/topic/notifications", (msg) => {
-          safeNotify(msg.body, onNotification);
+        // Subscribe với callback động
+        stompClient.subscribe("/user/queue/chat", (msg) => {
+        console.log("subscribe thành công");
+          console.log(`📩 Chat from /user/queue/chat:`, msg.body);
+          safeNotify(msg.body, callbacksRef.current.onChatMessage);
         });
 
-        stompClient.subscribe("/user/queue/notifications", (msg) => {
-          safeNotify(msg.body, onNotification);
-        });
-
-        // === Chat Channels ===
         stompClient.subscribe("/topic/chat", (msg) => {
-          safeNotify(msg.body, onChatMessage);
+          console.log(`📩 Chat from /topic/chat:`, msg.body);
+          safeNotify(msg.body, callbacksRef.current.onChatMessage);
         });
 
-        stompClient.subscribe("/user/queue/chat", (msg) => { // 👈 match backend
-          safeNotify(msg.body, onChatMessage);
+        // Notification subscriptions...
+        stompClient.subscribe("/user/queue/notifications", (msg) => {
+          console.log(`📩 Notif from /user/queue/notifications:`, msg.body);
+          safeNotify(msg.body, callbacksRef.current.onNotification);
         });
       },
-      onStompError: (frame) => {
-        console.error("❌ STOMP Error:", frame.headers["message"]);
-      },
-      onWebSocketClose: () => console.warn("⚠ WebSocket closed!"),
+      onStompError: (frame) => console.error("❌ STOMP Error:", frame.headers["message"]),
+      onWebSocketClose: () => console.warn("⚠ WS closed"),
       onWebSocketError: (err) => console.error("❌ WS Error:", err),
     });
 
@@ -50,32 +56,32 @@ const useUserNotifications = (onNotification, onChatMessage) => {
     console.log("🚀 WebSocket Activated");
 
     return () => {
-      // Không deactivate trong dev StrictMode để tránh disconnect spam
-      console.log("🔹 WS client alive until unload page");
+      console.log("🔹 WS cleanup");
     };
-  }, []); // 👈 chỉ chạy 1 lần duy nhất
+  }, []); // Chỉ chạy 1 lần
 
   const sendChatMessage = (chatBody) => {
     if (!clientRef.current?.active) {
-      console.warn("⛔ WS not ready to send yet");
+      console.warn("⛔ WS not ready");
       return;
     }
     clientRef.current.publish({
       destination: "/app/chat.send",
       body: JSON.stringify(chatBody),
     });
+    console.log("📤 Sent:", chatBody);
   };
 
   return { sendChatMessage };
 };
 
-// Helper: JSON safe parser
 function safeNotify(body, callback) {
   if (!callback) return;
   try {
+    console.log("Raw body:", body);
     callback(JSON.parse(body));
   } catch (e) {
-    console.error("❌ Parsing WS body failed:", body, e);
+    console.error("❌ Parse error:", body, e);
   }
 }
 
