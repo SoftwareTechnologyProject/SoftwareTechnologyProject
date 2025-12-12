@@ -18,6 +18,32 @@ import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import Login from "./pages/login.jsx"
+
+// Component Layout chung cho các trang có Header/Footer
+function MainLayout() {
+  return (
+    <>
+      <Header />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/voucher-management" element={<VoucherManagement />} />
+        <Route path="/account" element={<AccountLayout />}>
+          <Route path="accountInf" element={<Account />} />
+          <Route path="voucher-wallet" element={<VoucherWallet />} />
+          <Route path="order" element={<Order />} />
+          <Route path="orderAdmin" element={<OrderAdmin />} />
+          <Route path="order/:id" element={<OrderDetail />} />
+        </Route>
+        <Route path="/books/:id" element={<ProductDetail />} />
+      </Routes>
+      <Recommend />
+      <Footer />
+      <ChatFloating />
+    </>
+  );
+}
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -29,26 +55,11 @@ createRoot(document.getElementById("root")).render(
         <Route path="/blog/about" element={<BlogAbout />} />
         <Route path="/blog/admin" element={<BlogAdmin />} />
 
-        {/* Bookstore routes - with Header/Footer */}
-        <Route path="/*" element={
-          <>
-            <Header />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/voucher-management" element={<VoucherManagement />} />
-              <Route path="/account" element={<AccountLayout />}>
-                <Route path="accountInf" element={<Account />} />
-                <Route path="voucher-wallet" element={<VoucherWallet />} />
-                <Route path="order" element={<Order />} />
-                <Route path="orderAdmin" element={<OrderAdmin />} />
-                <Route path="order/:id" element={<OrderDetail />} />
-              </Route>
-              <Route path="/books/:id" element={<ProductDetail />} />
-            </Routes>
-            <Recommend />
-            <Footer />
-          </>
-        } />
+        {/* Login page - standalone without Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* All other pages with common Layout */}
+        <Route path="*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
