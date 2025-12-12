@@ -2,7 +2,13 @@ package com.bookstore.backend.controller;
 
 import java.util.List;
 
+import com.bookstore.backend.DTO.UserDTO;
+import com.bookstore.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +24,7 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
-//    private UserService userService;
+    private UserService userService;
 
     @GetMapping
     public List<Users> getAllUsers() {
@@ -30,11 +36,27 @@ public class UserController {
         return userRepository.save(user);
     }
 
-//    // Lấy thông tin người dùng hiện tại
-//    @GetMapping("/me")
-//    public Users getInfoUser(@AuthenticationPrincipal Users user) {
-//        return user;
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();  // email từ JWT
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserDTO response = new UserDTO(
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getAddress(),
+                user.getDateOfBirth()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
 //
 //    // Cập nhật thông tin người dùng
 //    @PutMapping("/me")

@@ -12,7 +12,7 @@ import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
 import { RiCoupon3Line } from "react-icons/ri";
 import useUserNotifications from "../../hook/useUserNotifications";
-import axios from "axios";
+import axios from "../../config/axiosConfig";
 
 const Header = () => {
 
@@ -35,7 +35,7 @@ const Header = () => {
   useEffect(() => {
     const fetchLatest = async () => {
       try {
-        const res = await axios.get(`/api/notifications?page=0&size=6`);
+        const res = await axios.get(`http://localhost:8080/api/notifications?page=0&size=6`);
         const list = Array.isArray(res.data) ? res.data : [];
         setNotifications(list);
       } catch (e) {
