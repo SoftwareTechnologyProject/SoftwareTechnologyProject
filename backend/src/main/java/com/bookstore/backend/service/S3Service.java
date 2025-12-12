@@ -22,6 +22,9 @@ public class S3Service {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
+    @Value("${aws.s3.blog-bucket-name}")
+    private String blogBucketName;
+
     @Value("${aws.s3.region}")
     private String region;
 
@@ -36,9 +39,9 @@ public class S3Service {
             : "";
         String fileName = "blog/" + UUID.randomUUID().toString() + extension;
 
-        // Upload to S3 with public-read ACL
+        // Upload to S3 - use blogBucketName for blog images
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
+                .bucket(blogBucketName)
                 .key(fileName)
                 .contentType(file.getContentType())
                 .build();
@@ -46,7 +49,7 @@ public class S3Service {
         s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
         // Return public URL
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", blogBucketName, region, fileName);
     }
 
     /**
@@ -58,8 +61,11 @@ public class S3Service {
             // Format: https://bucket-name.s3.region.amazonaws.com/key
             String key = fileUrl.substring(fileUrl.indexOf(".com/") + 5);
             
+            // Determine which bucket based on URL
+            String targetBucket = fileUrl.contains(blogBucketName) ? blogBucketName : bucketName;
+            
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(targetBucket)
                     .key(key)
                     .build();
 

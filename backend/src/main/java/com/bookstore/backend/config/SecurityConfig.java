@@ -43,6 +43,8 @@ public class SecurityConfig {
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**").permitAll()
+                    .requestMatchers("/blog/**").permitAll() // Allow public access to blog endpoints
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers/**").permitAll() // Allow public GET for vouchers
                     
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
