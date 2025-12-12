@@ -24,6 +24,20 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+  
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          from: ndtoan.work@gmail.com
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -38,3 +52,6 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+jwt:
+  secret:
+    key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}

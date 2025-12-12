@@ -20,10 +20,13 @@ import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
 import CategoryPage from './pages/Category/CategoryPage';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import Login from "./pages/login.jsx"
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
+// Component Layout chung cho các trang có Header/Footer
+function MainLayout() {
+  return (
+    <>
       <Header />
       <Routes>
         {/* Public */}
@@ -40,15 +43,26 @@ createRoot(document.getElementById("root")).render(
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-
-        {/* Admin (placeholder) */}
-        <Route path="/admin" element={<HeaderAdmin />} >
-          <Route path="books" element={<Account />} />
-        </Route>
+        <Route path="/books/:id" element={<ProductDetail />} />
       </Routes>
 
       <Recommend />
       <Footer />
+      <ChatFloating />
+    </>
+  );
+}
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Routes>
+        {/* Trang LOGIN riêng biệt - không có Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Tất cả các trang khác có Layout chung */}
+        <Route path="*" element={<MainLayout />} />
+      </Routes>
     </BrowserRouter>
   </StrictMode>
-)
+);
