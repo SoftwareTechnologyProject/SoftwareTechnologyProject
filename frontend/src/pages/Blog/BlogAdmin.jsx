@@ -4,7 +4,7 @@ import BlogHeader from './BlogHeader';
 import Footer from '../../components/Footer/Footer';
 import './BlogAdmin.css';
 
-const API_URL = 'http://localhost:8080/blog';
+const API_URL = 'http://localhost:8081/blog';
 //const API_URL = 'http://localhost:8081/blog';
 const BlogAdmin = () => {
     const [posts, setPosts] = useState([]);

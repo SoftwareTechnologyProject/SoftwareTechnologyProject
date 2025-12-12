@@ -7,7 +7,7 @@ import { BiSolidDiscount } from "react-icons/bi";
 import { Link } from 'react-router-dom';
 import './VoucherWallet.css';
 
-const API_URL = 'http://localhost:8080/vouchers';
+const API_URL = 'http://localhost:8081/vouchers';
 //const API_URL = 'http://localhost:8081/vouchers';
 
 const VoucherWallet = () => {

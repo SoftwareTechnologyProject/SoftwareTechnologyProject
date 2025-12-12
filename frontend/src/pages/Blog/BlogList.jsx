@@ -5,7 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import './BlogList.css';
 
 //const API_URL = 'http://localhost:8080/blog';
-const API_URL = 'http://localhost:8080/blog';
+const API_URL = 'http://localhost:8081/blog';
 
 const BlogList = () => {
     const [posts, setPosts] = useState([]);

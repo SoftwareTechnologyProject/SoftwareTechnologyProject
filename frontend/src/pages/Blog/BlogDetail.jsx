@@ -5,7 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import './BlogDetail.css';
 
 //const API_URL = 'http://localhost:8080/blog';
-const API_URL = 'http://localhost:8080/blog';
+const API_URL = 'http://localhost:8081/blog';
 
 const BlogDetail = () => {
     const { id } = useParams();
