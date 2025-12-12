@@ -1,27 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <annotationProcessing>
-<<<<<<< HEAD
-      <profile name="Annotation profile for backend" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="backend" />
-      </profile>
-    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="backend" target="17" />
+    </bytecodeTargetLevel>
   </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="backend" options="-parameters" />
-    </option>
-  </component>
-=======
-      <profile default="true" name="Default" enabled="true" />
-    </annotationProcessing>
-  </component>
->>>>>>> 6c71411a8c949be7d694e55efc40d6b4104ae1cc
 </project>

@@ -5,48 +5,105 @@ import requests
 import zipfile
 import shutil
 import time
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError
 
-DB_HOST = "db"
+# Database Config
+DB_HOST = os.environ.get("DB_HOST", "db")
 DB_NAME = os.environ.get("POSTGRES_DB", "bookstore")
 DB_USER = os.environ.get("POSTGRES_USER", "postgres")
 DB_PASS = os.environ.get("POSTGRES_PASSWORD", "123456")
+DB_PORT = os.environ.get("DB_PORT", "5432")
 
-SHARED_IMAGES_DIR = "/shared_data/images"
+# AWS S3 Config
+AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+
+# Data Source
 DOWNLOAD_URL = "https://github.com/MinhNguyen1510/testwebproject/releases/download/v1.0.0/book.zip"
 
+def get_db_connection():
+    return psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
+
 def wait_for_db():
+    print("--> [Seeder] Đang kết nối Database...")
     while True:
         try:
-            conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=5432)
+            conn = get_db_connection()
             conn.close()
+            print("--> [Seeder] Kết nối Database thành công!")
             break
         except psycopg2.OperationalError:
+            print("--> [Seeder] DB chưa sẵn sàng, chờ 2s...")
             time.sleep(2)
 
 def download_and_extract():
     if not os.path.exists("book.zip"):
-        r = requests.get(DOWNLOAD_URL)
-        with open("book.zip", "wb") as f:
-            f.write(r.content)
+        print("--> [Seeder] Đang tải dữ liệu mẫu (book.zip)...")
+        try:
+            r = requests.get(DOWNLOAD_URL, timeout=30)
+            with open("book.zip", "wb") as f:
+                f.write(r.content)
+        except Exception as e:
+            print(f"!!! Lỗi tải file: {e}")
+            exit(1)
 
     print("--> [Seeder] Đang giải nén...")
     with zipfile.ZipFile("book.zip", 'r') as zip_ref:
         zip_ref.extractall("temp_data")
 
+    # Tìm thư mục gốc dữ liệu
     base_path = "temp_data"
     if "Data" in os.listdir(base_path): base_path = os.path.join(base_path, "Data")
     elif "book" in os.listdir(base_path): base_path = os.path.join(base_path, "book")
     return base_path
 
 def safe_val(x):
+    """Xử lý giá trị NaN của Pandas thành None cho SQL"""
     return None if (x is None or (isinstance(x, float) and pd.isna(x))) else x
+
+def upload_to_s3_smart(local_file_path, s3_key):
+
+    if not AWS_ACCESS_KEY or not AWS_BUCKET_NAME:
+        print("!!! Thiếu cấu hình AWS, không thể upload ảnh.")
+        return None
+
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
+                      aws_secret_access_key=AWS_SECRET_KEY,
+                      region_name=AWS_REGION)
+
+    file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+
+    try:
+        s3.head_object(Bucket=AWS_BUCKET_NAME, Key=s3_key)
+        # Nếu không văng lỗi nghĩa là file đã có
+        # print(f"--> [Skip] Ảnh đã có trên S3: {s3_key}")
+        return file_url
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            try:
+                s3.upload_file(local_file_path, AWS_BUCKET_NAME, s3_key)
+                print(f"--> [Upload] Đã đẩy lên S3: {s3_key}")
+                return file_url
+            except Exception as up_err:
+                print(f"!!! Lỗi upload {s3_key}: {up_err}")
+                return None
+        else:
+            print(f"!!! Lỗi kiểm tra S3: {e}")
+            return None
+    except NoCredentialsError:
+        print("!!! Sai thông tin đăng nhập AWS")
+        return None
 
 def main():
     wait_for_db()
     base_dir = download_and_extract()
     print(f"--> Thư mục dữ liệu gốc: {base_dir}")
 
-    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=5432)
+    conn = get_db_connection()
     cur = conn.cursor()
 
     try:
@@ -199,54 +256,81 @@ def main():
         else:
             print(f"LỖI: Không tìm thấy file sách tại {books_path}")
 
-        # import images
+        # Import Images to S3 & DB
+
         images_root = os.path.join(base_dir, "images")
-        if os.path.exists(images_root):
-            print(f"--> [Import] Images từ: {images_root}")
 
-            # Tạo thư mục shared nếu chưa có
-            if not os.path.exists(SHARED_IMAGES_DIR):
-                os.makedirs(SHARED_IMAGES_DIR, exist_ok=True)
+        if os.path.exists(images_root) and AWS_BUCKET_NAME:
+            print(f"--> [S3] Bắt đầu xử lý ảnh từ: {images_root}")
 
-            img_count = 0
+            tiki_id_to_title = {}
+            if os.path.exists(books_path):
+                df_map = pd.read_csv(books_path, dtype={"id": str}, usecols=["id", "title"])
+                for _, row in df_map.iterrows():
+                    tid = str(row["id"]).strip()
+                    ttitle = safe_val(row.get("title"))
+                    if ttitle:
+                        tiki_id_to_title[tid] = ttitle
+
+            img_processed = 0
+            img_uploaded = 0
+
             for folder in os.listdir(images_root):
+                tiki_id = folder.strip()
+
+                # Tìm tên sách dựa vào tên thư mục (Tiki ID)
+                book_title = tiki_id_to_title.get(tiki_id)
+
+                # Nếu không tìm thấy tên sách trong CSV, bỏ qua folder này
+                if not book_title:
+                    continue
+
+                # Tìm variant_id trong Database dựa vào Tên Sách
+                # (Cách này an toàn nhất, lấy ID thực tế từ DB)
+                cur.execute("""
+                    SELECT bv.id
+                    FROM book_variants bv
+                    JOIN book b ON bv.book_id = b.id
+                    WHERE b.title = %s
+                    LIMIT 1
+                """, (book_title,))
+
+                res = cur.fetchone()
+
+                if not res:
+                    continue
+
+                variant_id = res[0]
                 src_folder_path = os.path.join(images_root, folder)
                 if not os.path.isdir(src_folder_path): continue
 
-                tiki_id = folder.strip()
-                # Tìm tên sách từ map
-                book_title = tiki_id_to_title_map.get(tiki_id)
-                if not book_title: continue
+                for fname in sorted(os.listdir(src_folder_path)):
+                    if fname.lower().endswith(('.jpg', '.png', '.webp')):
+                        local_path = os.path.join(src_folder_path, fname)
 
-                # Tìm variant_id dựa trên tên sách
-                cur.execute("SELECT bv.id FROM book_variants bv JOIN book b ON bv.book_id = b.id WHERE b.title = %s LIMIT 1", (book_title,))
-                res = cur.fetchone()
+                        # Tạo key trên S3: images/{tiki_id}/{filename}
+                        s3_key = f"images/{tiki_id}/{fname}"
 
-                if res:
-                    variant_id = res[0]
+                        # Gọi hàm upload thông minh (Idempotent)
+                        s3_url = upload_to_s3_smart(local_path, s3_key)
 
-                    dest_folder_path = os.path.join(SHARED_IMAGES_DIR, tiki_id)
-                    if not os.path.exists(dest_folder_path):
-                        os.makedirs(dest_folder_path, exist_ok=True)
-
-                    for fname in sorted(os.listdir(src_folder_path)):
-                        if fname.lower().endswith(('.jpg', '.png', '.webp')):
-                            src_file = os.path.join(src_folder_path, fname)
-                            dest_file = os.path.join(dest_folder_path, fname)
-                            shutil.copy2(src_file, dest_file)
-
-                            # Đường dẫn lưu vào DB là relative path
-                            img_rel_path = f"{tiki_id}/{fname}"
-
-                            cur.execute("SELECT 1 FROM book_images WHERE book_variant_id=%s AND image_url=%s", (variant_id, img_rel_path))
+                        if s3_url:
+                            # Check xem ảnh này đã link vào sách chưa để tránh duplicate row
+                            cur.execute("SELECT 1 FROM book_images WHERE book_variant_id=%s AND image_url=%s", (variant_id, s3_url))
                             if not cur.fetchone():
-                                cur.execute("INSERT INTO book_images (book_variant_id, image_url) VALUES (%s, %s)", (variant_id, img_rel_path))
-                                img_count += 1
+                                cur.execute("INSERT INTO book_images (book_variant_id, image_url) VALUES (%s, %s)", (variant_id, s3_url))
+                                img_processed += 1
+                                if "Đã đẩy lên S3" in str(s3_url):
+                                    img_uploaded += 1
 
-                    conn.commit()
-            print(f"--> Hoàn tất import {img_count} ảnh vào DB và Shared Volume!")
+                conn.commit()
+
+            print(f"--> Hoàn tất! Đã thêm {img_processed} ảnh vào Database.")
+
+        elif not AWS_BUCKET_NAME:
+            print("!!! [Warning] Không có cấu hình AWS BUCKET. Bỏ qua phần import ảnh.")
         else:
-            print(f"--> Không tìm thấy folder images tại {images_root}")
+            print("!!! [Warning] Không tìm thấy thư mục ảnh.")
 
     except Exception as e:
         print(f"!!! LỖI SEEDER: {e}")
@@ -254,7 +338,7 @@ def main():
     finally:
         cur.close()
         conn.close()
-        print("--> [Seeder] Kết thúc.")
+        print("--> [Seeder] Kết thúc chương trình.")
 
 if __name__ == "__main__":
     main()

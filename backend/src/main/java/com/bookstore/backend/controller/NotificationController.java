@@ -4,10 +4,7 @@ import com.bookstore.backend.DTO.NotificationDTO;
 import com.bookstore.backend.model.Notification;
 import com.bookstore.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +16,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping()
-    public List<NotificationDTO> getNotification(int page, int size){
+    public List<NotificationDTO> getNotification(@RequestParam int page, @RequestParam int size){
         return notificationService.getAllNotification(page, size);
     }
 
