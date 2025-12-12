@@ -4,12 +4,15 @@ import com.bookstore.backend.DTO.MessageResponseDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.Conversations;
 import com.bookstore.backend.model.Messages;
+import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.MessageRepository;
 import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,20 +22,21 @@ import java.util.List;
 public class MessageService {
     private final MessageRepository messageRepository;
     private final ConversationService conversationService;
+    private final SecurityUtils securityUtils;
 
-    public Messages createMessage(Conversations conversations, String content){
-        var user = SecurityUtils.getCurrentUser();
-        Messages message = Messages.builder().conversation(conversations).sender(user)
+    public Messages createMessage(Conversations conversations, String content, Users sender){
+        Messages message = Messages.builder().conversation(conversations).sender(sender)
                 .createdAt(LocalDateTime.now()).content(content).isRead(false).build();
 
         messageRepository.save(message);
         return message;
     }
 
-    public void markAsRead(Long id){
-        Messages message = messageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Message not found !"));
-        message.setIsRead(true);
-        messageRepository.save(message);
+    @Transactional
+    public void markAsRead(List<Long> ids) {
+        List<Messages> msgs = messageRepository.findAllById(ids);
+        msgs.forEach(m -> m.setIsRead(true));
+        messageRepository.saveAll(msgs);
     }
 
     public int getUnreadMessage(){
@@ -40,12 +44,12 @@ public class MessageService {
     }
 
     public Page<MessageResponseDTO> getCustomerMessages(int page, int size){
-        var user = SecurityUtils.getCurrentUser();
+        var user = securityUtils.getCurrentUser();
         if (user == null){
             return Page.empty();
         }
         Conversations conversation = conversationService.getConversations(user);
-        Page<Messages> allMessages = messageRepository.findByConversationOrderByCreatedAtDesc(conversation, PageRequest.of(page, size));
+        Page<Messages> allMessages = messageRepository.findByConversationOrderByCreatedAtAsc(conversation, PageRequest.of(page, size));
 
 
         return allMessages.map(messages -> MessageResponseDTO.from(messages));

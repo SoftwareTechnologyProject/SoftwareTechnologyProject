@@ -60,7 +60,6 @@ public class Users implements UserDetails{
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
 
-    // ✅ SỬ DỤNG ENUM: Thay vì String, dùng UserRole enum
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "role", nullable = false)
