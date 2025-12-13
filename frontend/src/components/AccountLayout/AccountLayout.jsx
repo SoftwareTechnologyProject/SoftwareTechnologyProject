@@ -1,4 +1,6 @@
 import { Outlet } from "react-router-dom";
+import axios from "../../config/axiosConfig";
+import React, { useState, useEffect } from "react";
 
 import "../../pages/HomePage/HomePage.css";
 import "../../components/AccountLayout/AccountLayout.css"
@@ -12,6 +14,26 @@ import { NavLink } from "react-router-dom";
 
 const AccountLayout = () => {
 
+    const [formData, setFormData] = useState({ userName:''});
+
+    // 🟢 LẤY USER TỪ BACKEND /me
+    useEffect(() => {
+        fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+        try {
+            const { data: user } = await axios.get("/users/me");
+
+            setFormData({
+                userName: user.fullName || "",
+            });
+
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
+
     return (
         <>
             <main>
@@ -20,7 +42,7 @@ const AccountLayout = () => {
                         <div className="top-nav">
                             < PiCrownSimpleFill className="w-30 h-30 p-5 rounded-full text-gray-400 border-8 mx-auto" />
                             <div className="content">
-                                <h1>Tên User</h1>
+                                <h1> {formData.userName} </h1>
                                 <h2 className="bg-gray-400 rounded-full">Thành Viên ...</h2>
                                 <h2>Mua Thêm ... đơn để nâng hạng ....</h2>
                             </div>

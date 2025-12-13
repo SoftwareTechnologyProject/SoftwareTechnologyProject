@@ -47,7 +47,7 @@ const CategoryPage = () => {
         setLoading(true);
         // Fetch all books từ API
         // Tăng size để chắc chắn lấy đủ (một category có ~108 sách)
-        const response = await axios.get('http://localhost:8080/books?page=0&size=500');
+        const response = await axios.get('http://localhost:8080/api/books?page=0&size=500');
         const allBooks = response.data || [];
         
         // Lọc sách theo category

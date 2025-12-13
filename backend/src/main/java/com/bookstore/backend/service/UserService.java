@@ -15,33 +15,22 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserDTO updateUser(Long userId, UserDTO dto) {
-        Users user = userRepository.findById(userId)
+    public UserDTO updateUser(String email, UserDTO dto) {
+
+        Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (dto.getFullName() != null) {
-            user.setFullName(dto.getFullName());
-        }
+        user.setFullName(dto.getFullName());
 
-        if (dto.getEmail() != null) {
-            user.setEmail(dto.getEmail());
-        }
+        user.setPhoneNumber(dto.getPhoneNumber());
 
-        if (dto.getPhoneNumber() != null) {
-            user.setPhoneNumber(dto.getPhoneNumber());
-        }
+        user.setAddress(dto.getAddress());
 
-        if (dto.getAddress() != null) {
-            user.setAddress(dto.getAddress());
-        }
+        user.setDateOfBirth(dto.getDateOfBirth());
 
-        if (dto.getDateOfBirth() != null) {
-            user.setDateOfBirth(dto.getDateOfBirth());
-        }
+        Users update = userRepository.save(user);
 
-        Users saved = userRepository.save(user);
-
-        return convertToDTO(saved);
+        return convertToDTO(update);
     }
 
     private UserDTO convertToDTO(Users user) {

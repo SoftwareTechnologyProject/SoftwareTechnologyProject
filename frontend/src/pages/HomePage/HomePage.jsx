@@ -60,14 +60,13 @@ const comboTrend = Array(20).fill({
     discount: "-10%",
 });
 
-
 const HomePage = () => {
     const [index, setIndex] = useState(0);
     const [giftIndex, setGiftIndex] = useState(0);
     const totalGiftSlides = Math.ceil(giftCard.length / 3);
     const [comboIndex, setComboIndex] = useState(0);
     const totalComboTrendSlides = Math.ceil(comboTrend.length / 5);
-    
+
     // State for real book data
     const [trendingBooks, setTrendingBooks] = useState([]);
     const [featuredBooks, setFeaturedBooks] = useState([]);
@@ -79,7 +78,7 @@ const HomePage = () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/books?page=0&size=20');
                 const books = response.data || [];
-                
+
                 // Use first 10 books for trending
                 setTrendingBooks(books.slice(0, 10));
                 // Use first 20 books for combo trending
@@ -242,11 +241,11 @@ const HomePage = () => {
                                 const imageUrl = variant?.imageUrls?.[0] || ex1;
                                 const price = variant?.price || 0;
                                 const oldPrice = price * 1.1; // Mock old price
-                                
+
                                 return (
                                     <Link className="book-view" key={book.id || index} to={`/books/${book.id}`}>
-                                        <img 
-                                            src={imageUrl} 
+                                        <img
+                                            src={imageUrl}
                                             alt={book.title}
                                             onError={(e) => {
                                                 e.target.src = ex1;
@@ -295,11 +294,11 @@ const HomePage = () => {
                                             const imageUrl = variant?.imageUrls?.[0] || ex1;
                                             const price = variant?.price || 0;
                                             const oldPrice = price * 1.15;
-                                            
+
                                             return (
                                                 <Link className="w-[70%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
-                                                    <img 
-                                                        src={imageUrl} 
+                                                    <img
+                                                        src={imageUrl}
                                                         alt={book.title}
                                                         onError={(e) => {
                                                             e.target.src = ex1;
