@@ -33,6 +33,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
+      - ./script_defined.sql:/sql/script_defined.sql
 
   data-seeder:
     build: ./seeder
