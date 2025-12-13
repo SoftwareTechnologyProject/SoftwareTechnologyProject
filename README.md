@@ -88,13 +88,13 @@ feature/manage-books
 
 **Type thường dùng:**
 
-* feat: thêm chức năng
-* fix: sửa lỗi
-* refactor: tối ưu code
-* style: sửa UI/format
-* docs: chỉnh tài liệu
-* test: thêm test
-* chore: config/script
+  * feat: thêm chức năng
+  * fix: sửa lỗi
+  * refactor: tối ưu code
+  * style: sửa UI/format
+  * docs: chỉnh tài liệu
+  * test: thêm test
+  * chore: config/script
 
 **Ví dụ:**
 

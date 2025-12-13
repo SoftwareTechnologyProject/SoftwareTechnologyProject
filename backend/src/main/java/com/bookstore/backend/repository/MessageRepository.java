@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+// import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Messages, Long> {
     @Query("""
@@ -16,4 +16,5 @@ public interface MessageRepository extends JpaRepository<Messages, Long> {
     int getUnreadMessages();
 
     Page<Messages> findByConversationOrderByCreatedAtDesc(Conversations conversation, Pageable pageable);
+    Page<Messages> findByConversationOrderByCreatedAtAsc(Conversations conversation, Pageable pageable);
 }

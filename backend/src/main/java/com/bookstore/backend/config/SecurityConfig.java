@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
-                    .requestMatchers("/api/books/**").permitAll()
+                    .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
                     
                     // Swagger UI
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

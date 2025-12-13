@@ -21,6 +21,10 @@ public class Conversations {
     @JoinColumn(name = "customer_id")
     private Users customer;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Users admin;
+
     private LocalDateTime createAt;
 
     private LocalDateTime updatedAt;
