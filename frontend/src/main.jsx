@@ -38,7 +38,7 @@ function MainLayout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/:categorySlug" element={<CategoryPage />} />
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/vouchers" element={<VoucherManagement />} />
+        <Route path="/voucher-management" element={<VoucherManagement />} />
 
         {/* Account area */}
         <Route path="/account" element={<AccountLayout />}>

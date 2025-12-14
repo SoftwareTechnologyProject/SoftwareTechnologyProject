@@ -44,10 +44,9 @@ public class SecurityConfig {
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
                     .requestMatchers("/blog/**").permitAll() // Allow public access to blog endpoints
-                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers/**").permitAll() // Allow public GET for vouchers
+                    .requestMatchers("/api/vouchers/**").permitAll() // Allow all methods for vouchers (testing)
                     
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
-                    .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     
                     .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")

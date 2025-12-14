@@ -32,16 +32,20 @@ const VoucherManagement = () => {
     const fetchVouchers = async () => {
         setLoading(true);
         try {
+            console.log('Fetching vouchers from:', API_URL);
             const response = await fetch(API_URL);
+            console.log('Response status:', response.status);
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            console.log('Vouchers received:', data);
             setVouchers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching vouchers:', error);
             setVouchers([]);
-            alert('Không thể tải danh sách voucher: ' + error.message);
+            alert('Không thể tải danh sách voucher: ' + error.message + '\n\nĐảm bảo backend đang chạy ở port 8081');
         } finally {
             setLoading(false);
         }

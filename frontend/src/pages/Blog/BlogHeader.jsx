@@ -14,9 +14,9 @@ const BlogHeader = () => {
 
                 {/* Navigation Menu */}
                 <nav className="blog-nav-menu">
-                    <Link to="/blog" className="nav-item">Blog</Link>
-                    <Link to="/blog/about" className="nav-item">About Us</Link>
-                    <Link to="/" className="nav-item">Shopping</Link>
+                    <Link to="/blog" className="blog-nav-item">Blog</Link>
+                    <Link to="/blog/about" className="blog-nav-item">About Us</Link>
+                    <Link to="/" className="blog-nav-item">Shopping</Link>
                 </nav>
 
                 {/* Social Media Icons */}

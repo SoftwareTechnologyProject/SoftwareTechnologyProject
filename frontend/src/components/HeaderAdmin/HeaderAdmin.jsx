@@ -56,7 +56,7 @@ const HeaderAdmin = () => {
                     </NavLink>
 
                     <NavLink
-                        to="/admin/vouchers"
+                        to="/voucher-management"
                         className={({ isActive }) =>
                             `nav-item ${isActive ? "active" : ""}`
                         }
