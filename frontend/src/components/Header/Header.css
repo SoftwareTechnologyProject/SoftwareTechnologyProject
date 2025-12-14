@@ -21,28 +21,12 @@ nav {
 }
 
 .nav-right {
-  @apply flex items-center mx-auto;
+  @apply mr-30 ml-10 grid grid-cols-4 place-items-center;
 }
 
 .nav-icons {
-  @apply w-7 h-7 cursor-pointer;
-}
-
-.notification-dropdown {
-  max-height: 350px; /* tăng chiều cao dropdown */
-  overflow-y: auto;
-  min-width: 320px; /* đảm bảo rộng hơn button */
-  transition: all 0.2s ease-in-out;
-}
-
-.notification-item {
-  transition: background-color 0.2s, transform 0.1s;
-  border-radius: 0.375rem; /* rounded-md */
-}
-
-.notification-item:hover {
-  background-color: #DBEAFE; /* light blue hover */
-  transform: translateX(2px);
+  @apply w-7 h-7
+         hover:text-[var(--primary-color)] transition-colors;
 }
 
 .nav-search {
@@ -51,4 +35,141 @@ nav {
 
 .input-search {
   @apply px-4 py-2 outline-none;
+}
+
+/* ==================== DANH MỤC DROPDOWN (HOVER) ==================== */
+.category-container {
+  @apply relative;
+}
+
+.category-container::after {
+  content: "";
+  @apply absolute left-0 right-0 top-full h-2;
+}
+
+.category-dropdown {
+  @apply absolute top-full left-1/2 -translate-x-1/2 mt-2 p-4
+         grid grid-cols-4 gap-5
+         bg-[var(--components-color)] shadow-lg rounded-lg p-2 z-50 
+         w-[250%]
+         opacity-0 invisible
+         transition-all duration-200 ease-in-out;
+}
+
+/* Hiển thị dropdown khi hover vào container */
+.category-container:hover .category-dropdown {
+  @apply opacity-100 visible shadow-xl/30 ;
+}
+
+.category-item {
+  @apply p-2 rounded-md w-full
+         text-gray-700 font-medium
+         transition-all duration-150
+         hover:bg-[var(--primary-color)] hover:text-[var(--components-color)]
+         hover:translate-x-1;
+}
+
+/* ==================== THÔNG BÁO DROPDOWN (CLICK) ==================== */
+.notification-container {
+  @apply relative;
+}
+
+.notification-dropdown {
+  @apply absolute top-full left-1/2 -translate-x-1/2 mt-2
+         bg-white shadow-xl/30 rounded-lg 
+         z-[9999]
+         min-w-[320px] max-h-[400px]
+         overflow-y-auto
+         transition-all duration-200 ease-in-out;
+}
+
+.notification-item {
+  @apply p-3 border-b last:border-b-0
+         transition-all duration-150
+         hover:bg-blue-50 hover:translate-x-1;
+  border-radius: 0.375rem;
+}
+
+.notification-unread {
+  @apply bg-blue-50;
+}
+
+.notification-link {
+  @apply font-medium text-gray-800
+         hover:text-[var(--primary-color)] hover:underline
+         block;
+}
+
+.notification-time {
+  @apply text-xs text-gray-400 mt-1;
+}
+
+.notification-empty {
+  @apply p-4 text-center text-gray-400;
+}
+
+.notification-more-btn {
+  @apply w-full py-2 text-blue-500 font-medium
+         hover:underline hover:bg-blue-50
+         transition-colors duration-150;
+}
+
+/* ==================== TÀI KHOẢN ==================== */
+.account-menu-container {
+  @apply relative mx-4;
+}
+
+.account-menu-link {
+  @apply flex flex-col items-center text-inherit 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+.account-popup {
+  @apply absolute top-full left-1/2 -translate-x-7/10 mt-2
+         bg-white shadow-xl rounded-lg p-2
+         z-50 min-w-[10rem]
+         opacity-0 invisible 
+         transition-all duration-200 ease-in-out
+         group-hover:opacity-100 group-hover:visible;
+}
+
+.account-popup-link {
+  @apply block text-center py-2 px-4 rounded-md w-2xs
+         text-lg font-medium transition-all duration-150;
+}
+
+.login {
+  @apply bg-[var(--primary-color)] text-[var(--components-color)]
+         hover:opacity-90;
+}
+
+.register {
+  @apply bg-[var(--components-color)] border-2 text-[var(--primary-color)]
+         hover:bg-gray-50;
+}
+
+.account-popup-link + .account-popup-link {
+  @apply mt-1;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .account-menu-container,
+  .category-container,
+  .notification-container {
+    @apply mx-2;
+  }
+  
+  .nav-icons {
+    @apply w-6 h-6;
+  }
+  
+  .account-popup,
+  .category-dropdown {
+    @apply min-w-[8rem];
+  }
+  
+  .notification-dropdown {
+    @apply min-w-[280px];
+  }
 }
