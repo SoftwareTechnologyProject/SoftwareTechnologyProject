@@ -2,17 +2,15 @@ import trashIcon from "../../assets/trash.png";
 import promoIcon from "../../assets/promote.png";
 import moneyIcon from "../../assets/money.png";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import { useNavigate } from 'react-router-dom';
 import './Cart.css';
 
 function Cart() {
   const navigate = useNavigate();
 
-  const API_BASE_URL = "http://localhost:8080/api/cart";
-  const API_VOUCHER_URL = "http://localhost:8080/api/vouchers/active";
-  // Cấu hình Axios để luôn gửi Cookie (Credentials)
-  axios.defaults.withCredentials = true;
+  const API_CART_URL = "/cart";
+  const API_VOUCHER_URL = "/vouchers/active";
 
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +28,7 @@ function Cart() {
   const fetchCart = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_BASE_URL);
+      const response = await axiosClient.get(API_CART_URL);
       const backendData = response.data;
 
       if (backendData && backendData.items) {
@@ -84,7 +82,7 @@ function Cart() {
     if (newQuantity < 1) return;
 
     try {
-      await axios.put(`${API_BASE_URL}/update/${id}?quantity=${newQuantity}`);
+      await axiosClient.put(`${API_CART_URL}/update/${id}?quantity=${newQuantity}`);
       setCartItems(items =>
         items.map(item => item.id === id ? { ...item, quantity: newQuantity } : item)
       );
@@ -107,7 +105,7 @@ function Cart() {
     if (!itemToDelete) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/remove/${itemToDelete}`);
+      await axiosClient.delete(`${API_CART_URL}/remove/${itemToDelete}`);
       // Cập nhật UI
       setCartItems(items => items.filter(item => item.id !== itemToDelete));
       // Đóng bảng và reset ID
@@ -133,7 +131,7 @@ function Cart() {
     const handleOpenPromoModal = async () => {
       setShowPromoModal(true);
       try {
-        const res = await axios.get(API_VOUCHER_URL);
+        const res = await axiosClient.get(API_VOUCHER_URL);
         setCoupons(res.data);
       } catch (error) {
         console.error("Lỗi lấy voucher:", error);
@@ -302,7 +300,9 @@ function Cart() {
                 </div>
               </div>
 
-              <button className="checkout-btn">THANH TOÁN</button>
+              <button className="checkout-btn" onClick={handleCheckout}>
+                THANH TOÁN
+              </button>
               <p className="discount-note">(Giảm giá trên web chỉ áp dụng cho bán lẻ)</p>
             </div>
         </div>

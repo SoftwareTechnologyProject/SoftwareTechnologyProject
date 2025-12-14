@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "./Checkout.css";
+import axios from 'axios';
 
 function Checkout() {
-  axios.defaults.withCredentials = true;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -89,11 +89,10 @@ function Checkout() {
 //       }
 //   }, [receivedItems, navigate]);
 
-  // Gọi API lấy thông tin người dùng (Tự động kèm Cookie)
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await axios.get("http://localhost:8080/api/users/profile");
+          const response = await axiosClient.get("/users/profile");
           const user = response.data;
 
           setFormData(prev => ({
@@ -222,7 +221,7 @@ function Checkout() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-md text-sm"
                 />
-              </div> thư viện Axios tự động biến Object đó thành chuỗi JSO
+              </div>
 
               <div>
                 <label className="block text-sm mb-1">Số điện thoại</label>
