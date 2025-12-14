@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiTag } from 'react-icons/fi';
 import './VoucherManagement.css';
 
-const API_URL = 'http://localhost:8081/api/vouchers';
+const API_URL = 'http://localhost:8080/api/vouchers';
 
 const VoucherManagement = () => {
+    const navigate = useNavigate();
     const [vouchers, setVouchers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -24,6 +26,16 @@ const VoucherManagement = () => {
         status: 'ACTIVE'
     });
 
+    // Check authentication
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('Vui lòng đăng nhập để truy cập trang này');
+            navigate('/login');
+            return;
+        }
+    }, [navigate]);
+
     // Fetch all vouchers
     useEffect(() => {
         fetchVouchers();
@@ -32,9 +44,20 @@ const VoucherManagement = () => {
     const fetchVouchers = async () => {
         setLoading(true);
         try {
+            const token = localStorage.getItem('accessToken');
             console.log('Fetching vouchers from:', API_URL);
-            const response = await fetch(API_URL);
+            const response = await fetch(API_URL, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             console.log('Response status:', response.status);
+            
+            if (response.status === 403) {
+                alert('Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản Admin.');
+                navigate('/login');
+                return;
+            }
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -45,7 +68,7 @@ const VoucherManagement = () => {
         } catch (error) {
             console.error('Error fetching vouchers:', error);
             setVouchers([]);
-            alert('Không thể tải danh sách voucher: ' + error.message + '\n\nĐảm bảo backend đang chạy ở port 8081');
+            alert('Không thể tải danh sách voucher: ' + error.message + '\n\nĐảm bảo backend đang chạy ở port 8080');
         } finally {
             setLoading(false);
         }
@@ -77,13 +100,20 @@ const VoucherManagement = () => {
         setLoading(true);
 
         try {
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(formData),
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 const error = await response.json();
@@ -108,13 +138,20 @@ const VoucherManagement = () => {
         setLoading(true);
 
         try {
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/${editingVoucher.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(formData),
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 const error = await response.json();
@@ -140,9 +177,18 @@ const VoucherManagement = () => {
 
         setLoading(true);
         try {
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/${id}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Không thể xóa voucher');

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import BlogHeader from './BlogHeader';
+import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../components/Footer/Footer';
 import './BlogAdmin.css';
 
-const API_URL = 'http://localhost:8081/blog';
-//const API_URL = 'http://localhost:8081/blog';
+const API_URL = 'http://localhost:8080/blog';
+//const API_URL = 'http://localhost:8080/blog';
 const BlogAdmin = () => {
+    const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [postComments, setPostComments] = useState([]); // Comments for editing post
     const [showForm, setShowForm] = useState(false);
@@ -21,6 +21,16 @@ const BlogAdmin = () => {
         coverImage: '',
         author: 'Admin'
     });
+
+    // Check authentication
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('Vui lòng đăng nhập để truy cập trang này');
+            navigate('/login');
+            return;
+        }
+    }, [navigate]);
 
     useEffect(() => {
         fetchPosts();
@@ -52,9 +62,18 @@ const BlogAdmin = () => {
         }
 
         try {
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/comments/${commentId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Không thể xóa bình luận');
@@ -74,6 +93,7 @@ const BlogAdmin = () => {
         e.preventDefault();
         
         try {
+            const token = localStorage.getItem('accessToken');
             let coverImageUrl = formData.coverImage;
 
             // Upload image if file selected
@@ -84,8 +104,17 @@ const BlogAdmin = () => {
 
                 const uploadResponse = await fetch(`${API_URL}/upload-image`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: uploadFormData
                 });
+
+                if (uploadResponse.status === 403) {
+                    alert('Bạn không có quyền upload ảnh');
+                    setUploading(false);
+                    return;
+                }
 
                 if (!uploadResponse.ok) {
                     throw new Error('Không thể upload ảnh');
@@ -111,9 +140,15 @@ const BlogAdmin = () => {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(postData)
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Không thể lưu bài viết');
@@ -163,9 +198,18 @@ const BlogAdmin = () => {
         }
 
         try {
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/posts/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.status === 403) {
+                alert('Bạn không có quyền thực hiện thao tác này');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Không thể xóa bài viết');
@@ -204,7 +248,6 @@ const BlogAdmin = () => {
 
     return (
         <div className="blog-page">
-            <BlogHeader />
             <div className="admin-container">
                 <header className="admin-header">
                     <h1>Quản lý Blog</h1>
@@ -297,18 +340,32 @@ const BlogAdmin = () => {
                                 <div className="comments-list">
                                     {postComments.map(comment => (
                                         <div key={comment.id} className="comment-item">
-                                            <div className="comment-content">
-                                                <strong>{comment.userName}</strong>
-                                                <span className="comment-date">
-                                                    {new Date(comment.createdAt).toLocaleString('vi-VN')}
-                                                </span>
-                                                <p>{comment.content}</p>
+                                            <div className="comment-avatar">
+                                                <div className="avatar-circle">
+                                                    {comment.commenterName?.charAt(0).toUpperCase() || comment.userName?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                            </div>
+                                            <div className="comment-body">
+                                                <div className="comment-header">
+                                                    <strong className="commenter-name">{comment.commenterName || comment.userName}</strong>
+                                                    <span className="comment-date">
+                                                        {new Date(comment.createdAt).toLocaleDateString('vi-VN', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <p className="comment-content">{comment.content}</p>
                                             </div>
                                             <button 
                                                 className="btn-delete-comment"
                                                 onClick={() => handleDeleteComment(comment.id)}
+                                                title="Xóa bình luận"
                                             >
-                                                Xóa
+                                                ×
                                             </button>
                                         </div>
                                     ))}

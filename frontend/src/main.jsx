@@ -52,6 +52,8 @@ function MainLayout() {
         {/* Admin */}
         <Route path="/admin" element={<HeaderAdmin />}>
           <Route path="books" element={<Account />} />
+          <Route path="vouchers" element={<VoucherManagement />} />
+          <Route path="blog" element={<BlogAdmin />} />
         </Route>
       </Routes>
 
@@ -70,7 +72,6 @@ createRoot(document.getElementById("root")).render(
         <Route path="/blog" element={<BlogList />} />
         <Route path="/blog/posts/:id" element={<BlogDetail />} />
         <Route path="/blog/about" element={<BlogAbout />} />
-        <Route path="/blog/admin" element={<BlogAdmin />} />
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />

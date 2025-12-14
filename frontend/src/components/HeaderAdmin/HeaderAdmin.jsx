@@ -5,6 +5,7 @@ import { TfiReceipt } from "react-icons/tfi";
 import { HiOutlineUsers } from "react-icons/hi2";
 import { IoTicketSharp } from "react-icons/io5";
 import { IoStatsChartOutline } from "react-icons/io5";
+import { HiOutlineNewspaper } from "react-icons/hi";
 import { BiLogOut } from "react-icons/bi";
 import { NavLink } from "react-router-dom";
 import "./HeaderAdmin.css";
@@ -56,13 +57,23 @@ const HeaderAdmin = () => {
                     </NavLink>
 
                     <NavLink
-                        to="/voucher-management"
+                        to="/admin/vouchers"
                         className={({ isActive }) =>
                             `nav-item ${isActive ? "active" : ""}`
                         }
                     >
                         <IoTicketSharp className="nav-icon" />
                         <span>Quản Lý Voucher</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/blog"
+                        className={({ isActive }) =>
+                            `nav-item ${isActive ? "active" : ""}`
+                        }
+                    >
+                        <HiOutlineNewspaper className="nav-icon" />
+                        <span>Quản Lý Blog</span>
                     </NavLink>
 
                     <NavLink

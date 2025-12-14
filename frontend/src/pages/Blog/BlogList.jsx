@@ -5,7 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import './BlogList.css';
 
 //const API_URL = 'http://localhost:8080/blog';
-const API_URL = 'http://localhost:8081/blog';
+const API_URL = 'http://localhost:8080/blog';
 
 const BlogList = () => {
     const [posts, setPosts] = useState([]);
@@ -134,7 +134,6 @@ const BlogList = () => {
                         <ul className="category-list">
                             <li><Link to="/blog">Tất cả bài viết</Link></li>
                             <li><Link to="/blog/about">Giới thiệu</Link></li>
-                            <li><Link to="/blog/admin">Quản lý</Link></li>
                         </ul>
                     </div>
 

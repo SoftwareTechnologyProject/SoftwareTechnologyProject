@@ -5,7 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import './BlogDetail.css';
 
 //const API_URL = 'http://localhost:8080/blog';
-const API_URL = 'http://localhost:8081/blog';
+const API_URL = 'http://localhost:8080/blog';
 
 const BlogDetail = () => {
     const { id } = useParams();
@@ -178,11 +178,18 @@ const BlogDetail = () => {
                         ) : (
                             comments.map(comment => (
                                 <div key={comment.id} className="comment-item">
-                                    <div className="comment-header">
-                                        <strong className="commenter-name">{comment.commenterName}</strong>
-                                        <span className="comment-date">{formatDate(comment.createdAt)}</span>
+                                    <div className="comment-avatar">
+                                        <div className="avatar-circle">
+                                            {comment.commenterName.charAt(0).toUpperCase()}
+                                        </div>
                                     </div>
-                                    <p className="comment-content">{comment.content}</p>
+                                    <div className="comment-body">
+                                        <div className="comment-header">
+                                            <strong className="commenter-name">{comment.commenterName}</strong>
+                                            <span className="comment-date">{formatDate(comment.createdAt)}</span>
+                                        </div>
+                                        <p className="comment-content">{comment.content}</p>
+                                    </div>
                                 </div>
                             ))
                         )}
