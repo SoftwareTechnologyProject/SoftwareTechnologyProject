@@ -222,7 +222,7 @@ const VoucherWallet = () => {
                 )}
 
                 <div className="back-link">
-                    <Link to="/account">← Quay lại tài khoản</Link>
+                    <Link to="/account/accountInf">Quay lại</Link>
                 </div>
             </main>
 
