@@ -9,6 +9,7 @@ import { CiSearch } from "react-icons/ci";
 import { FiShoppingCart } from "react-icons/fi";
 import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
+import { HiOutlineNewspaper } from "react-icons/hi";
 import useUserNotifications from "../../hook/useUserNotifications";
 import axios from "../../config/axiosConfig";
 
@@ -54,7 +55,6 @@ const Header = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openNotification]);
-
 
 
   const { pathname } = useLocation();
@@ -187,6 +187,14 @@ const Header = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Blog */}
+          <div className="account-menu-link">
+            <Link to="/blog">
+              <HiOutlineNewspaper className="nav-icons" />
+            </Link>
+            <span>Blog</span>
           </div>
 
           {/* Giỏ hàng */}

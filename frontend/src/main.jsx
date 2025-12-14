@@ -20,6 +20,10 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
+import BlogList from './pages/Blog/BlogList';
+import BlogDetail from './pages/Blog/BlogDetail';
+import BlogAbout from './pages/Blog/BlogAbout';
+import BlogAdmin from './pages/Blog/BlogAdmin';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
 
@@ -34,7 +38,7 @@ function MainLayout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/:categorySlug" element={<CategoryPage />} />
         <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/vouchers" element={<VoucherManagement />} />
+        <Route path="/voucher-management" element={<VoucherManagement />} />
 
         {/* Account area */}
         <Route path="/account" element={<AccountLayout />}>
@@ -48,6 +52,8 @@ function MainLayout() {
         {/* Admin */}
         <Route path="/admin" element={<HeaderAdmin />}>
           <Route path="books" element={<Account />} />
+          <Route path="vouchers" element={<VoucherManagement />} />
+          <Route path="blog" element={<BlogAdmin />} />
         </Route>
       </Routes>
 
@@ -62,10 +68,15 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Trang LOGIN riêng biệt */}
-        <Route path="/login" element={<Login />} />
+        {/* Blog routes - standalone without Header/Footer */}
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        <Route path="/blog/about" element={<BlogAbout />} />
 
-        {/* Tất cả route khác đều dùng layout chung */}
+        {/* Login page - standalone without Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* All other pages with common Layout */}
         <Route path="*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>
