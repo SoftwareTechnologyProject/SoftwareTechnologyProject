@@ -11,6 +11,8 @@ import { FiShoppingCart } from "react-icons/fi";
 import { CiUser } from "react-icons/ci";
 
 import NotificationBell from "../notification/NotificationBell";
+import { HiOutlineNewspaper } from "react-icons/hi";
+
 import axios from "../../config/axiosConfig";
 
 const Header = () => {
@@ -21,6 +23,7 @@ const Header = () => {
 
 
   const isLoggedIn = Boolean(localStorage.getItem("accessToken"));
+
 
   useEffect(() => {
     fetchUserInfo();
@@ -100,6 +103,14 @@ const Header = () => {
 
           {/* 🔔 Notification (đã tách) */}
           <NotificationBell />
+
+          {/* Blog */}
+          <div className="account-menu-link">
+            <Link to="/blog">
+              <HiOutlineNewspaper className="nav-icons" />
+            </Link>
+            <span>Blog</span>
+          </div>
 
           {/* Giỏ hàng */}
           <div className="account-menu-link">

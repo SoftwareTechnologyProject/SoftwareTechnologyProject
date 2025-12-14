@@ -44,6 +44,32 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+# Spring Boot Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# AWS S3 configuration
+aws:
+  s3:
+    access-key: ${AWS_ACCESS_KEY_ID:your-access-key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key}
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET_NAME:bookstore-images-dev}
+    blog-bucket-name: ${AWS_S3_BLOG_BUCKET_NAME:blogadmin-s3}
+
+# Gemini AI configuration
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:your-api-key}
+    url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
+
+# JWT configuration
 jwt:
   secret:
     key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
