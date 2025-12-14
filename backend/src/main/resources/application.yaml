@@ -1,5 +1,12 @@
-﻿server:
+server:
   port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  http2:
+    enabled: true
 
 spring:
   datasource:

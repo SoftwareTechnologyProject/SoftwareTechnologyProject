@@ -45,35 +45,44 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
-            authenticate(request.getEmail(), request.getPassword()); //Xác minh email và mật khẩu
-            final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail()); // Xác thực thành công thì load chi tiết người dùng lên.
-            final String jwtToken = jwtUtil.generateToken(userDetails); // tạo jwt mới
-            ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) 
-                .httpOnly(true) // Ngăn chặn js truy cập
-                .path("/")
-                .maxAge(Duration.ofDays(1))
-                .sameSite("Strict")
-                .build();
-            return ResponseEntity.ok()
-                .body(new AuthResponse(request.getEmail(), jwtToken));
+            authenticate(request.getEmail(), request.getPassword());
 
-        }catch(BadCredentialsException ex){
+            final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
+            final String jwtToken = jwtUtil.generateToken(userDetails);
+
+            // Cookie gửi cho FE
+            ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(Duration.ofDays(1))
+                    .sameSite("None")
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(new AuthResponse(request.getEmail(), jwtToken));
+
+        } catch (BadCredentialsException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Email or Password is incorrect");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        }catch(DisabledException ex) {
+
+        } catch (DisabledException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Account is disabled");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }catch(Exception ex) {
+
+        } catch (Exception ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Authentication failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
+
     private void authenticate(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
