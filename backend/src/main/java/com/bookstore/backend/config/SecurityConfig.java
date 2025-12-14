@@ -47,7 +47,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     
-                    .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
                     
                     .anyRequest().authenticated()

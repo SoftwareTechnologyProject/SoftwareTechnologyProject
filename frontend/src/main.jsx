@@ -16,6 +16,7 @@ import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
 import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
 import Login from "./pages/login.jsx"
+import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 
 // Component Layout chung cho các trang có Header/Footer
 function MainLayout() {
@@ -32,6 +33,7 @@ function MainLayout() {
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
         <Route path="/books/:id" element={<ProductDetail />} />
+        <Route path="/admin/chat" element={<AdminChatBox />} />
       </Routes>
       <Recommend />
       <Footer />

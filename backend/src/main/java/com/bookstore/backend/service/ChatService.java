@@ -25,26 +25,17 @@ public class ChatService {
     private final MessageService messageService;
     private final UserRepository userRepository;
 
-    public void sendMessage(MessageRequestDTO messageRequestDTO, String email){
-        email = email.trim();
-        System.out.println("Email user là: " + email);
-        var users = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    public void sendMessage(MessageRequestDTO messageRequestDTO, String emailSend){
+        String receiveEmail = messageRequestDTO.getReceiveEmail();
+        var users = userRepository.findByEmail(emailSend).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        var receiver = userRepository.findByEmail(receiveEmail).orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
+        Conversations conversations = conversationsService.getConversation(users, receiver);
 
-        Conversations conversations = conversationsService.getOrCreateConversation(users);
-        Messages message = messageService.createMessage(conversations, messageRequestDTO.getContent(), users);
-        String adminEmail = "admin@gmail.com";
-        String senderEmail = users.getEmail();
-        String receiverEmail;
-        if (senderEmail.equals(adminEmail)) {
-            receiverEmail = conversations.getCustomer().getEmail();
-        } else {
-            receiverEmail = adminEmail;
-        }
-        MessageResponseDTO messageResponseDTO = MessageResponseDTO.builder().id(message.getId())
-                        .content(messageRequestDTO.getContent()).createdAt(LocalDateTime.now())
-                        .sender(users.getFullName()).isRead(false).build();
-        simpMessagingTemplate.convertAndSendToUser(receiverEmail, "/queue/chat", messageResponseDTO);
-        simpMessagingTemplate.convertAndSendToUser(senderEmail, "/queue/chat", messageResponseDTO);
-        System.out.println("tin nhắn đã dc chuyển đi");
+        Messages message = messageService.createMessage(conversations, messageRequestDTO.getContent(), users, receiver);
+
+        MessageResponseDTO receiveDTO = MessageResponseDTO.fromReceiver(message);
+        MessageResponseDTO senderDTO = MessageResponseDTO.fromSender(message);
+        simpMessagingTemplate.convertAndSendToUser(receiveEmail, "/queue/chat", receiveDTO);
+        simpMessagingTemplate.convertAndSendToUser(emailSend, "/queue/chat", senderDTO);
     }
 }
