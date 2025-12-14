@@ -43,6 +43,7 @@ public class SecurityConfig {
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
+<<<<<<< HEAD
                     
                     // Swagger UI
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
@@ -50,6 +51,14 @@ public class SecurityConfig {
                     // Temporarily allow /users for testing (remove after adding proper registration endpoint)
                     .requestMatchers("/users/**").permitAll()
                     
+=======
+                        .requestMatchers("/api/vouchers/active").permitAll()
+
+                        .requestMatchers("/api/users/profile").authenticated()
+                        // Cho phép User thao tác Giỏ hàng
+                        .requestMatchers("/api/cart/**").authenticated()
+
+>>>>>>> ecaf1253d53ff6c7220f3a3b660c40e0e334eb76
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     

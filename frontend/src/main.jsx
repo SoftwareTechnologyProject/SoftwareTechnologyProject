@@ -17,6 +17,8 @@ import Account from './pages/Account/Account.jsx';
 import ProductDetail from './pages/Book/ProductDetail.jsx';
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
+import Cart from "./pages/Cart/Cart.jsx";
+import Checkout from './pages/Checkout/Checkout.jsx';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
@@ -44,11 +46,10 @@ function MainLayout() {
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-
-        {/* Admin */}
-        <Route path="/admin" element={<HeaderAdmin />}>
-          <Route path="books" element={<Account />} />
-        </Route>
+        <Route path="/books/:id" element={<ProductDetail />} />
+        <Route path="/voucher-wallet" element={<VoucherWallet />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
 
       <Recommend />
@@ -65,7 +66,7 @@ createRoot(document.getElementById("root")).render(
         {/* Trang LOGIN riêng biệt */}
         <Route path="/login" element={<Login />} />
 
-        {/* Tất cả route khác đều dùng layout chung */}
+        {/* Tất cả các trang khác có Layout chung */}
         <Route path="*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>

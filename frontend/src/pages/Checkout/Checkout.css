@@ -1,0 +1,185 @@
+/* -------------------------
+   RESET & BASE STYLE
+-------------------------- */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+/* Tăng độ mềm cho các form */
+input,
+select,
+textarea {
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #e53935;
+  box-shadow: 0 0 4px rgba(229, 57, 53, 0.3);
+}
+
+/* -------------------------
+   FORM SECTION
+-------------------------- */
+
+.form-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  transition: 0.3s ease;
+}
+
+.form-section:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-section h2 {
+  margin-bottom: 12px;
+}
+
+/* -------------------------
+   PAYMENT OPTION
+-------------------------- */
+.payment-option {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.payment-option:hover {
+  background: #fff7f7;
+  border-color: #e53935;
+}
+
+.payment-option.selected {
+  border-color: #e53935;
+  background-color: #ffecec;
+}
+
+/* -------------------------
+   SCROLLBAR – đẹp hơn
+-------------------------- */
+.order-summary::-webkit-scrollbar {
+  width: 6px;
+}
+
+.order-summary::-webkit-scrollbar-thumb {
+  background: #d32f2f;
+  border-radius: 10px;
+}
+
+.order-summary::-webkit-scrollbar-thumb:hover {
+  background: #b71c1c;
+}
+
+/* -------------------------
+   PROMO TAG
+-------------------------- */
+.promo-tag {
+  background: #fff3e0;
+  border-left: 4px solid #fb8c00;
+  padding: 8px 10px;
+  border-radius: 6px;
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* -------------------------
+   PRODUCT IMAGE
+-------------------------- */
+.product-image {
+  border-radius: 8px;
+  transition: 0.25s;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}
+
+/* -------------------------
+   SIDEBAR
+-------------------------- */
+.sticky-sidebar {
+  border-radius: 14px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
+  transition: 0.3s;
+}
+
+/* -------------------------
+   CHECKOUT BUTTON
+-------------------------- */
+.checkout-button {
+  background: linear-gradient(90deg, #e53935, #d32f2f);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: 0.2s;
+}
+
+.checkout-button:hover {
+  background: linear-gradient(90deg, #d32f2f, #c62828);
+  transform: translateY(-1px);
+}
+
+.checkout-button:active {
+  transform: scale(0.97);
+}
+
+/* -------------------------
+   BADGE
+-------------------------- */
+.discount-badge {
+  background: linear-gradient(135deg, #ff5252, #ff1744);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 2px 6px rgba(255, 80, 80, 0.4);
+}
+
+.badge-pulse {
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* -------------------------
+   RESPONSIVE
+-------------------------- */
+@media (max-width: 768px) {
+  .form-section {
+    padding: 18px;
+  }
+  .checkout-container {
+    padding: 12px;
+  }
+  .sticky-sidebar {
+    position: static;
+  }
+}
