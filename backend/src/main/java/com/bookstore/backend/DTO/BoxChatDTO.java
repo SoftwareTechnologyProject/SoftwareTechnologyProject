@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoxChatDTO {
+    private Long conversationId;
     private Long senderId;
     private String senderName;
     private Long receiverId;

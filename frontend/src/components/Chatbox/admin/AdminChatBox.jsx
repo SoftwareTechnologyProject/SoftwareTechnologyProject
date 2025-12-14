@@ -2,9 +2,21 @@ import { useEffect, useState } from "react";
 import axiosClient from "../../../api/axiosClient";
 import useUserNotifications from "../../../hook/useUserNotifications";
 
+/* =======================
+   ⏰ FORMAT TIME
+   ======================= */
+const formatTime = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const AdminChatBox = () => {
-  const [boxChats, setBoxChats] = useState([]); // danh sách box
-  const [activeBox, setActiveBox] = useState(null); // box đang chọn
+  const [boxChats, setBoxChats] = useState([]);
+  const [activeBox, setActiveBox] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [unreadMap, setUnreadMap] = useState({});
@@ -17,15 +29,18 @@ const AdminChatBox = () => {
     (msg) => {
       console.log("📩 WS received:", msg);
 
-      // nếu đang mở box này → append message
-      if (activeBox && msg.conversationId === activeBox.conversationId) {
+      if (
+        activeBox &&
+        msg.conversationId === activeBox.conversationId
+      ) {
         setMessages((prev) => [...prev, msg]);
 
-        if (!msg.isMine && msg.id) {
+        // admin nhận tin từ user
+        if (!msg.mine && msg.id) {
           markRead([msg.id]);
         }
       } else {
-        // cập nhật unread
+        // tin của box khác → tăng unread
         fetchUnread();
       }
     }
@@ -36,17 +51,12 @@ const AdminChatBox = () => {
      ======================= */
   const loadBoxChats = async () => {
     try {
-      console.log("📡 Load admin box chats...");
       const res = await axiosClient.get("/admin/chat", {
         params: { page: 0, size: 50 },
       });
 
-      console.log("📦 Box chats:", res.data);
       setBoxChats(res.data);
 
-      if (res.data.length && !activeBox) {
-        selectBox(res.data[0]);
-      }
     } catch (err) {
       console.error("❌ Load box chats failed:", err);
     }
@@ -58,7 +68,7 @@ const AdminChatBox = () => {
   const fetchUnread = async () => {
     try {
       const res = await axiosClient.get("/admin/chat/unread");
-      console.log("🔔 Unread map:", res.data);
+      console.log("🔔 unread:", res.data);
       setUnreadMap(res.data);
     } catch (err) {
       console.error("❌ Load unread failed:", err);
@@ -69,13 +79,11 @@ const AdminChatBox = () => {
      👉 SELECT BOX
      ======================= */
   const selectBox = async (box) => {
-    console.log("👉 Select box:", box);
-
     setActiveBox(box);
     setMessages(box.boxContent?.content || []);
 
     const unreadIds = box.boxContent?.content
-      ?.filter((m) => !m.isMine && !m.isRead)
+      ?.filter((m) => !m.mine && !m.isRead)
       .map((m) => m.id);
 
     if (unreadIds?.length) {
@@ -87,11 +95,10 @@ const AdminChatBox = () => {
      ✅ MARK READ
      ======================= */
   const markRead = async (ids) => {
-    if (!ids || !ids.length) return;
+    if (!ids?.length) return;
 
     try {
       await axiosClient.put("/admin/chat/mark-read", ids);
-      console.log("✔ Marked read:", ids);
       fetchUnread();
     } catch (err) {
       console.error("❌ Mark read failed:", err);
@@ -104,13 +111,11 @@ const AdminChatBox = () => {
   const handleSend = () => {
     if (!input.trim() || !activeBox) return;
 
-    const payload = {
+    sendChatMessage({
       receiveEmail: activeBox.receiverEmail,
       content: input,
-    };
+    });
 
-    console.log("📤 Send WS:", payload);
-    sendChatMessage(payload);
     setInput("");
   };
 
@@ -130,26 +135,28 @@ const AdminChatBox = () => {
       {/* LEFT - BOX LIST */}
       <div className="w-1/3 border-r overflow-y-auto">
         {boxChats.map((box) => {
-          const unread = unreadMap[box.receiverId] || 0;
+          const unread = unreadMap[box.conversationId] || 0;
 
           return (
             <div
-              key={box.receiverId}
+              key={box.conversationId}
+              onClick={() => selectBox(box)}
               className={`p-3 cursor-pointer border-b ${
-                activeBox?.receiverId === box.receiverId
+                activeBox?.conversationId === box.conversationId
                   ? "bg-gray-200"
                   : ""
               }`}
-              onClick={() => selectBox(box)}
             >
               <div className="flex justify-between">
-                <b>{box.senderName}</b>
+                <b>{box.receiverName}</b>
+
                 {unread > 0 && (
                   <span className="bg-red-500 text-white rounded-full px-2 text-xs">
                     {unread}
                   </span>
                 )}
               </div>
+
               <div className="text-sm text-gray-500 truncate">
                 {box.boxContent?.content?.slice(-1)[0]?.content}
               </div>
@@ -158,38 +165,45 @@ const AdminChatBox = () => {
         })}
       </div>
 
-      {/* RIGHT - CHAT CONTENT */}
+      {/* RIGHT - CHAT */}
       <div className="flex flex-col w-2/3">
         {activeBox ? (
           <>
-            {/* Header */}
             <div className="p-3 border-b font-bold">
-              Chat với {activeBox.senderName}
+              Chat với {activeBox.receiverName}
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
               {messages.map((m) => (
                 <div
                   key={m.id}
-                  className={`mb-2 ${
-                    m.isMine ? "text-right" : "text-left"
+                  className={`mb-3 flex ${
+                    m.mine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <span
-                    className={`inline-block p-2 rounded ${
-                      m.isMine
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-300"
-                    }`}
-                  >
-                    {m.content}
-                  </span>
+                  <div className="max-w-[70%]">
+                    <div
+                      className={`p-2 rounded ${
+                        m.mine
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-300"
+                      }`}
+                    >
+                      {m.content}
+                    </div>
+
+                    <div
+                      className={`text-xs text-gray-500 mt-1 ${
+                        m.mine ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {formatTime(m.createdAt)}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Input */}
             <div className="p-2 border-t flex gap-2">
               <input
                 className="flex-1 border rounded p-2"
@@ -198,8 +212,8 @@ const AdminChatBox = () => {
                 placeholder="Nhập tin nhắn..."
               />
               <button
-                className="bg-blue-600 text-white px-4 rounded"
                 onClick={handleSend}
+                className="bg-blue-600 text-white px-4 rounded"
               >
                 Gửi
               </button>

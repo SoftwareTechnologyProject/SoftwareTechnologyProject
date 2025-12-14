@@ -52,6 +52,7 @@ public class AdminMessageService {
             Page<MessageResponseDTO> messages = messageService.getMessages(conversation, admin, page, size);
 
             return BoxChatDTO.builder()
+                    .conversationId(conversation.getId())
                     .senderId(admin.getId())
                     .senderName(admin.getFullName())
                     .receiverId(customer.getId())

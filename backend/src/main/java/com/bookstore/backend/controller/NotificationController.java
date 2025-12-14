@@ -4,6 +4,7 @@ import com.bookstore.backend.DTO.NotificationDTO;
 import com.bookstore.backend.model.Notification;
 import com.bookstore.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping()
-    public List<NotificationDTO> getNotification(@RequestParam int page, @RequestParam int size){
+    public Page<NotificationDTO> getNotification(@RequestParam int page, @RequestParam int size){
         return notificationService.getAllNotification(page, size);
     }
 
@@ -31,7 +32,20 @@ public class NotificationController {
         notification.setUrl("/test");
 
         notificationService.broadcastNotification(notification);
+        return "Sent broadcast!";
+    }
 
-        return "Sent!";
+    @GetMapping("/send/user")
+    @ResponseBody
+    public String sendPrivate() {
+
+        Notification notification = new Notification();
+        notification.setContent("🔔 Test private notification");
+        notification.setRead(false);
+        notification.setCreateAt(LocalDateTime.now());
+        notification.setUrl("/test");
+
+        notificationService.broadcastNotification(notification);
+        return "Sent privately!";
     }
 }

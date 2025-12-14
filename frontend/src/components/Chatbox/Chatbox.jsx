@@ -21,7 +21,7 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
       setMessages((prev) => [...prev, msg]);
 
       // Tin của đối phương → mark read
-      if (!msg.isMine && msg.id) {
+      if (!msg.mine && msg.id) {
         markRead([msg.id]);
         setUnreadCount(0);
       }
@@ -48,7 +48,7 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
 
       // mark all unread
       const unreadIds = contents
-        .filter((m) => !m.isMine && !m.isRead)
+        .filter((m) => !m.mine && !m.read)
         .map((m) => m.id);
 
       if (unreadIds.length > 0) {
@@ -129,12 +129,12 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
           <div
             key={m.id}
             className={`mb-2 flex ${
-              m.isMine ? "justify-end" : "justify-start"
+              m.mine ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`p-2 rounded max-w-[70%] ${
-                m.isMine
+                m.mine
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 text-black"
               }`}
