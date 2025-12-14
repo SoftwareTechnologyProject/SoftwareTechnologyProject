@@ -7,6 +7,7 @@ import './login.css';
 import { AppContext } from "../context/AppContext"; 
 import axios from "axios";
 import toast from "react-hot-toast";
+import axiosClient from "../api/axiosClient"
 
 const Login = () => {
   // Khai báo state
@@ -70,8 +71,9 @@ const Login = () => {
         }
       } else {
         // Login logic
-        const response = await axios.post(`${backendURL}/login`, { email, password });
+        const response = await axiosClient.post("/auth/login", { email, password });
         if (response.status === 200) {
+    localStorage.setItem("accessToken", response.data.token);
           setIsLoggedIn(true);
           setUserData(response.data.user);
           toast.success("Login successful!");

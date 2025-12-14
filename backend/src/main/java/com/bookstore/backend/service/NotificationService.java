@@ -22,9 +22,10 @@ import lombok.Data;
 public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationRepository notificationRepository;
+    private final SecurityUtils securityUtils;
 
     public List<NotificationDTO> getAllNotification(int page, int size){
-        var user = SecurityUtils.getCurrentUser();
+        var user = securityUtils.getCurrentUser();
         if (user == null){
             return List.of();
         }
@@ -35,14 +36,14 @@ public class NotificationService {
     }
 
     public void broadcastNotification(Notification notification){
-        var user = SecurityUtils.getCurrentUser();
+        var user = securityUtils.getCurrentUser();
         System.out.println("thông tin user " + user.getEmail());
         NotificationDTO notificationDTO = NotificationDTO.from(notification);
         messagingTemplate.convertAndSend("/topic/notifications", notificationDTO);
     }
 
     public void sendToUser(Notification notification){
-        Users user = SecurityUtils.getCurrentUser();
+        Users user = securityUtils.getCurrentUser();
         String email = user.getEmail();
         NotificationDTO notificationDTO = NotificationDTO.from(notification);
         messagingTemplate.convertAndSendToUser(email, "/queue/notifications", notificationDTO);

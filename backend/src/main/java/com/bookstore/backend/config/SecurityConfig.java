@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
-                    .requestMatchers("/api/books/**").permitAll()
+                    .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
                     .requestMatchers("/blog/**").permitAll() // Allow public access to blog endpoints
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers/**").permitAll() // Allow public GET for vouchers
                     
