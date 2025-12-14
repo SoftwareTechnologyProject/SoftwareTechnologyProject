@@ -35,7 +35,6 @@ import com.bookstore.backend.service.impl.VoucherServiceImpl;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/vouchers")
 @RequestMapping("/api/vouchers")
 @CrossOrigin(origins = "*")
 public class VoucherController {

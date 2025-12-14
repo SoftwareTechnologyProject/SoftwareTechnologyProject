@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "book_variants")
@@ -53,7 +54,6 @@ public class BookVariants {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private List<BookImages> images;
-    private Set<BookImages> images;
 
     @Override
     public boolean equals(Object o) {

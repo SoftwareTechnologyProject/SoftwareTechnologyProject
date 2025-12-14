@@ -43,7 +43,12 @@ public class SecurityConfig {
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
-                    
+                        .requestMatchers("/api/vouchers/active").permitAll()
+
+                        .requestMatchers("/api/users/profile").authenticated()
+                        // Cho phép User thao tác Giỏ hàng
+                        .requestMatchers("/api/cart/**").authenticated()
+
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     

@@ -5,6 +5,7 @@ import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +25,46 @@ public class CartService {
     private final CartItemRepository cartItemRepo;
     private final BookVariantsRepository bookVariantRepo;
     private final UserRepository userRepo;
+    private final SecurityUtils mySecurityUtils;
 
     private Users getCurrentUser() {
-        Users user = SecurityUtils.getCurrentUser();
+        var user = mySecurityUtils.getCurrentUser();
         if (user == null) {
             throw new RuntimeException("Bạn chưa đăng nhập hoặc phiên đăng nhập hết hạn (401)");
         }
         return user;
+    }
+
+    public Users getMyUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Bạn chưa đăng nhập (401)");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        // Trường hợp 1: Token trả về String (Lỗi bạn đang gặp) -> Tự query DB
+        if (principal instanceof String) {
+            String emailOrUsername = (String) principal;
+            return userRepo.findByEmail(emailOrUsername)
+                    // Nếu login bằng username thì thêm dòng dưới:
+                    // .or(() -> userRepository.findByUsername(emailOrUsername))
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + emailOrUsername));
+        }
+
+        // Trường hợp 2: Token trả về đúng Object Users
+        if (principal instanceof Users) {
+            return (Users) principal;
+        }
+
+        // Trường hợp 3: Token trả về UserDetails mặc định
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            return userRepo.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + email));
+        }
+
+        throw new RuntimeException("Không xác định được người dùng!");
     }
 
     // Get or create cart for user
@@ -46,7 +80,7 @@ public class CartService {
     // Add to cart
     @Transactional
     public void addToCart(CartItemsDTO request) {
-        Users currentUser = getCurrentUser();
+        var currentUser = getMyUser();
         Cart cart = getOrCreateCart(currentUser);
 
         if (cart.getCartItems() == null) {
@@ -76,7 +110,7 @@ public class CartService {
     // Update item quantity in cart
     @Transactional
     public void updateItemQuantity(Long cartItemId, int newQuantity) {
-        Users currentUser = getCurrentUser();
+        var currentUser = getMyUser();
         CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm không có trong giỏ"));
 
@@ -97,7 +131,7 @@ public class CartService {
     // Remove item from cart
     @Transactional
     public void removeItem(Long cartItemId) {
-        Users currentUser = getCurrentUser();
+        var currentUser = getMyUser();
         CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Mục này không tồn tại"));
 
@@ -108,7 +142,7 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public CartResponseDTO getMyCart() {
-        Users currentUser = getCurrentUser();
+        var currentUser = getMyUser();
         Long userId = currentUser.getId();
 
         Cart cart = cartRepo.findByUserId(userId).orElse(null);
