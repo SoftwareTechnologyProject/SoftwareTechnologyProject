@@ -3,6 +3,7 @@ package com.bookstore.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Objects;
 
@@ -21,6 +22,9 @@ public class BookImages {
 
     @ManyToOne
     @JoinColumn(name = "book_variant_id")
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private BookVariants bookVariant;
 
     @NotBlank(message = "URL hình ảnh không được trống")
