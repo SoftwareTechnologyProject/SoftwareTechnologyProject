@@ -9,6 +9,7 @@ import Footer from './components/Footer/Footer';
 import Recommend from './components/Recommend/Recommend.jsx';
 import HeaderAdmin from './components/HeaderAdmin/HeaderAdmin.jsx';
 import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
 
 // Pages
 import HomePage from './pages/HomePage/HomePage';
@@ -19,15 +20,15 @@ import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
+import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
-import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
-import Login from "./pages/login.jsx"
 
-// Component Layout chung cho các trang có Header/Footer
+// Layout chung
 function MainLayout() {
   return (
     <>
       <Header />
+
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />
@@ -44,8 +45,8 @@ function MainLayout() {
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
-        {/* Admin (placeholder) */}
-        <Route path="/admin" element={<HeaderAdmin />} >
+        {/* Admin */}
+        <Route path="/admin" element={<HeaderAdmin />}>
           <Route path="books" element={<Account />} />
         </Route>
       </Routes>
@@ -61,10 +62,10 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Trang LOGIN riêng biệt - không có Header/Footer */}
+        {/* Trang LOGIN riêng biệt */}
         <Route path="/login" element={<Login />} />
-        
-        {/* Tất cả các trang khác có Layout chung */}
+
+        {/* Tất cả route khác đều dùng layout chung */}
         <Route path="*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react"
 import rank from "../../assets/banner/rank-banner.png"
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
+import axios from "../../config/axiosConfig";
+
 
 const API_URL = 'http://localhost:8080/vouchers';
 // const API_URL = 'http://localhost:8081/vouchers';
@@ -13,15 +15,66 @@ const Account = () => {
     const [copiedCode, setCopiedCode] = useState(null);
 
     const [formData, setFormData] = useState({
-        ho: 'Nguyễn',
-        ten: 'Thịnh',
-        phone: '0336289549',
+        ho: '',
+        ten: '',
+        phone: '',
         email: '',
         gender: 'Nam',
-        day: '17',
-        month: '07',
-        year: '2005',
+        day: '',
+        month: '',
+        year: '',
     });
+
+    // 🟢 LẤY USER TỪ BACKEND /me
+    useEffect(() => {
+        fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+        try {
+            const { data: user } = await axios.get("/users/me");
+
+            setFormData({
+                ho: user.fullName?.split(" ").slice(0, -1).join(" ") || "",
+                ten: user.fullName?.split(" ").slice(-1).join(" ") || "",
+                phone: user.phoneNumber || "",
+                email: user.email || "",
+                day: user.dateOfBirth ? new Date(user.dateOfBirth).getDate() : "",
+                month: user.dateOfBirth ? new Date(user.dateOfBirth).getMonth() + 1 : "",
+                year: user.dateOfBirth ? new Date(user.dateOfBirth).getFullYear() : "",
+            });
+
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
+
+
+
+    // const fetchUserInfo = async () => {
+    //     try {
+    //         const response = await fetch("http://localhost:8080/users/me", {
+    //             credentials: "include"  // gửi cookie JWT
+    //         });
+
+    //         if (!response.ok) throw new Error("Không thể lấy thông tin user");
+
+    //         const user = await response.json();
+
+    //         setFormData({
+    //             ho: user.fullName?.split(" ").slice(0, -1).join(" ") || "",
+    //             ten: user.fullName?.split(" ").slice(-1).join(" ") || "",
+    //             phone: user.phoneNumber || "",
+    //             email: user.email || "",
+    //             day: user.dateOfBirth ? new Date(user.dateOfBirth).getDate() : "",
+    //             month: user.dateOfBirth ? new Date(user.dateOfBirth).getMonth() + 1 : "",
+    //             year: user.dateOfBirth ? new Date(user.dateOfBirth).getFullYear() : "",
+    //         });
+
+    //     } catch (err) {
+    //         console.error("Lỗi lấy thông tin user:", err);
+    //     }
+    // };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -168,39 +221,6 @@ const Account = () => {
                             </div>
                         </div>
 
-                        {/* Field: Giới tính */}
-                        <div className="form-row">
-                            <label className="form-label">
-                                Giới tính<span className="required">*</span>
-                            </label>
-                            <div className="form-input-wrapper">
-                                <div className="radio-group">
-                                    <label className="radio-label">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="Nam"
-                                            checked={formData.gender === 'Nam'}
-                                            onChange={handleChange}
-                                            className="radio-input"
-                                        />
-                                        <span>Nam</span>
-                                    </label>
-                                    <label className="radio-label">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="Nữ"
-                                            checked={formData.gender === 'Nữ'}
-                                            onChange={handleChange}
-                                            className="radio-input"
-                                        />
-                                        <span>Nữ</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Field: Birthday */}
                         <div className="form-row">
                             <label className="form-label">
@@ -256,10 +276,6 @@ const Account = () => {
                             </label>
                             <div className="form-input-wrapper">
                                 <input
-                                    type="text"
-                                    name="ho"
-                                    value={formData.ho}
-                                    onChange={handleChange}
                                     className="form-input"
                                 />
                             </div>
@@ -270,12 +286,9 @@ const Account = () => {
                                 Mật Khẩu Mới<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span>{formData.phone}</span>
-                                    <button type="button" className="change-btn">
-                                        Thay đổi
-                                    </button>
-                                </div>
+                                <input
+                                    className="form-input"
+                                />
                             </div>
                         </div>
 
@@ -284,12 +297,9 @@ const Account = () => {
                                 Nhập Lại Mật Khẩu Mới<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span>{formData.phone}</span>
-                                    <button type="button" className="change-btn">
-                                        Thay đổi
-                                    </button>
-                                </div>
+                                <input
+                                    className="form-input"
+                                />
                             </div>
                         </div>
 
