@@ -1,6 +1,7 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.DTO.NotificationDTO;
+import com.bookstore.backend.DTO.NotificationRequestDTO;
 import com.bookstore.backend.model.Notification;
 import com.bookstore.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -21,31 +22,15 @@ public class NotificationController {
         return notificationService.getAllNotification(page, size);
     }
 
-    @GetMapping("/send/broadcast")
+    @GetMapping("/send")
     @ResponseBody
-    public String sendBroadcast() {
-
-        Notification notification = new Notification();
-        notification.setContent("🔔 Test broadcast notification");
-        notification.setRead(false);
-        notification.setCreateAt(LocalDateTime.now());
-        notification.setUrl("/test");
-
-        notificationService.broadcastNotification(notification);
+    public String sendBroadcast(@RequestBody NotificationRequestDTO requestDTO) {
+        notificationService.sendNotification(requestDTO);
         return "Sent broadcast!";
     }
 
-    @GetMapping("/send/user")
-    @ResponseBody
-    public String sendPrivate() {
-
-        Notification notification = new Notification();
-        notification.setContent("🔔 Test private notification");
-        notification.setRead(false);
-        notification.setCreateAt(LocalDateTime.now());
-        notification.setUrl("/test");
-
-        notificationService.broadcastNotification(notification);
-        return "Sent privately!";
+    @PutMapping("/{notificationId}/read")
+    public void markAsRead(@PathVariable Long notificationId) {
+        notificationService.markPrivateAsRead(notificationId);
     }
 }

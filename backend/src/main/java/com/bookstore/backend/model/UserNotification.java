@@ -1,30 +1,30 @@
 package com.bookstore.backend.model;
 
-import com.bookstore.backend.model.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
-@Data
+@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Notification {
+@Data
+public class UserNotification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private Users user;
 
-    private LocalDateTime createAt;
-    private String url;
+    @ManyToOne
+    @JoinColumn(name = "notification_id")
+    private Notification notification;
 
-    @Enumerated(EnumType.STRING)
-    private NotificationType type;
+    private boolean isRead;
 }
+
