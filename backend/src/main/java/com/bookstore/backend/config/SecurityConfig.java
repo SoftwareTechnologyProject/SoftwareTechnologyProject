@@ -41,11 +41,16 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authz -> authz
                     // Public endpoints
-                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
+                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**", "/register").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll() // Explicitly allow register
                     .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll() // Allow public GET for blog
+                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll() // Allow public POST comments
+                    .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for blog management
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll() // Allow public GET vouchers list
+                    .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for voucher management
                     
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
-                    .requestMatchers("/api/vouchers/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     
                     .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")

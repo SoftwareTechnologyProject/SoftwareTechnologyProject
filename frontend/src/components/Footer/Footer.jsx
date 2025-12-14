@@ -1,4 +1,6 @@
 import React from "react"
+
+import { useLocation } from "react-router-dom";
 import logo from '../../assets/logo/logo.png';
 import logoLex from '../../assets/logo/logo_lex.png';
 import logoNinja from '../../assets/logo/Logo_ninjavan.png';
@@ -19,6 +21,10 @@ import { GiPositionMarker } from "react-icons/gi";
 import { Link } from "react-router-dom"; 
 
 const Footer = () => {
+    const { pathname } = useLocation();
+
+    if (pathname.startsWith("/admin")) return null;
+
     return (
         <>
             <footer>
