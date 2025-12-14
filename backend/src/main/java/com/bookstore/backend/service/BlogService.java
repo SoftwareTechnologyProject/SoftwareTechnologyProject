@@ -96,6 +96,14 @@ public class BlogService {
         return convertCommentToDTO(savedComment);
     }
 
+    // Delete comment (admin only)
+    @Transactional
+    public void deleteComment(Long commentId) {
+        BlogComment comment = blogCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + commentId));
+        blogCommentRepository.delete(comment);
+    }
+
     // Convert BlogPost to DTO
     private BlogPostDTO convertPostToDTO(BlogPost post) {
         BlogPostDTO dto = new BlogPostDTO();

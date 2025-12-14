@@ -3,6 +3,7 @@ package com.bookstore.backend.controller;
 import com.bookstore.backend.DTO.BlogCommentDTO;
 import com.bookstore.backend.DTO.BlogPostDTO;
 import com.bookstore.backend.service.BlogService;
+import com.bookstore.backend.service.GeminiService;
 import com.bookstore.backend.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,16 +26,26 @@ public class BlogController {
     @Autowired
     private S3Service s3Service;
 
+    @Autowired
+    private GeminiService geminiService;
+
     // Upload image to S3
     @PostMapping("/upload-image")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
+            System.out.println("📤 Uploading image: " + file.getOriginalFilename());
+            System.out.println("   File size: " + file.getSize() + " bytes");
             String imageUrl = s3Service.uploadFile(file);
+            System.out.println("✅ Upload successful: " + imageUrl);
             Map<String, String> response = new HashMap<>();
             response.put("url", imageUrl);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("❌ Upload failed: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -82,8 +93,33 @@ public class BlogController {
 
     // Add comment to post
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<BlogCommentDTO> addComment(@PathVariable Long postId, @RequestBody BlogCommentDTO commentDTO) {
-        BlogCommentDTO createdComment = blogService.addComment(postId, commentDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+    public ResponseEntity<?> addComment(@PathVariable Long postId, @RequestBody BlogCommentDTO commentDTO) {
+        try {
+            // Validate comment content with Gemini AI
+            boolean isAppropriate = geminiService.isCommentAppropriate(commentDTO.getContent());
+            
+            if (!isAppropriate) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Bình luận của bạn chứa nội dung không phù hợp. Vui lòng sử dụng ngôn từ lịch sự.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            // If appropriate, save comment
+            BlogCommentDTO createdComment = blogService.addComment(postId, commentDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error adding comment: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Có lỗi xảy ra khi đăng bình luận");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // Delete comment (admin only)
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+        blogService.deleteComment(commentId);
+        return ResponseEntity.noContent().build();
     }
 }

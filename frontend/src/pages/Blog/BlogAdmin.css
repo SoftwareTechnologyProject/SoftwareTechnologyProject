@@ -33,6 +33,30 @@
 .admin-nav {
     display: flex;
     gap: 15px;
+    align-items: center;
+}
+
+.btn-tab {
+    color: #666;
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-tab:hover {
+    background: #f8f8f8;
+    border-color: #000;
+}
+
+.btn-tab.active {
+    background: #000;
+    color: #fff;
+    border-color: #000;
 }
 
 .nav-link {
@@ -73,6 +97,76 @@
     border-radius: 8px;
     margin-bottom: 40px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Post Comments Section */
+.post-comments-section {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.post-comments-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-content strong {
+    color: #333;
+    font-size: 14px;
+}
+
+.comment-date {
+    color: #999;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.comment-content p {
+    margin: 8px 0 0 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.btn-delete-comment {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.3s;
+    white-space: nowrap;
+}
+
+.btn-delete-comment:hover {
+    background: #b91c1c;
 }
 
 .post-form-section h2 {

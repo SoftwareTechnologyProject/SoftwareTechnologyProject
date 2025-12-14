@@ -56,6 +56,12 @@ aws:
     bucket-name: ${AWS_S3_BUCKET_NAME:bookstore-images-dev}
     blog-bucket-name: ${AWS_S3_BLOG_BUCKET_NAME:blogadmin-s3}
 
+# Gemini AI configuration
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:your-api-key}
+    url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
+
 # JWT configuration
 jwt:
   secret:

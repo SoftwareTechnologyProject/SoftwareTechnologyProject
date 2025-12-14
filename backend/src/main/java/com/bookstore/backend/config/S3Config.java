@@ -22,6 +22,12 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
+        System.out.println("🔧 S3Config - Initializing S3 Client");
+        System.out.println("   Access Key: " + accessKey);
+        System.out.println("   Region: " + region);
+        System.out.println("   Default Bucket: " + (System.getenv("AWS_S3_BUCKET_NAME") != null ? System.getenv("AWS_S3_BUCKET_NAME") : "not set"));
+        System.out.println("   Blog Bucket: " + (System.getenv("AWS_S3_BLOG_BUCKET_NAME") != null ? System.getenv("AWS_S3_BLOG_BUCKET_NAME") : "not set"));
+        
         AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
         
         return S3Client.builder()

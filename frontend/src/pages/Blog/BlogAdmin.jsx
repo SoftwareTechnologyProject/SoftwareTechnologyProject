@@ -8,6 +8,7 @@ const API_URL = 'http://localhost:8081/blog';
 //const API_URL = 'http://localhost:8081/blog';
 const BlogAdmin = () => {
     const [posts, setPosts] = useState([]);
+    const [postComments, setPostComments] = useState([]); // Comments for editing post
     const [showForm, setShowForm] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [imageFile, setImageFile] = useState(null);
@@ -32,6 +33,40 @@ const BlogAdmin = () => {
             setPosts(data);
         } catch (err) {
             console.error('Error fetching posts:', err);
+        }
+    };
+
+    const fetchPostComments = async (postId) => {
+        try {
+            const response = await fetch(`${API_URL}/posts/${postId}/comments`);
+            const comments = await response.json();
+            setPostComments(comments);
+        } catch (err) {
+            console.error('Error fetching comments:', err);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!confirm('Bạn có chắc muốn xóa bình luận này?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Không thể xóa bình luận');
+            }
+
+            alert('Đã xóa bình luận!');
+            if (editingPost) {
+                fetchPostComments(editingPost.id);
+            }
+        } catch (err) {
+            alert('Lỗi: ' + err.message);
+            console.error('Error deleting comment:', err);
         }
     };
 
@@ -106,6 +141,7 @@ const BlogAdmin = () => {
         });
         setImagePreview(post.coverImage || '');
         setImageFile(null);
+        fetchPostComments(post.id);
         setShowForm(true);
     };
 
@@ -154,6 +190,7 @@ const BlogAdmin = () => {
         setEditingPost(null);
         setImageFile(null);
         setImagePreview('');
+        setPostComments([]);
         setShowForm(false);
     };
 
@@ -252,6 +289,32 @@ const BlogAdmin = () => {
                                 </button>
                             </div>
                         </form>
+
+                        {/* Comments section for editing post */}
+                        {editingPost && postComments.length > 0 && (
+                            <div className="post-comments-section">
+                                <h3>Bình luận ({postComments.length})</h3>
+                                <div className="comments-list">
+                                    {postComments.map(comment => (
+                                        <div key={comment.id} className="comment-item">
+                                            <div className="comment-content">
+                                                <strong>{comment.userName}</strong>
+                                                <span className="comment-date">
+                                                    {new Date(comment.createdAt).toLocaleString('vi-VN')}
+                                                </span>
+                                                <p>{comment.content}</p>
+                                            </div>
+                                            <button 
+                                                className="btn-delete-comment"
+                                                onClick={() => handleDeleteComment(comment.id)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
