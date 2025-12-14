@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ChatBox from "./ChatBox";
+import Chatbox from "./Chatbox";
 import axiosClient from "../../api/axiosClient";
 
 export default function ChatFloating() {
@@ -40,8 +40,7 @@ export default function ChatFloating() {
           zIndex: 10000,
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
-          position: "fixed"
+          alignItems: "center"
         }}
       >
         💬
