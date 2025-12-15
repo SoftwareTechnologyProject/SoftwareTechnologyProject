@@ -26,6 +26,7 @@ import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
+import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 
 // Layout chung
 function MainLayout() {
@@ -55,6 +56,7 @@ function MainLayout() {
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
         </Route>
+        <Route path="/admin/chat" element={<AdminChatBox />} />
       </Routes>
 
       <Recommend />
