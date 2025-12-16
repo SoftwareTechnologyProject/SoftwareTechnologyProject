@@ -4,8 +4,6 @@ import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 import axios from "../../config/axiosConfig";
 
-
-//const API_URL = 'http://localhost:8080/vouchers';
 const API_URL = 'http://localhost:8080/vouchers';
 
 const Account = () => {
@@ -19,10 +17,12 @@ const Account = () => {
         ten: '',
         phone: '',
         email: '',
-        gender: 'Nam',
         day: '',
         month: '',
         year: '',
+        currentPass: '',
+        newPass: '',
+        confirmPass: ''
     });
 
     const handleSubmit = async (e) => {
@@ -35,10 +35,35 @@ const Account = () => {
                 dateOfBirth: `${formData.year}-${formData.month}-${formData.day}`
             };
 
-            const res = await axios.put("/users/update", payload);
+            const res = await axios.put("users/me/update", payload);
 
             alert("Cập nhật thành công!");
             console.log("User mới:", res.data);
+
+        } catch (err) {
+            console.error("Lỗi cập nhật:", err);
+
+            if (err.response?.status === 403) {
+                alert("Phiên đăng nhập hết hạn");
+            } else {
+                alert("Cập nhật thất bại");
+            }
+        }
+    };
+
+    const handleChangePass = async (e) => {
+        e.preventDefault(); 
+
+        try {
+            const payload = {
+                currentPass: formData.currentPass,
+                newPass: formData.newPass,
+                confirmPass: formData.confirmPass
+            };
+
+            const res = await axios.patch("users/me/update/password", payload);
+
+            alert("Cập nhật thành công!");
 
         } catch (err) {
             console.error("Lỗi cập nhật:", err);
@@ -58,7 +83,7 @@ const Account = () => {
 
     const fetchUserInfo = async () => {
         try {
-            const { data: user } = await axios.get("/users/me");
+            const { data: user } = await axios.get("users/me");
 
             setFormData({
                 ho: user.fullName?.split(" ").slice(0, -1).join(" ") || "",
@@ -258,14 +283,18 @@ const Account = () => {
                         Đổi Mật Khẩu
                     </h1>
 
-                    <form onSubmit={handleSubmit} className="account-form">
+                    <form onSubmit={handleChangePass} className="account-form">
                         <div className="form-row">
                             <label className="form-label">
                                 Mật Khẩu Hiện Tại<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
                                 <input
-                                    className="form-input"
+                                    type="password"
+                                    name="currentPass"
+                                    value={formData.currentPass}
+                                    onChange={handleChange}
+                                    className="form-input"                                
                                 />
                             </div>
                         </div>
@@ -276,7 +305,11 @@ const Account = () => {
                             </label>
                             <div className="form-input-wrapper">
                                 <input
-                                    className="form-input"
+                                    type="password"
+                                    name="newPass"
+                                    value={formData.newPass}
+                                    onChange={handleChange}
+                                    className="form-input" 
                                 />
                             </div>
                         </div>
@@ -287,7 +320,11 @@ const Account = () => {
                             </label>
                             <div className="form-input-wrapper">
                                 <input
-                                    className="form-input"
+                                    type="password"
+                                    name="confirmPass"
+                                    value={formData.confirmPass}
+                                    onChange={handleChange}
+                                    className="form-input" 
                                 />
                             </div>
                         </div>
