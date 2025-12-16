@@ -3,10 +3,10 @@ import { useLocation, Link, NavLink, useNavigate } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
 import logo from '../../assets/logo/logo.png';
 import "./Header.css";
+
 import { BsGrid } from "react-icons/bs";
 import { CiSearch } from "react-icons/ci";
 import { FiShoppingCart } from "react-icons/fi";
-import { GoBell } from "react-icons/go";
 import { CiUser } from "react-icons/ci";
 import { TfiReceipt } from "react-icons/tfi";
 import { IoTicketSharp } from "react-icons/io5";
@@ -15,7 +15,6 @@ import {
   FaLeaf,
   FaBook,
   FaNewspaper,
-  FaUtensils,
   FaCookie,
   FaWineGlass,
   FaCoffee,
@@ -27,6 +26,8 @@ import {
   FaAppleAlt,
   FaGraduationCap
 } from 'react-icons/fa';
+import NotificationBell from "../notification/NotificationBell";
+import { HiOutlineNewspaper } from "react-icons/hi";
 
 import useUserNotifications from "../../hook/useUserNotifications";
 import axios from "../../config/axiosConfig";
@@ -82,118 +83,93 @@ const Header = () => {
       slug: "agriculture",
       name: "Sách Nông - Lâm - Ngư Nghiệp",
       icon: <FaLeaf />,
-      color: "from-green-400 to-emerald-500"
     },
     {
       slug: "manga",
       name: "Truyện Tranh, Manga, Comic",
       icon: <FaBook />,
-      color: "from-purple-400 to-pink-500"
     },
     {
       slug: "magazines",
       name: "Tạp Chí - Catalogue",
       icon: <FaNewspaper />,
-      color: "from-blue-400 to-cyan-500"
     },
     {
       slug: "cooking",
       name: "Ingredients, Methods & Appliances",
       icon: <FaUtensils />,
-      color: "from-orange-400 to-red-500"
     },
     {
       slug: "desserts",
       name: "Baking - Desserts",
       icon: <FaCookie />,
-      color: "from-pink-400 to-rose-500"
     },
     {
       slug: "magazines-alt",
       name: "Magazines",
       icon: <FaNewspaper />,
-      color: "from-indigo-400 to-blue-500"
     },
     {
       slug: "beverages-wine",
       name: "Beverages & Wine",
       icon: <FaWineGlass />,
-      color: "from-red-400 to-pink-500"
     },
     {
       slug: "drinks",
       name: "Drinks & Beverages",
       icon: <FaCoffee />,
-      color: "from-amber-400 to-orange-500"
     },
     {
       slug: "travel",
       name: "Discovery & Exploration",
       icon: <FaGlobeAsia />,
-      color: "from-teal-400 to-cyan-500"
     },
     {
       slug: "vietnam",
       name: "Vietnam",
       icon: <FaMapMarkedAlt />,
-      color: "from-red-500 to-yellow-500"
     },
     {
       slug: "vegetarian",
       name: "Vegetarian & Vegan",
       icon: <FaSeedling />,
-      color: "from-green-500 to-lime-500"
     },
     {
       slug: "anthropology",
       name: "Anthropology",
       icon: <FaUsers />,
-      color: "from-violet-400 to-purple-500"
     },
     {
       slug: "europe",
       name: "Europe",
       icon: <FaMapSigns />,
-      color: "from-blue-500 to-indigo-500"
     },
     {
       slug: "guidebook",
       name: "Guidebook series",
       icon: <FaBook />,
-      color: "from-cyan-400 to-blue-500"
     },
     {
       slug: "diet",
       name: "Diets - Weight Loss - Nutrition",
       icon: <FaAppleAlt />,
-      color: "from-lime-400 to-green-500"
     },
     {
       slug: "cooking-education",
       name: "Cooking Education & Reference",
       icon: <FaGraduationCap />,
-      color: "from-yellow-400 to-orange-500"
     },
     {
       slug: "asia",
       name: "Asia",
       icon: <FaGlobeAsia />,
-      color: "from-rose-400 to-red-500"
     }
   ];
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      fetchUserInfo();
-    }
-  }, [isLoggedIn]);
-
   const fetchUserInfo = async () => {
     try {
-      const { data: user } = await axios.get("users/me");
-      setFormData({
-        userName: user.fullName || "",
-      });
+      const { data: user } = await axios.get("/users/me");
+      setFormData({ userName: user.fullName || "" });
     } catch (err) {
       console.error("Lỗi lấy thông tin user:", err);
     }
@@ -302,53 +278,15 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Thông báo */}
-          <div className="notification-container mx-4">
-            <button
-              className="account-menu-link"
-              onClick={() => setOpenNotification(!openNotification)}
-            >
-              <GoBell className="nav-icons" />
-              <span>Thông báo</span>
-            </button>
+          {/* 🔔 Notification (đã tách) */}
+          <NotificationBell />
 
-            {openNotification && (
-              <div className="notification-dropdown">
-                {Array.isArray(notifications) && notifications.length > 0 ? (
-                  <>
-                    {notifications.map((noti, index) => (
-                      <div
-                        key={index}
-                        className={`notification-item ${noti.isRead ? "" : "notification-unread"}`}
-                      >
-                        <a href={noti.url} className="notification-link">
-                          {noti.content}
-                        </a>
-                        <div className="notification-time">
-                          {new Date(noti.createAt).toLocaleString()}
-                        </div>
-                      </div>
-                    ))}
-                    <button
-                      className="notification-more-btn"
-                      onClick={async () => {
-                        const next = page + 1;
-                        const res = await axios.get(`/api/notifications?page=${next}&size=6`);
-                        const list = Array.isArray(res.data) ? res.data : [];
-                        setNotifications(prev => [...prev, ...list]);
-                        setPage(next);
-                      }}
-                    >
-                      Xem thêm
-                    </button>
-                  </>
-                ) : (
-                  <div className="notification-empty">
-                    Không có thông báo nào
-                  </div>
-                )}
-              </div>
-            )}
+          {/* Blog */}
+          <div className="account-menu-link">
+            <Link to="/blog">
+              <HiOutlineNewspaper className="nav-icons" />
+            </Link>
+            <span>Blog</span>
           </div>
 
           {/* Giỏ hàng */}

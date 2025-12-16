@@ -4,7 +4,6 @@ import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 import axios from "../../config/axiosConfig";
 
-
 const API_URL = 'http://localhost:8080/vouchers';
 
 const Account = () => {
