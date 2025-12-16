@@ -7,6 +7,7 @@ import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,15 @@ public class BookService {
     // Tìm sách theo keyword
     public Page<BookDTO> getBookByKey(String keyword, Pageable pageable){
         return bookRepository.findByKey(keyword, pageable).map(this::convertToDTO);
+    }
+
+    // Tạo gợi ý
+    public List<String> suggestKey(String keyword) {
+        Pageable limit = PageRequest.of(0, 5);
+        if (keyword == null){
+            return List.of();
+        }
+        return bookRepository.findTop5Titles(keyword, limit);
     }
 
     // Tạo sách mới

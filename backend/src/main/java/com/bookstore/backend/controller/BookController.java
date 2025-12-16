@@ -119,4 +119,9 @@ public class BookController {
 
         return ResponseEntity.ok(bookPage);
     }
+
+    @GetMapping("/suggest")
+    public List<String> suggest (@RequestParam String keyword) {
+        return bookService.suggestKey(keyword);
+    }
 }

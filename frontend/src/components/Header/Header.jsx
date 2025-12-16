@@ -166,7 +166,7 @@ const Header = () => {
       icon: <FaGlobeAsia />,
     }
   ];
-  
+
   useEffect(() => {
     if (isLoggedIn) {
       fetchUserInfo();
@@ -190,12 +190,29 @@ const Header = () => {
   };
 
   const [keyword, setKeyword] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [show, setShow] = useState(false);
 
   const handleSearch = async (e) => {
     e.preventDefault();
 
     navigate(`/search?keyword=${encodeURIComponent(keyword)}&page=0`);
   };
+
+  useEffect(() => {
+    if (keyword.length < 1) return;
+    const timeout = setTimeout(async () => {
+      const res = await fetch(
+        `http://localhost:8080/api/books/suggest?keyword=${keyword}`
+      );
+      const data = await res.json();
+      setSuggestions(data);
+      setShow(true);
+    }, 300); // debounce 300ms
+
+    return () => clearTimeout(timeout);
+  }, [keyword]);
+
 
   if (pathname.startsWith("/admin")) return null;
 
@@ -212,11 +229,30 @@ const Header = () => {
           </Link>
         </div>
 
-        <form className="nav-search">
+        <form className="nav-search" onMouseEnter={() => setShow(true)}>
           <input type="text" value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
+            onFocus={() => setShow(true)}
             placeholder="Tìm kiếm..." className="input-search" />
           <button onClick={handleSearch}><CiSearch className="w-5 h-5 cursor-pointer" /></button>
+
+          {show && suggestions.length > 0 && (
+            <ul className="suggest-box" onMouseLeave={() => setShow(false)}>
+              {suggestions.map((item, index) => (
+                <li
+                  key={index}
+                  className="suggest-item"
+                  onMouseDown={() => {
+                    setKeyword(item);
+                    setShow(false);
+                  }}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
+
         </form>
 
         <div className="nav-right">

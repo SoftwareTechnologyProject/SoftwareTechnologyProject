@@ -30,11 +30,36 @@ nav {
 }
 
 .nav-search {
-  @apply grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
+  @apply relative grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
 }
 
 .input-search {
   @apply px-4 py-2 outline-none;
+}
+
+/* Button Search */
+.btn-search {
+  @apply p-2 text-gray-500 hover:text-gray-800 transition-colors duration-200 rounded-full hover:bg-gray-100;
+}
+
+/* Hộp gợi ý (Dropdown) */
+.suggest-box {
+  @apply absolute left-0 right-0 mt-15 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50;
+}
+
+/* Từng dòng gợi ý */
+.suggest-item {
+  @apply px-4 py-3 text-sm text-gray-700 cursor-pointer transition-colors duration-150 border-b border-gray-50 last:border-none;
+}
+
+.suggest-item:hover {
+  @apply bg-gray-50 text-gray-900 font-medium;
+}
+
+/* Animation nhẹ khi mở box gợi ý */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ==================== DANH MỤC DROPDOWN (HOVER) ==================== */

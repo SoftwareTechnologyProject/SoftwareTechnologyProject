@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findByCategoriesName(String categoryName, Pageable pageable);
@@ -16,6 +18,15 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findByPublisherName(String publisherName, Pageable pageable);
 
     Page<Book> findByTitle(String keyword, Pageable pageable);
+
+    @Query("""
+        SELECT b.title
+        FROM Book b
+        WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY b.title ASC
+    """)
+    List<String> findTop5Titles(@Param("keyword") String keyword, Pageable pageable);
+
 
     @Query("""
         SELECT DISTINCT b
