@@ -80,14 +80,16 @@ const Header = () => {
 
   const [formData, setFormData] = useState({ userName: '' });
 
-  // 🟢 LẤY USER TỪ BACKEND /me
+  // 🟢 LẤY USER TỪ BACKEND /me (CHỈ KHI ĐÃ LOGIN)
   useEffect(() => {
-    fetchUserInfo();
-  }, []);
+    if (isLoggedIn) {
+      fetchUserInfo();
+    }
+  }, [isLoggedIn]);
 
   const fetchUserInfo = async () => {
     try {
-      const { data: user } = await axios.get("/users/me");
+      const { data: user } = await axios.get("/api/users/me");
 
       setFormData({
         userName: user.fullName || "",

@@ -26,6 +26,7 @@ import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
+import UserManagement from './pages/User/UserManagement';
 
 // Layout chung
 function MainLayout() {
@@ -53,6 +54,7 @@ function MainLayout() {
         <Route path="/admin" element={<HeaderAdmin />}>
           <Route path="books" element={<Account />} />
           <Route path="vouchers" element={<VoucherManagement />} />
+          <Route path="customers" element={<UserManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
         </Route>
       </Routes>
