@@ -51,6 +51,11 @@ public class BookService {
         return bookRepository.findByPublisherName(publisherName, pageable).map(this::convertToDTO);
     }
 
+    // Tìm sách theo keyword
+    public Page<BookDTO> getBookByKey(String keyword, Pageable pageable){
+        return bookRepository.findByKey(keyword, pageable).map(this::convertToDTO);
+    }
+
     // Tạo sách mới
     public BookDTO createBook(BookDTO dto) {
         Book book = convertToEntity(dto);

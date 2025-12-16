@@ -22,6 +22,7 @@ import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
+import SearchResult from './pages/SearchResult/SearchResult.jsx';
 
 // Layout chung
 function MainLayout() {
@@ -35,6 +36,7 @@ function MainLayout() {
         <Route path="/:categorySlug" element={<CategoryPage />} />
         <Route path="/books/:id" element={<ProductDetail />} />
         <Route path="/vouchers" element={<VoucherManagement />} />
+        <Route path="/search" element={<SearchResult />} />
 
         {/* Account area */}
         <Route path="/account" element={<AccountLayout />}>

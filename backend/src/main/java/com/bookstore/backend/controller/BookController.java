@@ -101,4 +101,22 @@ public class BookController {
 
         return ResponseEntity.ok(bookPage.getContent());
     }
+
+    @GetMapping("/searchKey")
+    public ResponseEntity<Page<BookDTO>> searchBooks(
+            @RequestParam(required = false) String keyWord,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BookDTO> bookPage;
+
+        if (keyWord != null) {
+            bookPage = bookService.getBookByKey(keyWord, pageable);
+        } else {
+            bookPage = bookService.getAllBooks(pageable);
+        }
+
+        return ResponseEntity.ok(bookPage);
+    }
 }

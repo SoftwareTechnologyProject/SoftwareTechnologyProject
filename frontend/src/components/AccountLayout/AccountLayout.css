@@ -45,9 +45,17 @@
 }
 
 .account-nav .main-nav .nav-link:hover {
-  @apply bg-[#c74d4d] text-white;
+  @apply bg-[var(--primary-color)] text-white;
 }
 
 .account-nav .main-nav .nav-link.active {
-  @apply bg-[#c74d4d] text-white font-semibold;
+  @apply bg-[var(--primary-color)] text-white font-semibold;
+}
+
+.account-logged-avatar {
+    @apply w-22 h-22 m-auto;
+}
+
+.account-logged-avatar-text {
+    @apply text-3xl;
 }
