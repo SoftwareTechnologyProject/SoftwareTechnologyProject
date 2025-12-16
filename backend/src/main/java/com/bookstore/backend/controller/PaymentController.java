@@ -1,7 +1,7 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.model.Orders;
-import com.bookstore.backend.service.PaymentService;
+// import com.bookstore.backend.service.PaymentService;
 import com.bookstore.backend.service.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/payment")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    // private final PaymentService paymentService;
     private final VNPayService vnPayService;
 
     @Autowired
-    public PaymentController(PaymentService paymentService, VNPayService vnPayService) {
-        this.paymentService = paymentService;
+    public PaymentController(VNPayService vnPayService) {
+        // this.paymentService = paymentService;
         this.vnPayService = vnPayService;
     }
 
@@ -147,81 +147,164 @@ public class PaymentController {
         }
     }
 
+
+
     /**
-     * Xử lý callback từ VNPay sau khi thanh toán.
-     * Endpoint này sẽ được VNPay gọi sau khi user hoàn tất thanh toán.
-     * Có thể trả về JSON hoặc redirect tùy theo cách frontend xử lý.
+     * Return URL - VNPay redirect user về URL này sau khi thanh toán
+     * Backend redirect về frontend page duy nhất để xử lý
      */
     @GetMapping("/vnpay-return")
-    public ResponseEntity<Map<String, Object>> vnpayReturn(
-            HttpServletRequest request,
-            @RequestParam(value = "shipping_address", required = false) String shippingAddress,
-            @RequestParam(value = "phone_number", required = false) String phoneNumber) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
+    public RedirectView vnpayReturn(HttpServletRequest request) {
         try {
-            // Lấy tất cả parameters từ VNPay
-            Map<String, String> params = new HashMap<>();
-            Enumeration<String> parameterNames = request.getParameterNames();
-            while (parameterNames.hasMoreElements()) {
-                String paramName = parameterNames.nextElement();
-                String paramValue = request.getParameter(paramName);
-                params.put(paramName, paramValue);
-            }
-
-            // Verify chữ ký từ VNPay
-            boolean isValid = vnPayService.verifyCallback(params);
+            // Lấy params từ VNPay
+            String paymentKey = request.getParameter("vnp_TxnRef");
+            String transactionDate = request.getParameter("vnp_PayDate");
+            String responseCode = request.getParameter("vnp_ResponseCode");
+            String transactionNo = request.getParameter("vnp_TransactionNo");
+            String amount = request.getParameter("vnp_Amount");
             
-            if (!isValid) {
-                response.put("code", "97");
-                response.put("message", "Invalid signature");
-                return ResponseEntity.badRequest().body(response);
+            if (paymentKey == null || paymentKey.isEmpty()) {
+                return new RedirectView("http://localhost:5173/payment/result?error=missing_payment_key");
             }
 
-            // Lấy thông tin giao dịch
-            String vnp_ResponseCode = params.get("vnp_ResponseCode");
-            String vnp_TxnRef = params.get("vnp_TxnRef"); // Chính là paymentKey
-            String vnp_Amount = params.get("vnp_Amount");
-            String vnp_BankCode = params.get("vnp_BankCode");
-            String vnp_TransactionNo = params.get("vnp_TransactionNo");
-            String paymentKey = vnp_TxnRef;
+            System.out.println("📥 Received VNPay callback: " + paymentKey);
+            System.out.println("   - Response Code: " + responseCode);
+            System.out.println("   - Transaction Date: " + transactionDate);
+            System.out.println("   - Transaction No: " + transactionNo);
 
-            if ("00".equals(vnp_ResponseCode)) {
-                // Thanh toán thành công - Tạo đơn hàng
-                // TODO: Khi ráp vào project, uncomment block dưới và comment phần TEST
-                // Orders order = paymentService.createOrderFromCart(
-                //     paymentKey, 
-                //     vnp_TransactionNo,
-                //     shippingAddress != null ? shippingAddress : "Default Address",
-                //     phoneNumber != null ? phoneNumber : "0000000000"
-                // );
-                // response.put("code", "00");
-                // response.put("message", "Payment successful");
-                // response.put("orderId", order.getId());
-                // response.put("paymentKey", paymentKey);
-                // response.put("transactionNo", vnp_TransactionNo);
-                // return ResponseEntity.ok(response);
+            // ✅ Redirect về frontend với paymentKey và transactionDate
+            // Frontend sẽ tự gọi /payment/verify để xác thực
+            String redirectUrl = String.format(
+                "http://localhost:5173/payment/result?paymentKey=%s&transactionDate=%s",
+                paymentKey,
+                transactionDate != null ? transactionDate : ""
+            );
+            
+            return new RedirectView(redirectUrl);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new RedirectView("http://localhost:5173/payment/result?error=unknown");
+        }
+    }
+
+    /**
+     * Verify và xác nhận thanh toán bằng cách query VNPay
+     * Frontend gọi API này sau khi nhận callback từ VNPay
+     */
+    @PostMapping("/verify")
+    public ResponseEntity<Map<String, Object>> verifyPayment(
+            @RequestParam("paymentKey") String paymentKey,
+            @RequestParam("transactionDate") String transactionDate) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            System.out.println("🔍 Verifying payment with VNPay: " + paymentKey);
+            System.out.println("   Transaction Date: " + transactionDate);
+
+            // ===== TEST MODE =====
+            // Nếu là payment key test, bỏ qua query VNPay và giả lập thành công
+            if (paymentKey.startsWith("payment_test_")) {
+                System.out.println("⚠️ TEST MODE: Bypassing VNPay query for test payment");
+                System.out.println("✅ Payment VERIFIED (TEST MODE)");
                 
-                // TEST MODE: Chỉ trả về thông tin thanh toán thành công
                 response.put("code", "00");
-                response.put("message", "Payment successful (TEST MODE)");
-                response.put("paymentKey", paymentKey);
-                response.put("transactionNo", vnp_TransactionNo);
-                response.put("amount", vnp_Amount);
-                response.put("bankCode", vnp_BankCode);
+                response.put("message", "Payment verified successfully (TEST MODE)");
+                response.put("paymentStatus", "SUCCESS");
+                response.put("transactionNo", "TEST_" + System.currentTimeMillis());
+                
                 return ResponseEntity.ok(response);
-                
-            } else {
-                // Thanh toán thất bại - Hủy thanh toán
-                // TODO: Khi ráp vào project, uncomment dòng dưới
-                // paymentService.cancelPayment(paymentKey);
-                
-                response.put("code", vnp_ResponseCode);
-                response.put("message", "Payment failed");
-                response.put("paymentKey", paymentKey);
-                return ResponseEntity.badRequest().body(response);
             }
+
+            // ===== REAL MODE =====
+            // Gọi VNPay API để query và verify transaction
+            com.google.gson.JsonObject vnpayResponse = vnPayService.queryTransaction(paymentKey, transactionDate);
+
+            // Parse VNPay response
+            String vnpResponseCode = vnpayResponse.has("vnp_ResponseCode") 
+                ? vnpayResponse.get("vnp_ResponseCode").getAsString() : "99";
+            String vnpTransactionStatus = vnpayResponse.has("vnp_TransactionStatus")
+                ? vnpayResponse.get("vnp_TransactionStatus").getAsString() : "99";
+            String transactionNo = vnpayResponse.has("vnp_TransactionNo")
+                ? vnpayResponse.get("vnp_TransactionNo").getAsString() : "";
+
+            System.out.println("   VNPay Response Code: " + vnpResponseCode);
+            System.out.println("   Transaction Status: " + vnpTransactionStatus);
+
+            // Xác thực và cập nhật database
+            if ("00".equals(vnpResponseCode) && "00".equals(vnpTransactionStatus)) {
+                System.out.println("✅ Payment VERIFIED and CONFIRMED as SUCCESS");
+                
+                // ===== REAL MODE =====
+                // paymentService.markPaymentSuccess(paymentKey, transactionNo);
+                
+                response.put("code", "00");
+                response.put("message", "Payment verified successfully");
+                response.put("paymentStatus", "SUCCESS");
+                response.put("transactionNo", transactionNo);
+            } else {
+                System.out.println("❌ Payment FAILED or NOT FOUND");
+                
+                // ===== REAL MODE =====
+                // paymentService.markPaymentFailed(paymentKey);
+                
+                response.put("code", "01");
+                response.put("message", "Payment verification failed");
+                response.put("paymentStatus", "FAILED");
+                response.put("vnpResponseCode", vnpResponseCode);
+                response.put("vnpTransactionStatus", vnpTransactionStatus);
+            }
+
+            response.put("vnpayData", vnpayResponse.toString());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("code", "99");
+            response.put("message", "Error: " + e.getMessage());
+            response.put("paymentStatus", "ERROR");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Query Transaction từ VNPay - Fallback khi Return URL fail
+     * Frontend gọi API này khi không nhận được kết quả sau một khoảng thời gian
+     */
+    @PostMapping("/query")
+    public ResponseEntity<Map<String, Object>> queryTransaction(
+            @RequestParam("paymentKey") String paymentKey,
+            @RequestParam("transactionDate") String transactionDate) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            System.out.println("🔍 Querying VNPay for payment: " + paymentKey);
+            System.out.println("   Transaction Date: " + transactionDate);
+
+            // Gọi VNPay API để query transaction
+            com.google.gson.JsonObject vnpayResponse = vnPayService.queryTransaction(paymentKey, transactionDate);
+
+            response.put("code", "00");
+            response.put("message", "success");
+            response.put("data", vnpayResponse.toString());
+
+            // Parse VNPay response
+            String vnpResponseCode = vnpayResponse.get("vnp_ResponseCode").getAsString();
+            String vnpTransactionStatus = vnpayResponse.get("vnp_TransactionStatus").getAsString();
+
+            System.out.println("   VNPay Response Code: " + vnpResponseCode);
+            System.out.println("   Transaction Status: " + vnpTransactionStatus);
+
+            // Cập nhật database nếu cần
+            if ("00".equals(vnpTransactionStatus)) {
+                System.out.println("✅ Transaction confirmed as SUCCESS by query");
+                // ===== REAL MODE =====
+                // paymentService.markPaymentSuccess(paymentKey, vnpayResponse.get("vnp_TransactionNo").getAsString());
+            }
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,4 +313,5 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 }

@@ -1,6 +1,6 @@
 import "./PaymentSuccess.css";
 
-const PaymentSuccess = () => {
+const PaymentSuccess = ({ orderData }) => {
     return (
         <div className="payment-success">
             <div className="payment-success__content">
@@ -19,7 +19,16 @@ const PaymentSuccess = () => {
                 <div className="payment-success__message">
                     <p>Cảm ơn bạn đã mua hàng tại EliteBooks.com</p>
                     <p>
-                        Mã đơn hàng của bạn là <strong>#123456</strong>
+                        Mã đơn hàng của bạn là{" "}
+                        <strong>#{orderData?.orderId || "123456"}</strong>
+                    </p>
+                    <p>
+                        Tổng tiền:{" "}
+                        <strong>
+                            {orderData?.totalPrice?.toLocaleString("vi-VN") ||
+                                "0"}{" "}
+                            ₫
+                        </strong>
                     </p>
                     <p>Bạn sẽ sớm nhận được email xác nhận từ chúng tôi.</p>
                 </div>
@@ -33,7 +42,7 @@ const PaymentSuccess = () => {
                     </a>
 
                     <a
-                        href="/order-details"
+                        href={`/account/order/${orderData?.orderId || ""}`}
                         className="payment-success__btn view-order_btn"
                     >
                         Xem chi tiết hóa đơn

@@ -1,0 +1,35 @@
+.payment-pending-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.payment-pending-content {
+    text-align: center;
+}
+
+.pending-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.payment-pending-content h1 {
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.payment-pending-content p {
+    color: #666;
+}

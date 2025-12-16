@@ -15,6 +15,8 @@ import Order from "./pages/Order/Order";
 import OrderAdmin from "./pages/OrderAdmin/OrderAdmin";
 import OrderDetail from "./pages/OrderDetail/OrderDetail";
 import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess";
+import PaymentPending from "./pages/PaymentPending/PaymentPending";
+import PaymentResult from "./pages/PaymentResult/PaymentResult";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
@@ -30,6 +32,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="order/:id" element={<OrderDetail />} />
                 </Route>
                 <Route path="/books/:id" element={<ProductDetail />} />
+                <Route path="/payment/result" element={<PaymentResult />} />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/pending" element={<PaymentPending />} />
             </Routes>
