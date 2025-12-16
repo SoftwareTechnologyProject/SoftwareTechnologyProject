@@ -16,15 +16,4 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-instance.interceptors.response.use(
-  res => res,
-  err => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem("accessToken");
-      window.location.href = "/login";
-    }
-    return Promise.reject(err);
-  }
-);
-
 export default instance;

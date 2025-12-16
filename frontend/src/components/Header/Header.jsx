@@ -12,6 +12,7 @@ import { TfiReceipt } from "react-icons/tfi";
 import { IoTicketSharp } from "react-icons/io5";
 import { CiStar } from "react-icons/ci";
 import {
+  FaUtensils,
   FaLeaf,
   FaBook,
   FaNewspaper,
@@ -165,6 +166,12 @@ const Header = () => {
       icon: <FaGlobeAsia />,
     }
   ];
+  
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserInfo();
+    }
+  }, [isLoggedIn]);
 
   const fetchUserInfo = async () => {
     try {

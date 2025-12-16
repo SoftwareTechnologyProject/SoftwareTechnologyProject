@@ -1,12 +1,7 @@
 @import "tailwindcss";
 
 .account-container {
-  @apply grid grid-cols-[2fr_7fr] my-4;
-  max-width: 1600px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  @apply grid grid-cols-[2fr_7fr] mx-30 my-4;
 }
 
 .account-nav {
@@ -46,7 +41,7 @@
 }
 
 .account-nav .main-nav .nav-link {
-  @apply flex flex-row justify-start py-2 px-7 gap-4 text-[#080909] rounded mb-1 transition-all duration-300 no-underline;
+  @apply flex flex-row justify-start py-2 px-7 gap-4 text-[#080909] rounded mb-1 transition-all duration-300 no-underline border-0;
 }
 
 .account-nav .main-nav .nav-link:hover {

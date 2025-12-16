@@ -21,7 +21,7 @@ nav {
 }
 
 .nav-right {
-  @apply mr-30 ml-10 grid grid-cols-4 place-items-center;
+  @apply grid grid-cols-5 place-items-center;
 }
 
 .nav-icons {
@@ -199,7 +199,7 @@ nav {
 
 /* Account popup cho trạng thái chưa đăng nhập */
 .account-popup {
-  @apply absolute top-full left-1/2 -translate-x-[70%] mt-2
+  @apply absolute top-full -translate-x-[75%] mt-2
          bg-white shadow-xl rounded-lg p-2
          z-50 min-w-[10rem]
          opacity-0 invisible 
@@ -232,7 +232,7 @@ nav {
 
 /* Account popup cho trạng thái đã đăng nhập */
 .account-logged-popup {
-  @apply absolute top-full left-1/2 -translate-x-[70%] mt-2 
+  @apply absolute top-full -translate-x-[75%] mt-2 
          w-[280px] bg-white rounded-lg shadow-xl 
          z-50 opacity-0 invisible 
          transition-all duration-200 overflow-hidden;
