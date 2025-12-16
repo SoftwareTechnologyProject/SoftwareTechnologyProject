@@ -1,13 +1,12 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.DTO.NotificationDTO;
+import com.bookstore.backend.DTO.NotificationRequestDTO;
 import com.bookstore.backend.model.Notification;
 import com.bookstore.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,22 +18,19 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping()
-    public List<NotificationDTO> getNotification(int page, int size){
+    public Page<NotificationDTO> getNotification(@RequestParam int page, @RequestParam int size){
         return notificationService.getAllNotification(page, size);
     }
 
-    @GetMapping("/send/broadcast")
+    @GetMapping("/send")
     @ResponseBody
-    public String sendBroadcast() {
+    public String sendBroadcast(@RequestBody NotificationRequestDTO requestDTO) {
+        notificationService.sendNotification(requestDTO);
+        return "Sent broadcast!";
+    }
 
-        Notification notification = new Notification();
-        notification.setContent("🔔 Test broadcast notification");
-        notification.setRead(false);
-        notification.setCreateAt(LocalDateTime.now());
-        notification.setUrl("/test");
-
-        notificationService.broadcastNotification(notification);
-
-        return "Sent!";
+    @PutMapping("/{notificationId}/read")
+    public void markAsRead(@PathVariable Long notificationId) {
+        notificationService.markPrivateAsRead(notificationId);
     }
 }

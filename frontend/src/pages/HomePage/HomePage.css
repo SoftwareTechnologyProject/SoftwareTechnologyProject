@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Loading Placeholders */
+.book-loading-placeholder {
+    @apply animate-pulse;
+}
+
+.loading-img {
+    @apply w-full h-48 bg-gray-300 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-300 rounded mt-2 w-3/4;
+}
+
 /* ========== Common ================= */
 .product-catalog {
     @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[3fr_7fr] px-5 rounded-xl;
@@ -13,11 +26,15 @@ h1 {
     @apply text-2xl font-bold place-content-center;
 }
 
+.book-view {
+    @apply px-5 transition-shadow duration-500 ease-in-out hover:shadow-xl;
+}
+
 /* ============ End ================== */
 
 /* ========= Button More ========== */
 .button-more {
-    @apply flex justify-center font-bold pb-10 pt-4;
+    @apply flex justify-center items-center font-bold pb-10 pt-4;
 }
 
 .button-more a {
@@ -93,7 +110,7 @@ h1 {
 
 /* ================================== Trending ================================ */
 .trending {
-    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[1fr_7fr] px-5 rounded-xl;
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[0.8fr_5fr] px-5 rounded-xl;
 }
 
 .title-trending {
@@ -105,11 +122,19 @@ h1 {
 }
 
 .trend-detail {
-    @apply grid grid-cols-5 gap-4 pb-4;
+    @apply grid grid-cols-5 auto-rows-[minmax(0,0.8fr)] gap-4 pb-4;
+}
+
+.trend-detail img {
+    @apply w-full h-[58%] mb-5;
 }
 
 .label-price {
-    @apply px-10 pt-2;
+    @apply pt-2;
+}
+
+h3 {
+    @apply line-clamp-2;
 }
 
 .special-price {
@@ -129,7 +154,7 @@ h1 {
 }
 
 .combo-trending {
-    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[2fr_7fr] px-5 rounded-xl;
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[0.8fr_minmax(0,60%)] px-5 rounded-xl;
 }
 
 .combo-slide {
@@ -141,7 +166,11 @@ h1 {
 }
 
 .combo-detail {
-    @apply flex shrink-0 w-[25%] pb-4;
+    @apply flex shrink-0 w-[25%] pb-4 gap-4;
+}
+
+.combo-detail img {
+    @apply w-full h-[50%] mb-5;
 }
 
 /* ======================= End ========================= */
