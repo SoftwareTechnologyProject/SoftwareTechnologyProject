@@ -45,7 +45,7 @@ function MainLayout() {
           <Route path="accountInf" element={<Account />} />
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
+
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
@@ -54,6 +54,7 @@ function MainLayout() {
           <Route path="books" element={<Account />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
+          <Route path="orderAdmin" element={<OrderAdmin />} />
         </Route>
       </Routes>
 

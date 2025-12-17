@@ -67,7 +67,7 @@ const Login = () => {
           setAddress("");
           setDateOfBirth("");
         } else {
-          toast.error("Registration failed. Try again."); 
+          toast.error("Registration failed. Try again.");
         }
       } else {
         // Login logic
