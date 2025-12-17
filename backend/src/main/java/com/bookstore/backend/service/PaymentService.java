@@ -1,218 +1,142 @@
-// package com.bookstore.backend.service;
+package com.bookstore.backend.service;
 
-// import com.bookstore.backend.model.*;
-// import com.bookstore.backend.repository.*;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.stereotype.Service;
-// import org.springframework.transaction.annotation.Transactional;
+import com.bookstore.backend.model.*;
+import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.model.enums.PaymentStatus;
+import com.bookstore.backend.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-// import java.math.BigDecimal;
-// import java.util.HashMap;
-// import java.util.HashSet;
-// import java.util.List;
-// import java.util.Map;
-// import java.util.Set;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
-// @Service
-// public class PaymentService {
+@Service
+public class PaymentService {
 
-//     private final VoucherRepository voucherRepository;
-//     private final OrderRepository orderRepository;
-//     private final CartItemRepository cartItemRepository;
+    private final OrdersService ordersService;
     
-//     // Lưu trữ tạm thông tin thanh toán (paymentKey -> PaymentInfo)
-//     private final Map<String, PaymentInfo> pendingPayments = new HashMap<>();
-    
-//     // Inner class để lưu thông tin thanh toán tạm thời
-//     private static class PaymentInfo {
-//         List<Long> cartItemIds;
-//         String voucherCode;
-//         Long userId;
+    // Lưu trữ tạm thông tin thanh toán (paymentKey -> OrderId)
+    private final Map<String, Long> pendingPayments = new HashMap<>();
+
+    @Autowired
+    public PaymentService(OrdersService ordersService) {
+        this.ordersService = ordersService;
+    }
+
+    /**
+     * Khởi tạo giao dịch thanh toán từ orderId
+     * @param orderId ID của đơn hàng đã được tạo
+     * @return String - Payment key để tracking
+     */
+    @Transactional
+    public String initiatePaymentTransaction(Long orderId) throws Exception {
+        // Validate input
+        if (orderId == null) {
+            throw new Exception("Order ID is required");
+        }
+
+        // Kiểm tra order tồn tại
+        Orders order = ordersService.getOrderEntityById(orderId);
         
-//         PaymentInfo(List<Long> cartItemIds, String voucherCode, Long userId) {
-//             this.cartItemIds = cartItemIds;
-//             this.voucherCode = voucherCode;
-//             this.userId = userId;
-//         }
-//     }
-
-//     @Autowired
-//     public PaymentService(VoucherRepository voucherRepository, 
-//                          OrderRepository orderRepository, CartItemRepository cartItemRepository) {
-//         this.voucherRepository = voucherRepository;
-//         this.orderRepository = orderRepository;
-//         this.cartItemRepository = cartItemRepository;
-//     }
-
-//     /**
-//      * Khởi tạo giao dịch thanh toán từ các cart items được chọn
-//      * @param cartItemIds Danh sách ID của các cart items cần thanh toán
-//      * @param voucherCode Mã voucher (có thể null)
-//      * @param userId ID người dùng
-//      * @return String - Payment key để tracking
-//      */
-//     @Transactional
-//     public String initiatePaymentTransaction(List<Long> cartItemIds, String voucherCode, Long userId) throws Exception {
-//         // Validate input
-//         if (cartItemIds == null || cartItemIds.isEmpty()) {
-//             throw new Exception("No items selected for payment");
-//         }
-
-//         // Lấy và kiểm tra các cart items
-//         List<CartItems> selectedItems = cartItemRepository.findAllById(cartItemIds);
-//         if (selectedItems.size() != cartItemIds.size()) {
-//             throw new Exception("Some cart items not found");
-//         }
+        // Kiểm tra order chưa được thanh toán
+        if (PaymentStatus.PAID.equals(order.getPaymentStatus())) {
+            throw new Exception("Order has already been paid");
+        }
         
-//         // Kiểm tra tất cả items thuộc về cùng 1 user
-//         Long cartUserId = selectedItems.get(0).getCart().getUser().getId();
-//         boolean allBelongToUser = selectedItems.stream()
-//                 .allMatch(item -> item.getCart().getUser().getId().equals(cartUserId));
+        // Tạo payment key unique
+        String paymentKey = "payment_" + orderId + "_" + System.currentTimeMillis();
         
-//         if (!allBelongToUser || !cartUserId.equals(userId)) {
-//             throw new Exception("Invalid cart items or user mismatch");
-//         }
+        // Lưu mapping paymentKey -> orderId
+        pendingPayments.put(paymentKey, orderId);
+        
+        return paymentKey;
+    }
 
-//         // Kiểm tra voucher nếu có
-//         if (voucherCode != null && !voucherCode.trim().isEmpty()) {
-//             Voucher voucher = voucherRepository.findByCode(voucherCode)
-//                     .orElseThrow(() -> new Exception("Voucher not found: " + voucherCode));
+    /**
+     * Đánh dấu thanh toán thành công
+     * @param paymentKey Payment key từ initiatePaymentTransaction
+     * @param transactionNo Mã giao dịch VNPay
+     */
+    @Transactional
+    public void markPaymentSuccess(String paymentKey, String transactionNo) throws Exception {
+        // Lấy orderId từ paymentKey
+        Long orderId = pendingPayments.get(paymentKey);
+        if (orderId == null) {
+            throw new Exception("Payment information not found or expired");
+        }
+
+        // Cập nhật payment status thông qua OrdersService
+        ordersService.updatePaymentStatus(orderId, PaymentStatus.PAID, PaymentType.BANKING);
+        
+        // Xóa pending payment
+        pendingPayments.remove(paymentKey);
+        
+        System.out.println("✅ Order #" + orderId + " marked as PAID. Transaction: " + transactionNo);
+    }
+
+    /**
+     * Đánh dấu thanh toán thất bại
+     * @param paymentKey Payment key từ initiatePaymentTransaction
+     */
+    @Transactional
+    public void markPaymentFailed(String paymentKey) throws Exception {
+        // Lấy orderId từ paymentKey
+        Long orderId = pendingPayments.get(paymentKey);
+        if (orderId == null) {
+            throw new Exception("Payment information not found or expired");
+        }
+
+        // Cập nhật payment status thông qua OrdersService
+        ordersService.updatePaymentStatus(orderId, PaymentStatus.FAILED, null);
+        
+        // Xóa pending payment
+        pendingPayments.remove(paymentKey);
+        
+        System.out.println("❌ Order #" + orderId + " marked as FAILED");
+    }
+
+    /**
+     * Kiểm tra payment status của order
+     * @param paymentKey Payment key để lấy orderId
+     * @return Payment status (PAID/FAILED) hoặc null nếu chưa xử lý
+     */
+    public String getPaymentStatus(String paymentKey) {
+        try {
+            Long orderId = pendingPayments.get(paymentKey);
+            if (orderId == null) {
+                // Payment key không tồn tại trong pending -> đã được xử lý rồi
+                // Thử tìm order bằng cách parse orderId từ paymentKey
+                String[] parts = paymentKey.split("_");
+                if (parts.length >= 2) {
+                    orderId = Long.parseLong(parts[1]);
+                    Orders order = ordersService.getOrderEntityById(orderId);
+                    return order.getPaymentStatus() != null ? order.getPaymentStatus().name() : null;
+                }
+                return null;
+            }
             
-//             if (!voucher.isValid()) {
-//                 throw new Exception("Voucher is not valid or has expired");
-//             }
-//         }
+            // Nếu vẫn còn trong pending, chưa xử lý
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Tính tổng tiền của order
+     * @param paymentKey Payment key để lấy orderId
+     * @return Tổng tiền order
+     */
+    public BigDecimal calculateFinalAmount(String paymentKey) throws Exception {
+        // Lấy orderId từ paymentKey
+        Long orderId = pendingPayments.get(paymentKey);
+        if (orderId == null) {
+            throw new Exception("Payment information not found");
+        }
         
-//         // Tạo payment key unique
-//         String paymentKey = "payment_" + userId + "_" + System.currentTimeMillis();
-        
-//         // Lưu thông tin thanh toán tạm thời
-//         pendingPayments.put(paymentKey, new PaymentInfo(cartItemIds, voucherCode, userId));
-        
-//         return paymentKey;
-//     }
-
-//     /**
-//      * Tạo đơn hàng từ các cart items đã chọn sau khi thanh toán thành công
-//      * @param paymentKey Payment key từ initiatePaymentTransaction
-//      * @param transactionNo Mã giao dịch VNPay
-//      * @param shippingAddress Địa chỉ giao hàng
-//      * @param phoneNumber Số điện thoại
-//      * @return Orders đã tạo
-//      */
-//     @Transactional
-//     public Orders createOrderFromCart(String paymentKey, String transactionNo, String shippingAddress, String phoneNumber) throws Exception {
-//         // Lấy thông tin thanh toán
-//         PaymentInfo paymentInfo = pendingPayments.get(paymentKey);
-//         if (paymentInfo == null) {
-//             throw new Exception("Payment information not found or expired");
-//         }
-
-//         // Lấy các cart items đã chọn
-//         List<CartItems> selectedItems = cartItemRepository.findAllById(paymentInfo.cartItemIds);
-//         if (selectedItems.isEmpty()) {
-//             throw new Exception("Selected cart items not found");
-//         }
-        
-//         Users user = selectedItems.get(0).getCart().getUser();
-
-//         // Lấy voucher nếu có
-//         Voucher voucher = null;
-//         if (paymentInfo.voucherCode != null) {
-//             voucher = voucherRepository.findByCode(paymentInfo.voucherCode).orElse(null);
-//         }
-
-//         // Tạo Order mới
-//         Orders order = Orders.builder()
-//                 .users(user)
-//                 .shippingAddress(shippingAddress)
-//                 .phoneNumber(phoneNumber)
-//                 .status("PENDING")
-//                 .paymentType("VNPAY:" + transactionNo)
-//                 .voucher(voucher)
-//                 .build();
-
-//         // Tạo OrderDetails từ CartItems đã chọn
-//         Set<OrderDetails> orderDetailsList = new HashSet<>();
-//         for (CartItems cartItem : selectedItems) {
-//             OrderDetails orderDetail = OrderDetails.builder()
-//                     .orders(order)
-//                     .bookVariant(cartItem.getBookVariant())
-//                     .quantity(cartItem.getQuantity())
-//                     .pricePurchased(cartItem.getBookVariant().getPrice())
-//                     .build();
-//             orderDetailsList.add(orderDetail);
-//         }
-//         order.setOrderDetails(orderDetailsList);
-
-//         // Lưu order
-//         Orders savedOrder = orderRepository.save(order);
-
-//         // Xóa các cart items đã thanh toán
-//         cartItemRepository.deleteAll(selectedItems);
-        
-//         // Xóa pending payment
-//         pendingPayments.remove(paymentKey);
-
-//         return savedOrder;
-//     }
-
-//     /**
-//      * Hủy thanh toán khi thất bại
-//      */
-//     @Transactional
-//     public void cancelPayment(String paymentKey) {
-//         pendingPayments.remove(paymentKey);
-//     }
-
-//     /**
-//      * Tính tổng tiền của các cart items được chọn sau khi áp dụng voucher
-//      */
-//     public BigDecimal calculateFinalAmount(String paymentKey) throws Exception {
-//         // Lấy thông tin thanh toán
-//         PaymentInfo paymentInfo = pendingPayments.get(paymentKey);
-//         if (paymentInfo == null) {
-//             throw new Exception("Payment information not found");
-//         }
-        
-//         // Lấy các cart items đã chọn
-//         List<CartItems> selectedItems = cartItemRepository.findAllById(paymentInfo.cartItemIds);
-        
-//         // Tính tổng tiền từ cart items đã chọn
-//         BigDecimal totalAmount = selectedItems.stream()
-//                 .map(item -> BigDecimal.valueOf(item.getBookVariant().getPrice())
-//                         .multiply(BigDecimal.valueOf(item.getQuantity())))
-//                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-//         // Áp dụng giảm giá từ voucher nếu có
-//         if (paymentInfo.voucherCode != null) {
-//             try {
-//                 Voucher voucher = voucherRepository.findByCode(paymentInfo.voucherCode).orElse(null);
-//                 if (voucher != null && voucher.isValid()) {
-//                     // Xử lý theo loại giảm giá
-//                     if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
-//                         // Giảm theo phần trăm
-//                         BigDecimal discount = totalAmount
-//                                 .multiply(BigDecimal.valueOf(voucher.getDiscountValue()))
-//                                 .divide(BigDecimal.valueOf(100));
-                        
-//                         // Áp dụng giới hạn giảm giá tối đa nếu có
-//                         if (voucher.getMaxDiscount() != null) {
-//                             BigDecimal maxDiscount = BigDecimal.valueOf(voucher.getMaxDiscount());
-//                             discount = discount.min(maxDiscount);
-//                         }
-//                         totalAmount = totalAmount.subtract(discount);
-//                     } else {
-//                         // Giảm số tiền cố định
-//                         BigDecimal discount = BigDecimal.valueOf(voucher.getDiscountValue());
-//                         totalAmount = totalAmount.subtract(discount);
-//                     }
-//                 }
-//             } catch (Exception e) {
-//                 // Ignore voucher error
-//             }
-//         }
-
-//         return totalAmount;
-//     }
-// }
+        // Tính tổng tiền thông qua OrdersService
+        return ordersService.calculateOrderTotalAmount(orderId);
+    }
+}

@@ -1,7 +1,7 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.model.Orders;
-// import com.bookstore.backend.service.PaymentService;
+import com.bookstore.backend.service.PaymentService;
 import com.bookstore.backend.service.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,50 +21,32 @@ import java.util.stream.Collectors;
 @RequestMapping("/payment")
 public class PaymentController {
 
-    // private final PaymentService paymentService;
+    private final PaymentService paymentService;
     private final VNPayService vnPayService;
 
     @Autowired
-    public PaymentController(VNPayService vnPayService) {
-        // this.paymentService = paymentService;
+    public PaymentController(PaymentService paymentService, VNPayService vnPayService) {
+        this.paymentService = paymentService;
         this.vnPayService = vnPayService;
     }
 
     /**
      * Endpoint GET cho browser - Tự động redirect đến VNPay
-     * Dùng khi muốn paste link vào browser: http://localhost:8080/payment/create
+     * Dùng khi muốn paste link vào browser: http://localhost:8080/payment/create?order_id=1
      */
     @GetMapping("/create")
     public RedirectView createPaymentRedirect(
-            @RequestParam(value = "cart_item_ids", required = false) String cartItemIdsStr,
-            @RequestParam(value = "voucher_code", required = false) String voucherCode,
-            @RequestParam(value = "user_id", required = false) Long userId,
+            @RequestParam(value = "order_id") Long orderId,
             HttpServletRequest request) {
         
         try {
-            // TEST MODE: Dùng dữ liệu giả lập nếu không có tham số
-            if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
-                cartItemIdsStr = "1,2,3";
+            // Validate orderId
+            if (orderId == null) {
+                return new RedirectView("/payment-error?message=Missing+order+ID");
             }
-            if (userId == null) {
-                userId = 1L;
-            }
-            
-            // TODO: Khi ráp vào project, uncomment validation này
-            // if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
-            //     return new RedirectView("/payment-error?message=Missing+cart+items");
-            // }
 
-            List<Long> cartItemIds = Arrays.stream(cartItemIdsStr.split(","))
-                    .map(String::trim)
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
-
-            // TODO: Khi ráp vào project, uncomment dòng dưới
-            // String paymentKey = paymentService.initiatePaymentTransaction(cartItemIds, voucherCode, userId);
-            
-            // TEST MODE: Tạo paymentKey giả
-            String paymentKey = "payment_test_" + System.currentTimeMillis();
+            // Khởi tạo thanh toán - trả về paymentKey
+            String paymentKey = paymentService.initiatePaymentTransaction(orderId);
             
             // Tạo URL thanh toán VNPay và redirect
             String paymentUrl = vnPayService.createPaymentUrl(paymentKey, request);
@@ -77,52 +59,26 @@ public class PaymentController {
     }
 
     /**
-     * Xử lý yêu cầu POST để tạo giao dịch thanh toán từ các sản phẩm được chọn.
+     * Xử lý yêu cầu POST để tạo giao dịch thanh toán từ orderId.
      * Trả về JSON với URL thanh toán VNPay - Dùng cho API call từ frontend.
      */
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createPayment(
-            @RequestParam(value = "cart_item_ids", required = false) String cartItemIdsStr,
-            @RequestParam(value = "voucher_code", required = false) String voucherCode,
-            @RequestParam(value = "user_id", required = false) Long userId,
+            @RequestParam(value = "order_id") Long orderId,
             HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // TEST MODE: Dùng dữ liệu giả lập nếu không có tham số
-            // TODO: Khi ráp vào project, xóa block TEST này và uncomment phần validation bên dưới
-            if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
-                cartItemIdsStr = "1,2,3"; // Test với cart items giả
+            // Validate orderId
+            if (orderId == null) {
+                response.put("code", "01");
+                response.put("message", "Missing order ID");
+                return ResponseEntity.badRequest().body(response);
             }
-            if (userId == null) {
-                userId = 1L; // Test với user ID giả
-            }
-            
-            // TODO: Khi ráp vào project, uncomment phần validation này và thay đổi response
-            // if (cartItemIdsStr == null || cartItemIdsStr.trim().isEmpty()) {
-            //     response.put("code", "01");
-            //     response.put("message", "Missing cart items");
-            //     return ResponseEntity.badRequest().body(response);
-            // }
-            // if (userId == null) {
-            //     response.put("code", "01");
-            //     response.put("message", "Missing user ID");
-            //     return ResponseEntity.badRequest().body(response);
-            // }
-
-            // Parse cart item IDs (format: "1,2,3")
-            List<Long> cartItemIds = Arrays.stream(cartItemIdsStr.split(","))
-                    .map(String::trim)
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
 
             // Khởi tạo thanh toán - trả về paymentKey
-            // TODO: Khi ráp vào project, uncomment dòng dưới và comment dòng test
-            // String paymentKey = paymentService.initiatePaymentTransaction(cartItemIds, voucherCode, userId);
-            
-            // TEST MODE: Tạo paymentKey giả
-            String paymentKey = "payment_test_" + System.currentTimeMillis();
+            String paymentKey = paymentService.initiatePaymentTransaction(orderId);
             
             // Tạo URL thanh toán VNPay
             String paymentUrl = vnPayService.createPaymentUrl(paymentKey, request);
@@ -134,11 +90,6 @@ public class PaymentController {
             
             return ResponseEntity.ok(response);
 
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            response.put("code", "02");
-            response.put("message", "Invalid cart item IDs format");
-            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             e.printStackTrace();
             response.put("code", "99");
@@ -202,22 +153,17 @@ public class PaymentController {
         try {
             System.out.println("🔍 Verifying payment with VNPay: " + paymentKey);
             System.out.println("   Transaction Date: " + transactionDate);
-
-            // ===== TEST MODE =====
-            // Nếu là payment key test, bỏ qua query VNPay và giả lập thành công
-            if (paymentKey.startsWith("payment_test_")) {
-                System.out.println("⚠️ TEST MODE: Bypassing VNPay query for test payment");
-                System.out.println("✅ Payment VERIFIED (TEST MODE)");
-                
+            
+            // Kiểm tra xem payment đã được xử lý chưa (tránh duplicate requests)
+            String existingStatus = paymentService.getPaymentStatus(paymentKey);
+            if (existingStatus != null) {
+                System.out.println("⚠️ Payment already processed with status: " + existingStatus);
                 response.put("code", "00");
-                response.put("message", "Payment verified successfully (TEST MODE)");
-                response.put("paymentStatus", "SUCCESS");
-                response.put("transactionNo", "TEST_" + System.currentTimeMillis());
-                
+                response.put("message", "Payment already processed");
+                response.put("paymentStatus", existingStatus);
                 return ResponseEntity.ok(response);
             }
 
-            // ===== REAL MODE =====
             // Gọi VNPay API để query và verify transaction
             com.google.gson.JsonObject vnpayResponse = vnPayService.queryTransaction(paymentKey, transactionDate);
 
@@ -236,8 +182,13 @@ public class PaymentController {
             if ("00".equals(vnpResponseCode) && "00".equals(vnpTransactionStatus)) {
                 System.out.println("✅ Payment VERIFIED and CONFIRMED as SUCCESS");
                 
-                // ===== REAL MODE =====
-                // paymentService.markPaymentSuccess(paymentKey, transactionNo);
+                try {
+                    // Cập nhật payment status trong database
+                    paymentService.markPaymentSuccess(paymentKey, transactionNo);
+                } catch (Exception e) {
+                    // Nếu payment đã được xử lý rồi, ignore exception
+                    System.out.println("⚠️ Payment already processed or expired: " + e.getMessage());
+                }
                 
                 response.put("code", "00");
                 response.put("message", "Payment verified successfully");
@@ -245,9 +196,15 @@ public class PaymentController {
                 response.put("transactionNo", transactionNo);
             } else {
                 System.out.println("❌ Payment FAILED or NOT FOUND");
+                System.out.println("   Response Code: " + vnpResponseCode + ", Transaction Status: " + vnpTransactionStatus);
                 
-                // ===== REAL MODE =====
-                // paymentService.markPaymentFailed(paymentKey);
+                try {
+                    // Đánh dấu payment thất bại
+                    paymentService.markPaymentFailed(paymentKey);
+                } catch (Exception e) {
+                    // Nếu payment đã được xử lý rồi, ignore exception
+                    System.out.println("⚠️ Payment already processed or expired: " + e.getMessage());
+                }
                 
                 response.put("code", "01");
                 response.put("message", "Payment verification failed");
@@ -300,8 +257,12 @@ public class PaymentController {
             // Cập nhật database nếu cần
             if ("00".equals(vnpTransactionStatus)) {
                 System.out.println("✅ Transaction confirmed as SUCCESS by query");
-                // ===== REAL MODE =====
-                // paymentService.markPaymentSuccess(paymentKey, vnpayResponse.get("vnp_TransactionNo").getAsString());
+                try {
+                    // Cập nhật payment status
+                    paymentService.markPaymentSuccess(paymentKey, vnpayResponse.get("vnp_TransactionNo").getAsString());
+                } catch (Exception e) {
+                    System.out.println("⚠️ Payment already processed or expired: " + e.getMessage());
+                }
             }
 
             return ResponseEntity.ok(response);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import PaymentSuccess from "../PaymentSuccess/PaymentSuccess";
 import "./PaymentResult.css";
@@ -11,7 +11,16 @@ const PaymentResult = () => {
     const [error, setError] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState("verifying"); // verifying | success | failed
 
+    // 🔒 useRef để khóa API call (chống React Strict Mode chạy 2 lần)
+    const hasVerified = useRef(false);
+
     useEffect(() => {
+        // ⚠️ Nếu đã verify rồi thì return ngay (ngăn duplicate call)
+        if (hasVerified.current) {
+            console.log("⏭️ Skip: Already verified");
+            return;
+        }
+
         const paymentKey = searchParams.get("paymentKey");
         const transactionDate = searchParams.get("transactionDate");
         const urlError = searchParams.get("error");
@@ -34,6 +43,9 @@ const PaymentResult = () => {
             setLoading(false);
             return;
         }
+
+        // 🔐 Đánh dấu đã verify để không gọi lại
+        hasVerified.current = true;
 
         // ✅ Gọi API verify để xác thực thanh toán với VNPay
         verifyPayment(paymentKey, transactionDate);

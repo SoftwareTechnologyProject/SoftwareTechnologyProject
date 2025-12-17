@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -21,12 +22,12 @@ import com.google.gson.JsonObject;
 
 @Service
 public class VNPayService {
-    // private final PaymentService paymentService;
+    private final PaymentService paymentService;
     private final VNPayConfig vnPayConfig;
 
     @Autowired
-    public VNPayService(VNPayConfig vnPayConfig) {
-        // this.paymentService = paymentService;
+    public VNPayService(PaymentService paymentService, VNPayConfig vnPayConfig) {
+        this.paymentService = paymentService;
         this.vnPayConfig = vnPayConfig;
     }
 
@@ -35,13 +36,9 @@ public class VNPayService {
         String vnp_TxnRef = paymentKey;
         String vnp_IpAddr = VNPayConfig.getIpAddress(request);
         
-        // Tính tổng tiền
-        // TODO: Khi ráp vào project, uncomment dòng dưới và comment dòng test
-        // BigDecimal finalAmount = paymentService.calculateFinalAmount(paymentKey);
-        // long amount = finalAmount.multiply(new BigDecimal("100")).longValue();
-        
-        // TEST MODE: Dùng số tiền giả lập (10,000 VND = 1,000,000 đồng)
-        long amount = 1000000; // 10,000 VND
+        // Tính tổng tiền từ order
+        BigDecimal finalAmount = paymentService.calculateFinalAmount(paymentKey);
+        long amount = finalAmount.multiply(new BigDecimal("100")).longValue();
 
         Map<String, String> vnp_Params = new HashMap<>();
         
@@ -135,9 +132,11 @@ public class VNPayService {
         vnp_Params.put("vnp_CreateDate", now.format(formatter));
         vnp_Params.put("vnp_IpAddr", "127.0.0.1");
 
-        // ✅ Create secure hash theo chuẩn VNPay (KHÔNG thêm vnp_SecureHash vào params)
-        String hashData = buildHashData(vnp_Params);
+        // ✅ Create secure hash cho QueryDR API (Dùng dấu | theo đúng spec VNPay)
+        String hashData = buildQueryDRHashData(vnp_Params);
         String vnp_SecureHash = VNPayConfig.hmacSHA512(vnPayConfig.secretKey, hashData);
+        
+        System.out.println("🔐 QueryDR Hash Data: " + hashData);
         
         // JSON request body
         JsonObject requestJson = new JsonObject();
@@ -176,21 +175,24 @@ public class VNPayService {
         return gson.fromJson(response.toString(), JsonObject.class);
     }
 
-    // Helper method để build hash data
-    private String buildHashData(Map<String, String> params) {
-        List<String> fieldNames = new ArrayList<>(params.keySet());
-        Collections.sort(fieldNames);
+    /**
+     * Build hash data cho QueryDR API theo đúng spec của VNPay
+     * Format: vnp_RequestId|vnp_Version|vnp_Command|vnp_TmnCode|vnp_TxnRef|vnp_TransactionDate|vnp_CreateDate|vnp_IpAddr|vnp_OrderInfo
+     */
+    private String buildQueryDRHashData(Map<String, String> params) {
         StringBuilder hashData = new StringBuilder();
         
-        for (String fieldName : fieldNames) {
-            String fieldValue = params.get(fieldName);
-            if (fieldValue != null && fieldValue.length() > 0) {
-                if (hashData.length() > 0) {
-                    hashData.append('&');
-                }
-                hashData.append(fieldName).append('=').append(fieldValue);
-            }
-        }
+        // Thứ tự cố định theo VNPay spec (không sort alphabet)
+        hashData.append(params.get("vnp_RequestId")).append("|");
+        hashData.append(params.get("vnp_Version")).append("|");
+        hashData.append(params.get("vnp_Command")).append("|");
+        hashData.append(params.get("vnp_TmnCode")).append("|");
+        hashData.append(params.get("vnp_TxnRef")).append("|");
+        hashData.append(params.get("vnp_TransactionDate")).append("|");
+        hashData.append(params.get("vnp_CreateDate")).append("|");
+        hashData.append(params.get("vnp_IpAddr")).append("|");
+        hashData.append(params.get("vnp_OrderInfo"));
+        
         return hashData.toString();
     }
 }
