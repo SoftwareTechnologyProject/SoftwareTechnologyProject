@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.bookstore.backend.exception.ResourceNotFoundException;
@@ -21,6 +22,9 @@ import com.bookstore.backend.filter.JwtResquestFilter;
 import com.bookstore.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,9 +45,10 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authz -> authz
                     // Public endpoints
+                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
+                    .requestMatchers("/api/books/**", "/ws/**").permitAll()
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**", "/register").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll() // Explicitly allow register
-                    .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll() // Allow public GET for blog
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll() // Allow public POST comments
                     .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for blog management
@@ -52,7 +57,7 @@ public class SecurityConfig {
                     
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     
-                    .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
                     
                     .anyRequest().authenticated()

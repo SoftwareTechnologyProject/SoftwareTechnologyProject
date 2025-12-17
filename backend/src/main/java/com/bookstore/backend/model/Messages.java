@@ -26,6 +26,11 @@ public class Messages {
     @JsonIgnore
     private Users sender;
 
+    @ManyToOne
+    @JoinColumn(name = "receiver_id")
+    @JsonIgnore
+    private Users receiver;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 

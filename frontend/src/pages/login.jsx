@@ -58,47 +58,47 @@ const Login = () => {
 
                 const response = await axios.post(`${backendURL}/register`, payload);
 
-        if (response.status === 200 || response.status === 201) {
-          toast.success("Account created successfully. Please log in.");
-          setIsCreateAccount(false);
-          setName("");
-          setPassword("");
-          setPhoneNumber("");
-          setAddress("");
-          setDateOfBirth("");
-        } else {
-          toast.error("Registration failed. Try again.");
-        }
-      } else {
-        // Login logic
-        const response = await axiosClient.post("/auth/login", { email, password });
-        if (response.status === 200) {
-    localStorage.setItem("accessToken", response.data.token);
-          setIsLoggedIn(true);
-          setUserData(response.data.user);
-          toast.success("Login successful!");
-          navigate("/");
-        }
-      }
-    } catch (error) {
-      if (error.response) {
-        const data = error.response.data;
-        const errMsg =
-          data?.message ||
-          data?.error ||
-          data?.details ||
-          (error.response.status === 401 ? "Invalid credentials." : "Request failed.");
-        toast.error(errMsg);
-      } else if (error.request) {
-        toast.error("Cannot reach the server. Please check your connection.");
-      } else {
-        toast.error("Unexpected error occurred.");
-      }
-    } finally {
-      setLoading(false);
-      if (!isCreateAccount) setPassword("");
-    }
-  };
+                if (response.status === 200 || response.status === 201) {
+                    toast.success("Account created successfully. Please log in.");
+                    setIsCreateAccount(false);
+                    setName("");
+                    setPassword("");
+                    setPhoneNumber("");
+                    setAddress("");
+                    setDateOfBirth("");
+                } else {
+                    toast.error("Registration failed. Try again.");
+                }
+            } else {
+                // Login logic
+                const response = await axiosClient.post("/auth/login", { email, password });
+                if (response.status === 200) {
+                    localStorage.setItem("accessToken", response.data.token);
+                    setIsLoggedIn(true);
+                    setUserData(response.data.user);
+                    toast.success("Login successful!");
+                    navigate("/");
+                }
+            }
+        } catch (error) {
+            if (error.response) {
+                const data = error.response.data;
+                const errMsg =
+                    data?.message ||
+                    data?.error ||
+                    data?.details ||
+                    (error.response.status === 401 ? "Invalid credentials." : "Request failed.");
+                toast.error(errMsg);
+            } else if (error.request) {
+                toast.error("Cannot reach the server. Please check your connection.");
+            } else {
+                toast.error("Unexpected error occurred.");
+            }
+        } finally {
+            setLoading(false);
+            if (!isCreateAccount) setPassword("");
+        }
+    };
 
     const handleToggle = () => {
         setIsCreateAccount((prev) => !prev);

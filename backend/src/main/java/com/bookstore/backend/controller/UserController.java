@@ -2,6 +2,7 @@ package com.bookstore.backend.controller;
 
 import java.util.List;
 
+import com.bookstore.backend.DTO.ChangePassRequest;
 import com.bookstore.backend.DTO.UserDTO;
 import com.bookstore.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.UserRepository;
@@ -59,7 +55,7 @@ public class UserController {
     }
 
     // Cập nhật thông tin người dùng
-    @PutMapping("/update")
+    @PutMapping("me/update")
     public ResponseEntity<UserDTO> updateInfo(
             @AuthenticationPrincipal UserDetails user,
             @RequestBody UserDTO userDTO
@@ -69,6 +65,13 @@ public class UserController {
         return ResponseEntity.ok(newInfo);
     }
 
-//    // Đổi Password
-//    @PutMapping
+    // Đổi Password
+    @PatchMapping("me/update/password")
+    public ResponseEntity<?> updatePass(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody ChangePassRequest request) {
+        String email = user.getUsername();
+        userService.changePass(request, email);
+        return ResponseEntity.ok().build();
+    }
 }
