@@ -1,73 +1,95 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
-const useUserNotifications = (onMessage) => {
-  useEffect(() => {
-    console.log("🔹 Initializing STOMP client...");
+const useUserNotifications = (onNotification, onChatMessage) => {
+    const clientRef = useRef(null);
+    const callbacksRef = useRef({ onNotification, onChatMessage });
 
-    const stompClient = new Client({
-      webSocketFactory: () => {
-        console.log("🔹 Creating SockJS connection to /ws");
-        return new SockJS("http://localhost:8080/ws");
-      },
-      reconnectDelay: 5000, // tự reconnect nếu mất kết nối
-      heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
-      onConnect: (frame) => {
-        console.log("✅ STOMP connected!", frame);
+    // Luôn update callbacks mới nhất
+    useEffect(() => {
+        callbacksRef.current = { onNotification, onChatMessage };
+    }, [onNotification, onChatMessage]);
 
-        // Subscribe global notifications
-        stompClient.subscribe("/topic/notifications", (msg) => {
-          console.log("📨 Received /topic/notifications:", msg.body);
-          safeNotify(msg.body, onMessage);
+    useEffect(() => {
+        if (clientRef.current) {
+            console.log("⚠ WS already initialized → skip reinit");
+            return;
+        }
+
+        const token = localStorage.getItem("accessToken");
+        const stompClient = new Client({
+            webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+            connectHeaders: { Authorization: "Bearer " + token },
+            reconnectDelay: 5000,
+            heartbeatIncoming: 10000,
+            heartbeatOutgoing: 10000,
+            onConnect: (frame) => {
+                console.log("✅ STOMP connected");
+                console.log(
+                    "Connected user:",
+                    frame.headers["user-name"] || "unknown"
+                );
+
+                // Subscribe với callback động
+                stompClient.subscribe("/user/queue/chat", (msg) => {
+                    console.log("subscribe thành công");
+                    console.log(`📩 Chat from /user/queue/chat:`, msg.body);
+                    safeNotify(msg.body, callbacksRef.current.onChatMessage);
+                });
+
+                stompClient.subscribe("/topic/chat", (msg) => {
+                    console.log(`📩 Chat from /topic/chat:`, msg.body);
+                    safeNotify(msg.body, callbacksRef.current.onChatMessage);
+                });
+
+                // Notification subscriptions...
+                stompClient.subscribe("/user/queue/notifications", (msg) => {
+                    console.log(
+                        `📩 Notif from /user/queue/notifications:`,
+                        msg.body
+                    );
+                    safeNotify(msg.body, callbacksRef.current.onNotification);
+                });
+            },
+            onStompError: (frame) =>
+                console.error("❌ STOMP Error:", frame.headers["message"]),
+            onWebSocketClose: () => console.warn("⚠ WS closed"),
+            onWebSocketError: (err) => console.error("❌ WS Error:", err),
         });
 
-        // Subscribe user-specific notifications
-        stompClient.subscribe("/user/queue/notifications", (msg) => {
-          console.log("📨 Received /user/queue/notifications:", msg.body);
-          safeNotify(msg.body, onMessage);
+        clientRef.current = stompClient;
+        stompClient.activate();
+        console.log("🚀 WebSocket Activated");
+
+        return () => {
+            console.log("🔹 WS cleanup");
+        };
+    }, []); // Chỉ chạy 1 lần
+
+    const sendChatMessage = (chatBody) => {
+        if (!clientRef.current?.active) {
+            console.warn("⛔ WS not ready");
+            return;
+        }
+        clientRef.current.publish({
+            destination: "/app/chat.send",
+            body: JSON.stringify(chatBody),
         });
-      },
-      onStompError: (frame) => {
-        console.error("❌ STOMP error:", frame.headers["message"], frame.body);
-      },
-      onWebSocketClose: (evt) => {
-        console.warn("⚠️ WebSocket closed:", evt);
-      },
-      onWebSocketError: (evt) => {
-        console.error("❌ WebSocket error:", evt);
-      }
-    });
-
-    stompClient.activate();
-    console.log("🔹 STOMP client activated");
-
-    return () => {
-      if (stompClient.active) {
-        console.log("🔹 Deactivating STOMP client...");
-        stompClient.deactivate();
-      }
+        console.log("📤 Sent:", chatBody);
     };
-  }, []); // chỉ chạy 1 lần khi mount
+
+    return { sendChatMessage };
 };
 
-// Xử lý dữ liệu an toàn từ WebSocket
-function safeNotify(body, onMessage) {
-  try {
-    const data = JSON.parse(body);
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        if (item && typeof item === "object") onMessage(item);
-      });
-    } else if (data && typeof data === "object") {
-      onMessage(data);
-    } else {
-      console.warn("WS data invalid:", data);
+function safeNotify(body, callback) {
+    if (!callback) return;
+    try {
+        console.log("Raw body:", body);
+        callback(JSON.parse(body));
+    } catch (e) {
+        console.error("❌ Parse error:", body, e);
     }
-  } catch (err) {
-    console.error("❌ Failed to parse WS message:", body, err);
-  }
 }
 
 export default useUserNotifications;

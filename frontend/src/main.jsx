@@ -11,16 +11,21 @@ import ProductDetail from "./pages/productDetails/ProductDetail";
 import VoucherManagement from "./pages/VoucherManagement/VoucherManagement.jsx";
 import Recommend from "./components/Recommend/Recommend.jsx";
 import VoucherWallet from "./pages/VoucherWallet/VoucherWallet";
+import Cart from "./pages/Cart/Cart.jsx";
+import Checkout from "./pages/Checkout/Checkout.jsx";
 import Order from "./pages/Order/Order";
 import OrderAdmin from "./pages/OrderAdmin/OrderAdmin";
 import OrderDetail from "./pages/OrderDetail/OrderDetail";
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import Login from "./pages/login.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess";
 import PaymentPending from "./pages/PaymentPending/PaymentPending";
 import PaymentResult from "./pages/PaymentResult/PaymentResult";
 
-createRoot(document.getElementById("root")).render(
-    <StrictMode>
-        <BrowserRouter>
+// Component Layout chung cho các trang có Header/Footer
+function MainLayout() {
+    return (
+        <>
             <Header />
             <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -32,12 +37,30 @@ createRoot(document.getElementById("root")).render(
                     <Route path="order/:id" element={<OrderDetail />} />
                 </Route>
                 <Route path="/books/:id" element={<ProductDetail />} />
+                <Route path="/voucher-wallet" element={<VoucherWallet />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/payment/result" element={<PaymentResult />} />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/pending" element={<PaymentPending />} />
             </Routes>
             <Recommend />
             <Footer />
+            <ChatFloating />
+        </>
+    );
+}
+
+createRoot(document.getElementById("root")).render(
+    <StrictMode>
+        <BrowserRouter>
+            <Routes>
+                {/* Trang LOGIN riêng biệt - không có Header/Footer */}
+                <Route path="/login" element={<Login />} />
+
+                {/* Tất cả các trang khác có Layout chung */}
+                <Route path="*" element={<MainLayout />} />
+            </Routes>
         </BrowserRouter>
     </StrictMode>
 );
