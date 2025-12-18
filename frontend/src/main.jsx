@@ -26,6 +26,7 @@ import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
+import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 
 // Layout chung
@@ -39,6 +40,8 @@ function MainLayout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/:categorySlug" element={<CategoryPage />} />
         <Route path="/books/:id" element={<ProductDetail />} />
+        <Route path="/vouchers" element={<VoucherManagement />} />
+        <Route path="/search" element={<SearchResult />} />
         <Route path="/voucher-management" element={<VoucherManagement />} />
 
         {/* Account area */}
