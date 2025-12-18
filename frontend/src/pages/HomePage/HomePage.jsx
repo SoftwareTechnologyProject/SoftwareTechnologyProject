@@ -77,9 +77,9 @@ const HomePage = () => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/books?page=0&size=10');
-                const books = response.data || [];
-                
+                const response = await axios.get('http://localhost:8080/api/books?page=0&size=20');
+                const books = response.data.value || response.data || [];
+
                 // Use first 10 books for trending
                 setTrendingBooks(books.slice(0, 10));
                 // Use first 20 books for combo trending

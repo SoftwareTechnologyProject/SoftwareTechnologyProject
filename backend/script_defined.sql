@@ -1,4 +1,11 @@
 -- =========================
+-- Tạo tài khoản với thứ tự đúng để tránh constraint violation
+-- =========================
+
+-- Tạm thời disable triggers/constraints
+SET session_replication_role = 'replica';
+
+-- =========================
 -- 1️⃣ Tạo tài khoản STAFF (ID account = 1)
 -- =========================
 INSERT INTO accounts (
@@ -9,7 +16,8 @@ INSERT INTO accounts (
     is_account_verified,
     email,
     created_at,
-    updated_at
+    updated_at,
+    user_id
 ) VALUES (
     1,
     'admin',
@@ -18,7 +26,8 @@ INSERT INTO accounts (
     true,
     'admin@gmail.com',
     now(),
-    now()
+    now(),
+    1  -- Tạm thời set user_id = 1
 );
 
 INSERT INTO users (
@@ -46,7 +55,8 @@ INSERT INTO accounts (
     is_account_verified,
     email,
     created_at,
-    updated_at
+    updated_at,
+    user_id
 ) VALUES (
     2,
     'mamatqlee',
@@ -55,7 +65,8 @@ INSERT INTO accounts (
     true,
     'mamatqlee1903@gmail.com',
     now(),
-    now()
+    now(),
+    2  -- Tạm thời set user_id = 2
 );
 
 INSERT INTO users (
@@ -71,3 +82,6 @@ INSERT INTO users (
     'USER',
     2
 );
+
+-- Enable lại constraints
+SET session_replication_role = 'origin';

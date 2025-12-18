@@ -17,6 +17,20 @@ const Header = () => {
     const [open, setOpen] = useState(false);
       const [notifications, setNotifications] = useState([]);
       const [page, setPage] = useState(0);
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+      // Check login status
+      useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        setIsLoggedIn(!!token);
+      }, []);
+
+      const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setIsLoggedIn(false);
+        window.location.href = '/login';
+      };
 
       // Callback để nhận notification mới từ WebSocket
       const handleNewNotification = useCallback((newNoti) => {
@@ -125,10 +139,21 @@ const Header = () => {
                     </div>
 
                     <div className="mx-4">
-                        <Link to="/account/accountInf" className="flex flex-col items-center">
-                            <CiUser className="nav-icons" />
-                        </Link>
-                        <span>Tài khoản</span>
+                        {isLoggedIn ? (
+                          <>
+                            <Link to="/account/accountInf" className="flex flex-col items-center">
+                                <CiUser className="nav-icons" />
+                            </Link>
+                            <span>Tài khoản</span>
+                          </>
+                        ) : (
+                          <>
+                            <Link to="/login" className="flex flex-col items-center">
+                                <CiUser className="nav-icons" />
+                            </Link>
+                            <span>Đăng nhập</span>
+                          </>
+                        )}
                     </div>
                 </div>
             </nav>

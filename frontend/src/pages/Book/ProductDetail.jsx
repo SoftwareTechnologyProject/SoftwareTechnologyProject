@@ -67,9 +67,13 @@ export default function BookDetail() {
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/books/${id}`);
+        console.log('Fetching book ID:', id);
+        const response = await axios.get(`http://localhost:8080/api/books/${id}`);
+        console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
+        console.error('Error fetching book:', err);
+        console.error('Error response:', err.response?.data);
         setError("Không thể tải thông tin sách");
       } finally {
         setLoading(false);

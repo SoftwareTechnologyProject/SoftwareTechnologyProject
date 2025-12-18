@@ -7,7 +7,7 @@ import Footer from './components/Footer/Footer';
 import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
 import HomePage from "./pages/HomePage/HomePage";
 import Account from "./pages/Account/Account.jsx";
-import ProductDetail from "./pages/productDetails/ProductDetail";
+import ProductDetail from "./pages/Book/ProductDetail";
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import Recommend from './components/Recommend/Recommend.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
