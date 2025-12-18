@@ -34,17 +34,47 @@ export default function BookDetail() {
     return true;
   };
   
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (handleAuthRequired('thêm vào giỏ hàng')) {
-      // TODO: Add to cart logic here
-      alert('Đã thêm vào giỏ hàng!');
+      try {
+        // TODO: Replace with real userId from authentication
+        const userId = 1; // Mock userId
+        
+        const cartItem = {
+          bookVariantId: variant?.id,
+          quantity: quantity
+        };
+        
+        await axios.post(`http://localhost:8080/api/cart/add?userId=${userId}`, cartItem);
+        alert('Đã thêm vào giỏ hàng!');
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại!');
+      }
     }
   };
   
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (handleAuthRequired('mua hàng')) {
-      // TODO: Buy now logic here
-      alert('Chuyển đến trang thanh toán!');
+      try {
+        // TODO: Replace with real userId from authentication
+        const userId = 1; // Mock userId
+        
+        // Thêm vào giỏ trước
+        const cartItem = {
+          bookVariantId: variant?.id,
+          quantity: quantity
+        };
+        
+        await axios.post(`http://localhost:8080/api/cart/add?userId=${userId}`, cartItem);
+        
+        // Chuyển đến trang thanh toán
+        // TODO: Replace with actual checkout page route
+        window.location.href = '/checkout';
+      } catch (error) {
+        console.error('Error during buy now:', error);
+        alert('Không thể thực hiện. Vui lòng thử lại!');
+      }
     }
   };
 

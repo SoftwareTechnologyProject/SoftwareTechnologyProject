@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* Admin Layout Container */
+.admin-layout {
+    @apply flex min-h-screen bg-gray-50;
+}
+
+/* Sidebar Styles */
+.admin-sidebar {
+    @apply w-[280px] bg-white shadow-lg flex flex-col;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    @apply p-6 border-b border-gray-200 flex items-center gap-3;
+}
+
+.sidebar-icon {
+    @apply w-8 h-8 text-amber-500;
+}
+
+.sidebar-title {
+    @apply text-xl font-bold text-gray-800 m-0;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    @apply p-4 flex flex-col gap-2 flex-1;
+}
+
+/* Navigation Items */
+nav {
+    @apply m-0;
+}
+
+.nav-item {
+    @apply flex items-center gap-3 rounded-lg py-5 px-2.5 text-gray-600 no-underline font-medium transition-all duration-200 bg-transparent border-0 w-full cursor-pointer text-[15px];
+}
+
+.nav-item:hover, .nav-item.active {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)];
+}
+
+.nav-icon {
+    @apply w-[22px] h-[22px] flex-shrink-0;
+}
+
+/* Logout Button */
+.logout-btn {
+    @apply mt-auto text-red-600;
+}
+
+.logout-btn:hover {
+    @apply bg-red-50 text-red-800;
+}
+
+/* Main Content Area */
+.admin-content {
+    @apply flex-1 overflow-y-auto p-8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        @apply w-60;
+    }
+
+    .sidebar-header {
+        @apply p-5;
+    }
+
+    .sidebar-title {
+        @apply text-lg;
+    }
+
+    .nav-item {
+        @apply py-2.5 px-3 text-sm;
+    }
+
+    .admin-content {
+        @apply p-5;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-layout {
+        @apply flex-col;
+    }
+
+    .admin-sidebar {
+        @apply w-full shadow-md;
+    }
+
+    .sidebar-nav {
+        @apply flex-row overflow-x-auto p-3;
+    }
+
+    .nav-item span {
+        @apply hidden;
+    }
+
+    .nav-item {
+        @apply flex-col p-3 min-w-[60px];
+    }
+
+    .admin-content {
+        @apply p-4;
+    }
+}

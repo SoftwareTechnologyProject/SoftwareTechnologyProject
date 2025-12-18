@@ -1,7 +1,9 @@
 package com.bookstore.backend.model;
 
+import com.bookstore.backend.model.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -19,13 +22,9 @@ public class Notification {
 
     private String content;
 
-    @ManyToMany
-    @JoinTable(name = "user_notification", joinColumns = @JoinColumn(name = "notification_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<Users> users;
-
     private LocalDateTime createAt;
-    private boolean isRead;
     private String url;
 
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
 }

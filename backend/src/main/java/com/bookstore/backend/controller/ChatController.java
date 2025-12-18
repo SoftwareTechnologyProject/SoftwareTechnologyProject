@@ -1,5 +1,6 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.DTO.BoxChatDTO;
 import com.bookstore.backend.DTO.MessageRequestDTO;
 import com.bookstore.backend.DTO.MessageResponseDTO;
 import com.bookstore.backend.model.Messages;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,19 +25,14 @@ public class ChatController {
     @MessageMapping("/chat.send")
     public void sendTo(MessageRequestDTO messageRequestDTO, Principal principal) {
         if (principal == null) {
-            System.out.println("❌ Principal is null! User not authenticated in WebSocket");
             return;
         }
-
         String email = principal.getName();
-        System.out.println("📩 Principal in WS: " + email);
-        System.out.println("📩 Message received from front-end: " + messageRequestDTO.getContent());
 
         try {
             chatService.sendMessage(messageRequestDTO, email);
-            System.out.println("✅ Message processed and sent by ChatService");
         } catch (Exception e) {
-            System.out.println("❌ Error while sending message: " + e.getMessage());
+            System.out.println("Error while sending message: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -60,7 +57,8 @@ public class ChatController {
 //            "size": 20
 //    }
     @GetMapping
-    public ResponseEntity<Page<MessageResponseDTO>> getMessage(@RequestParam int page, @RequestParam int size){
-        return ResponseEntity.ok(messageService.getCustomerMessages(page, size));
+    public ResponseEntity<BoxChatDTO> getMessage(@RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "50") int size){
+        return ResponseEntity.ok(messageService.getBoxChat(page, size));
     }
 }

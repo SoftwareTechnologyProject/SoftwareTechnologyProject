@@ -1,31 +1,52 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './main.css';
+
+// Components
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
-import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
-import HomePage from "./pages/HomePage/HomePage";
-import Account from "./pages/Account/Account.jsx";
-import ProductDetail from "./pages/Book/ProductDetail";
-import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import Recommend from './components/Recommend/Recommend.jsx';
+import HeaderAdmin from './components/HeaderAdmin/HeaderAdmin.jsx';
+import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
+import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+
+// Pages
+import HomePage from './pages/HomePage/HomePage';
+import Account from './pages/Account/Account.jsx';
+import ProductDetail from './pages/Book/ProductDetail';
+import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Cart from "./pages/Cart/Cart.jsx";
 import Checkout from './pages/Checkout/Checkout.jsx';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
-import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
-import Login from "./pages/login.jsx"
+import BlogList from './pages/Blog/BlogList';
+import BlogDetail from './pages/Blog/BlogDetail';
+import BlogAbout from './pages/Blog/BlogAbout';
+import BlogAdmin from './pages/Blog/BlogAdmin';
+import Login from "./pages/login.jsx";
+import CategoryPage from './pages/Category/CategoryPage';
+import SearchResult from './pages/SearchResult/SearchResult.jsx';
+import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 
-// Component Layout chung cho các trang có Header/Footer
+// Layout chung
 function MainLayout() {
   return (
     <>
       <Header />
+
       <Routes>
+        {/* Public */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/:categorySlug" element={<CategoryPage />} />
+        <Route path="/books/:id" element={<ProductDetail />} />
+        <Route path="/vouchers" element={<VoucherManagement />} />
+        <Route path="/search" element={<SearchResult />} />
+        <Route path="/voucher-management" element={<VoucherManagement />} />
+
+        {/* Account area */}
         <Route path="/account" element={<AccountLayout />}>
           <Route path="accountInf" element={<Account />} />
           <Route path="voucher-wallet" element={<VoucherWallet />} />
@@ -33,11 +54,20 @@ function MainLayout() {
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-        <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/voucher-wallet" element={<VoucherWallet />} />
+
+        {/* Cart and Checkout */}
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<HeaderAdmin />}>
+          <Route path="books" element={<Account />} />
+          <Route path="vouchers" element={<VoucherManagement />} />
+          <Route path="blog" element={<BlogAdmin />} />
+        </Route>
+        <Route path="/admin/chat" element={<AdminChatBox />} />
       </Routes>
+
       <Recommend />
       <Footer />
       <ChatFloating />
@@ -49,10 +79,15 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Trang LOGIN riêng biệt - không có Header/Footer */}
-        <Route path="/login" element={<Login />} />
+        {/* Blog routes - standalone without Header/Footer */}
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        <Route path="/blog/about" element={<BlogAbout />} />
 
-        {/* Tất cả các trang khác có Layout chung */}
+        {/* Login page - standalone without Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* All other pages with common Layout */}
         <Route path="*" element={<MainLayout />} />
       </Routes>
     </BrowserRouter>
