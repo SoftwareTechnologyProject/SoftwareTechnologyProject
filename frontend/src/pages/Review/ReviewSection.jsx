@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaStar, FaUpload } from "react-icons/fa";
-import axios from "axios";
+import axiosClient from "../../config/axiosConfig";
 import "./ReviewSection.css";
 
 export default function ReviewSection({ bookId }) {
@@ -24,10 +24,10 @@ export default function ReviewSection({ bookId }) {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/books/${bookId}/reviews`);
+        const res = await axiosClient.get(`/api/books/${bookId}/reviews`);
         setReviews(res.data || []);
       } catch (err) {
-        console.error("Không thể tải review");
+        console.error("Không thể tải review", err);
       }
     };
     fetchReviews();
@@ -56,7 +56,7 @@ export default function ReviewSection({ bookId }) {
       formData.append("rating", newReview.rating);
       formData.append("text", newReview.text);
       newReview.images.forEach(img => formData.append("images", img));
-      const res = await axios.post(`http://localhost:8080/books/${bookId}/reviews`, formData, {
+      const res = await axiosClient.post(`/api/books/${bookId}/reviews`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setReviews([res.data, ...reviews]);

@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../../config/axiosConfig";
 import { Link } from "react-router-dom";
 import ex1 from "../../assets/ex1.jpg";
 import "./CategoryPage.css";
@@ -20,9 +20,9 @@ const CategoryPage = () => {
 
   // Mapping slug to category name (all 17 categories from database)
   const categoryMap = {
-    "agriculture": "S├ích N├┤ng - L├óm - Ng╞░ Nghiß╗çp",           // 108 books
-    "manga": "Truyß╗çn Tranh, Manga, Comic",                    // 108 books
-    "magazines": "Tß║íp Ch├¡ - Catalogue",                       // 108 books
+    "agriculture": "Sách Nông - Lâm - Ngư Nghiệp",           // 108 books
+    "manga": "Truyện Tranh, Manga, Comic",                    // 108 books
+    "magazines": "Tạp Chí - Catalogue",                       // 108 books
     "cooking": "Ingredients, Methods & Appliances",           // 69 books
     "desserts": "Baking - Desserts",                          // 66 books
     "magazines-alt": "Magazines",                             // 27 books
@@ -45,12 +45,12 @@ const CategoryPage = () => {
     const fetchBooksByCategory = async () => {
       try {
         setLoading(true);
-        // Fetch all books tß╗½ API
-        // T─âng size ─æß╗â chß║»c chß║»n lß║Ñy ─æß╗º (mß╗Öt category c├│ ~108 s├ích)
-        const response = await axios.get('http://localhost:8080/api/books?page=0&size=500');
+        // Fetch all books từ API
+        // Tăng size để chắc chắn lấy đủ (một category có ~108 sách)
+        const response = await axiosClient.get('/api/books?page=0&size=500');
         const allBooks = response.data.value || response.data || [];
         
-        // Lß╗ìc s├ích theo category
+        // Lọc sách theo category
         const targetCategory = categoryMap[normalizedSlug];
         if (targetCategory) {
           const filteredByCategory = allBooks.filter(book => {

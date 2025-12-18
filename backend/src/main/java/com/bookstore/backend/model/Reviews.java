@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 import java.time.LocalDateTime;
 
-//@Entity
+@Entity
 @Table(name = "reviews")
 @Data
 @NoArgsConstructor

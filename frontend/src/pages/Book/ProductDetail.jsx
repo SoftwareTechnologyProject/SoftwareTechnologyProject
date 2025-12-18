@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../../config/axiosConfig";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
+import Toast from "../../components/Toast/Toast";
 import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
@@ -12,6 +13,8 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
   
   // TODO: Replace with real authentication
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock: set to true for development
@@ -37,18 +40,16 @@ export default function BookDetail() {
   const handleAddToCart = async () => {
     if (handleAuthRequired('thêm vào giỏ hàng')) {
       try {
-        // TODO: Replace with real userId from authentication
-        const userId = 1; // Mock userId
-        
         const cartItem = {
           bookVariantId: variant?.id,
           quantity: quantity
         };
         
-        await axios.post(`http://localhost:8080/api/cart/add?userId=${userId}`, cartItem);
-        alert('Đã thêm vào giỏ hàng!');
+        await axiosClient.post(`/api/cart/add`, cartItem);
+        setShowToast(true);
       } catch (error) {
         console.error('Error adding to cart:', error);
+        console.error('Error details:', error.response?.data);
         alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại!');
       }
     }
@@ -57,23 +58,39 @@ export default function BookDetail() {
   const handleBuyNow = async () => {
     if (handleAuthRequired('mua hàng')) {
       try {
-        // TODO: Replace with real userId from authentication
-        const userId = 1; // Mock userId
-        
+        setBuyNowLoading(true);
         // Thêm vào giỏ trước
         const cartItem = {
           bookVariantId: variant?.id,
           quantity: quantity
         };
         
-        await axios.post(`http://localhost:8080/api/cart/add?userId=${userId}`, cartItem);
+        await axiosClient.post(`/api/cart/add`, cartItem);
         
-        // Chuyển đến trang thanh toán
-        // TODO: Replace with actual checkout page route
-        window.location.href = '/checkout';
+        // Fetch cart to get items with proper data
+        const cartResponse = await axiosClient.get('/api/cart');
+        const cartData = cartResponse.data;
+        
+        if (cartData && cartData.items) {
+          const formattedItems = cartData.items.map(item => ({
+            id: item.id,
+            name: item.bookTitle,
+            price: item.price,
+            originalPrice: item.price * 1.2,
+            quantity: item.quantity,
+            image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
+            checked: true,
+          }));
+          
+          // Navigate to checkout with cart items
+          window.location.href = '/checkout';
+          // Or better: navigate('/checkout', { state: { items: formattedItems } });
+        }
       } catch (error) {
         console.error('Error during buy now:', error);
+        console.error('Error details:', error.response?.data);
         alert('Không thể thực hiện. Vui lòng thử lại!');
+        setBuyNowLoading(false);
       }
     }
   };
@@ -98,7 +115,7 @@ export default function BookDetail() {
       try {
         setLoading(true);
         console.log('Fetching book ID:', id);
-        const response = await axios.get(`http://localhost:8080/api/books/${id}`);
+        const response = await axiosClient.get(`/api/books/${id}`);
         console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
@@ -434,6 +451,43 @@ export default function BookDetail() {
                 Xác nhận
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Toast notification */}
+      {showToast && (
+        <Toast 
+          message="Đã thêm vào giỏ hàng!" 
+          linkText="Xem ngay" 
+          linkHref="/cart"
+          onClose={() => setShowToast(false)}
+        />
+      )}
+      
+      {/* Loading overlay for Buy Now */}
+      {buyNowLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px 48px',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+            color: '#333'
+          }}>
+            Đang chuyển tới giỏ hàng...
           </div>
         </div>
       )}

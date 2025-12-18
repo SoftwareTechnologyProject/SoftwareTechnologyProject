@@ -46,7 +46,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
-                    .requestMatchers("/api/books/**", "/ws/**").permitAll()
+                    .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/books/*/reviews").authenticated() // Require auth for creating reviews
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**", "/register").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll() // Explicitly allow register
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll() // Allow public GET for blog
@@ -55,6 +56,10 @@ public class SecurityConfig {
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll() // Allow public GET vouchers list
                     .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for voucher management
                     
+                    // User authenticated endpoints
+                    .requestMatchers("/api/cart/**").authenticated()
+                    .requestMatchers("/api/chat/**").authenticated()
+                    .requestMatchers("/api/users/profile").authenticated()
                     .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                     
                     .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
