@@ -9,7 +9,36 @@ function Checkout() {
   const location = useLocation();
 
   // Nhận danh sách sản phẩm từ trang Cart (được truyền qua state) và Nếu không có (người dùng vào thẳng link), mặc định là mảng rỗng
-  const receivedItems = location.state?.items || [];
+  const [receivedItems, setReceivedItems] = useState(location.state?.items || []);
+
+  // Fetch cart if no items passed from Cart page
+  useEffect(() => {
+    const fetchCartIfNeeded = async () => {
+      if (!receivedItems || receivedItems.length === 0) {
+        try {
+          const response = await axiosClient.get('/api/cart');
+          const cartData = response.data;
+          
+          if (cartData && cartData.items) {
+            const formattedItems = cartData.items.map(item => ({
+              id: item.id,
+              name: item.bookTitle,
+              price: item.price,
+              originalPrice: item.price * 1.2,
+              quantity: item.quantity,
+              image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
+              checked: true,
+            }));
+            setReceivedItems(formattedItems);
+          }
+        } catch (error) {
+          console.error("Lỗi load cart:", error);
+        }
+      }
+    };
+    
+    fetchCartIfNeeded();
+  }, []);
 
   const [formData, setFormData] = useState({
       fullName: '',

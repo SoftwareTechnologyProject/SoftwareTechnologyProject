@@ -27,7 +27,7 @@ import { RiBook3Line } from "react-icons/ri";
 
 import "./HomePage.css";
 
-const banners = [banner3, banner2, banner1];
+const banners = [banner1, banner2, banner3];
 
 const catalog = [
     { img: paper, link: "/paper", content: "Giấy Photo" },
@@ -78,8 +78,8 @@ const HomePage = () => {
         const fetchBooks = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/books?page=0&size=20');
-                const books = response.data || [];
-                
+                const books = response.data.value || response.data || [];
+
                 // Use first 10 books for trending
                 setTrendingBooks(books.slice(0, 10));
                 // Use first 20 books for combo trending
@@ -244,16 +244,17 @@ const HomePage = () => {
                                 const oldPrice = price * 1.1; // Mock old price
                                 
                                 return (
-                                    <Link className="book-view" key={book.id || index} to={`/books/${book.id}`}>
+                                    <Link key={book.id || index} to={`/books/${book.id}`}>
                                         <img 
                                             src={imageUrl} 
-                                            alt={book.title}
+                                            alt={book.title} 
+                                            className="w-full h-auto"
                                             onError={(e) => {
                                                 e.target.src = ex1;
                                             }}
                                         />
                                         <div className="label-price">
-                                            <h3>{book.title}</h3>
+                                            <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
                                             <p className="special-price">
                                                 <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
                                                 <span className="percent-discount">-10%</span>
@@ -297,7 +298,7 @@ const HomePage = () => {
                                             const oldPrice = price * 1.15;
                                             
                                             return (
-                                                <Link className="w-[70%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
+                                                <Link key={book.id || idx} to={`/books/${book.id}`}>
                                                     <img 
                                                         src={imageUrl} 
                                                         alt={book.title}
@@ -306,7 +307,7 @@ const HomePage = () => {
                                                         }}
                                                     />
                                                     <div className="label-price">
-                                                        <h3>{book.title}</h3>
+                                                        <h3>{book.title?.substring(0, 40) + (book.title?.length > 40 ? '...' : '')}</h3>
                                                         <p className="special-price">
                                                             <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
                                                             <span className="percent-discount">-15%</span>

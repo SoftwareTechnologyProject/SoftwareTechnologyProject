@@ -7,8 +7,7 @@ import { BiSolidDiscount } from "react-icons/bi";
 import { Link } from 'react-router-dom';
 import './VoucherWallet.css';
 
-const API_URL = 'http://localhost:8080/vouchers';
-// const API_URL = 'http://localhost:8081/vouchers';
+const API_URL = 'http://localhost:8080/api/vouchers';
 
 const VoucherWallet = () => {
     const [vouchers, setVouchers] = useState([]);
@@ -222,29 +221,8 @@ const VoucherWallet = () => {
                     </div>
                 )}
 
-                <div className="wallet-info-section">
-                    <h2>📌 Hướng dẫn sử dụng voucher</h2>
-                    <div className="info-grid">
-                        <div className="info-card">
-                            <span className="step-number">1</span>
-                            <h3>Chọn voucher phù hợp</h3>
-                            <p>Xem điều kiện áp dụng và chọn voucher phù hợp với đơn hàng của bạn</p>
-                        </div>
-                        <div className="info-card">
-                            <span className="step-number">2</span>
-                            <h3>Copy mã voucher</h3>
-                            <p>Nhấn nút "Copy mã" để sao chép mã voucher vào clipboard</p>
-                        </div>
-                        <div className="info-card">
-                            <span className="step-number">3</span>
-                            <h3>Áp dụng khi thanh toán</h3>
-                            <p>Dán mã voucher vào ô "Mã giảm giá" khi thanh toán đơn hàng</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="back-link">
-                    <Link to="/account">← Quay lại tài khoản</Link>
+                    <Link to="/account/accountInf">Quay lại</Link>
                 </div>
             </main>
 
