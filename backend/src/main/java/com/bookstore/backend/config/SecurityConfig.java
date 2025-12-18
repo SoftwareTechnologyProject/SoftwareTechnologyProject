@@ -47,8 +47,8 @@ public class SecurityConfig {
                     // Public endpoints
                     .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
                     .requestMatchers("/api/books/**", "/ws/**").permitAll()
-                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**", "/register").permitAll()
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll() // Explicitly allow register
+                    .requestMatchers("/api/chat/**", "/api/notifications").permitAll()
+                    .requestMatchers("/api/register").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll() // Allow public GET for blog
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll() // Allow public POST comments
                     .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for blog management

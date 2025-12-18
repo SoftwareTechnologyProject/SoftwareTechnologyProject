@@ -46,4 +46,13 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    public void sendVerificationEmail(String toEmail, String otp) throws MailException {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Account Verification OTP");
+        message.setText("Your OTP for verifying your account is " + otp + ". Use this OTP to confirm your registration.");
+        mailSender.send(message);
+    }
+
 }
