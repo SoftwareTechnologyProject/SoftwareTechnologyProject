@@ -44,10 +44,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        System.out.println("🔐 Login attempt - Email: " + request.getEmail());
         try {
             authenticate(request.getEmail(), request.getPassword());
 
             final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
+            System.out.println("✅ UserDetails loaded: " + userDetails.getUsername());
             final String jwtToken = jwtUtil.generateToken(userDetails);
 
             // Cookie gửi cho FE
@@ -64,18 +66,22 @@ public class AuthController {
                     .body(new AuthResponse(request.getEmail(), jwtToken));
 
         } catch (BadCredentialsException ex) {
+            System.out.println("❌ BadCredentialsException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Email or Password is incorrect");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
         } catch (DisabledException ex) {
+            System.out.println("❌ DisabledException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Account is disabled");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 
         } catch (Exception ex) {
+            System.out.println("❌ Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
+            ex.printStackTrace();
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Authentication failed");

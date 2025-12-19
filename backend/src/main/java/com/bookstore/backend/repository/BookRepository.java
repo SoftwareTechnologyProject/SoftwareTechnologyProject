@@ -11,14 +11,19 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
+    // Tìm sách theo tên category (có phân trang)
     Page<Book> findByCategoriesName(String categoryName, Pageable pageable);
 
+    // Tìm sách theo tên tác giả (có phân trang)
     Page<Book> findByAuthorsName(String authorName, Pageable pageable);
 
+    // Tìm sách theo tên nhà xuất bản (có phân trang)
     Page<Book> findByPublisherName(String publisherName, Pageable pageable);
 
+    // Tìm sách theo tiêu đề chính xác (có phân trang)
     Page<Book> findByTitle(String keyword, Pageable pageable);
 
+    // Lấy danh sách tối đa 5 tiêu đề sách có chứa keyword (gợi ý search)
     @Query("""
         SELECT b.title
         FROM Book b
@@ -27,7 +32,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     """)
     List<String> findTop5Titles(@Param("keyword") String keyword, Pageable pageable);
 
-
+    // Tìm sách theo keyword trong title, category, author hoặc publisher (search tổng hợp, có phân trang)
     @Query("""
         SELECT DISTINCT b
         FROM Book b
