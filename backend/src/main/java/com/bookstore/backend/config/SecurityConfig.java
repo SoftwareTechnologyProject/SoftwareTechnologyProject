@@ -65,6 +65,9 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
 
+                        // Thêm từ stashed
+                        .requestMatchers("/api/chat/**", "/api/notifications").permitAll()
+
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
@@ -72,7 +75,6 @@ public class SecurityConfig {
 
                         // Các request khác phải login
                         .anyRequest().authenticated())
-                // Thêm filter JWT trước UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtResquestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

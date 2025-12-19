@@ -55,6 +55,7 @@ public class Account {
     private Long verifyOtpExpiredAt;
     private String resetPasswordOtp;
     private Long resetOtpExpiredAt;
+    private String verificationToken;
 
     @CreationTimestamp
     @Column(updatable = false)
