@@ -255,12 +255,12 @@ CREATE INDEX idx_blog_posts_created ON blog_posts(created_at);
 
 -- ==================== SAMPLE USER DATA ====================
 INSERT INTO users (fullname, phonenumber, address, email, dateofbirth, role) VALUES
-('Admin User', '0123456789', 'Admin Office', 'admin@bookstore.com', '1990-01-01', 'ADMIN'),
+('Admin User', '0123456789', 'Admin Office', 'ndtoan.work@gmail.com', '1990-01-01', 'ADMIN'),
 ('Test Customer', '0987654321', '123 Test Street', 'customer@test.com', '1995-05-15', 'USER'),
 ('Staff User', '0456789123', 'Store Location', 'staff@bookstore.com', '1992-03-10', 'STAFF');
 
 INSERT INTO accounts (userid, username, email, password, is_account_verified, created_at) VALUES
-(1, 'admin', 'admin@bookstore.com', '$2a$10$example_hashed_password_admin', TRUE, NOW()),
+(1, 'admin', 'ndtoan.work@gmail.com', '$2a$10$example_hashed_password_admin', TRUE, NOW()),
 (2, 'customer', 'customer@test.com', '$2a$10$example_hashed_password_customer', TRUE, NOW()),
 (3, 'staff', 'staff@bookstore.com', '$2a$10$example_hashed_password_staff', TRUE, NOW());
 
