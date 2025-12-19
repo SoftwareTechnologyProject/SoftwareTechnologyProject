@@ -1,51 +1,22 @@
 -- =====================================================
--- SAMPLE DATA: Users & Vouchers
+-- SAMPLE DATA: Update Users & Vouchers
 -- Auto-run when Docker starts
 -- Password for all users: "password123"
 -- =====================================================
 
 -- =========================
--- 1. SAMPLE USERS & ACCOUNTS
+-- 1. UPDATE USER PASSWORDS (01-schema.sql created users with invalid passwords)
 -- =========================
 -- BCrypt hash of "password123": $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 
 DO $$
-DECLARE
-    admin_user_id INTEGER;
-    customer_user_id INTEGER;
-    staff_user_id INTEGER;
 BEGIN
-    -- Create admin user (if not exists)
-    IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@bookstore.com') THEN
-        INSERT INTO users (email, fullname, phonenumber, role)
-        VALUES ('admin@bookstore.com', 'Admin User', '0901234567', 'OWNER')
-        RETURNING id INTO admin_user_id;
-        
-        INSERT INTO accounts (username, password, userid)
-        VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', admin_user_id);
-    END IF;
+    -- Update passwords for users created by 01-schema.sql  
+    -- BCrypt hash: $2b$10$gx5SK3voCbWdcbYAI1DFvegCUlmCW70b7Oca7O41aKDIVy5d/ck/O
+    UPDATE Accounts SET password = '$2b$10$gx5SK3voCbWdcbYAI1DFvegCUlmCW70b7Oca7O41aKDIVy5d/ck/O' 
+    WHERE username IN ('admin', 'customer', 'staff');
     
-    -- Create customer user (if not exists)
-    IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'customer@test.com') THEN
-        INSERT INTO users (email, fullname, phonenumber, role)
-        VALUES ('customer@test.com', 'Test Customer', '0912345678', 'CUSTOMER')
-        RETURNING id INTO customer_user_id;
-        
-        INSERT INTO accounts (username, password, userid)
-        VALUES ('customer', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', customer_user_id);
-    END IF;
-    
-    -- Create staff user (if not exists)
-    IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'staff@bookstore.com') THEN
-        INSERT INTO users (email, fullname, phonenumber, role)
-        VALUES ('staff@bookstore.com', 'Staff User', '0923456789', 'STAFF')
-        RETURNING id INTO staff_user_id;
-        
-        INSERT INTO accounts (username, password, userid)
-        VALUES ('staff', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', staff_user_id);
-    END IF;
-    
-    RAISE NOTICE 'Sample users ready';
+    RAISE NOTICE 'Updated user passwords to: password123';
 END $$;
 
 
