@@ -43,7 +43,6 @@ public class ProfileServiceImpl implements ProfileService {
                 // Dùng getFullName() làm username (theo yêu cầu của bạn)
                 .username(request.getFullName()) 
                 .password(passwordEncoder.encode(request.getPassword()))
-                .status("ACTIVE")
                 .isAccountVerified(false)
                 .verifyOtp(null)
                 .verifyOtpExpiredAt(0L)
