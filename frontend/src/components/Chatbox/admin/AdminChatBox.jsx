@@ -27,21 +27,14 @@ const AdminChatBox = () => {
   const { sendChatMessage } = useUserNotifications(
     null,
     (msg) => {
-      console.log("📩 WS received:", msg);
+      console.log("📩 WS received (admin):", msg);
 
-      if (
-        activeBox &&
-        msg.conversationId === activeBox.conversationId
-      ) {
-        setMessages((prev) => [...prev, msg]);
+      // ✅ DÙNG LOGIC GIỐNG USER: render luôn
+      setMessages((prev) => [...prev, msg]);
 
-        // admin nhận tin từ user
-        if (!msg.mine && msg.id) {
-          markRead([msg.id]);
-        }
-      } else {
-        // tin của box khác → tăng unread
-        fetchUnread();
+      // chỉ mark read khi admin nhận tin từ user
+      if (!msg.mine && msg.id) {
+        markRead([msg.id]);
       }
     }
   );
@@ -56,7 +49,6 @@ const AdminChatBox = () => {
       });
 
       setBoxChats(res.data);
-
     } catch (err) {
       console.error("❌ Load box chats failed:", err);
     }
