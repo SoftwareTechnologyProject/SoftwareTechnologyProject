@@ -1,5 +1,6 @@
 -- ==================== SCHEMA BASED ON JAVA MODELS ====================
 -- Generated from Java Entity classes
+-- password 3 account: password123
 
 -- ==================== ENUM TYPES ====================
 CREATE TYPE UserRole AS ENUM ('USER', 'STAFF', 'ADMIN');
