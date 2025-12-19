@@ -4,6 +4,6 @@ public enum StatusOrder {
     PENDING,
     DELIVERY,
     SUCCESS,
-    CANCEL,
+    CANCELLED,
     RESTORE
 }

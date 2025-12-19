@@ -6,6 +6,7 @@ import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.repository.*;
+import com.bookstore.backend.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,23 +22,26 @@ public class OrdersService {
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final SecurityUtils securityUtils;
 
-    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository) {
+
+    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
         this.userRepository = userRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.securityUtils = securityUtils;
     }
 
     // ------------------- CREATE ORDER -------------------
-    public OrdersDTO createOrder(Long userId, List<OrderDetailDTO> details, String voucherCode,
+    public OrdersDTO createOrder(List<OrderDetailDTO> details, String voucherCode,
                                  PaymentType paymentType, String shippingAddress, String phoneNumber) {
-
+        var userInfo = securityUtils.getCurrentUser();
         Orders order = new Orders();
 
         // Lấy User từ repository
-        Users user = userRepository.findById(userId)
+        Users user = userRepository.findById(userInfo.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         order.setUsers(user);
 
@@ -71,8 +75,9 @@ public class OrdersService {
 
 
     // ------------------- GET ORDERS BY USER -------------------
-    public List<OrdersDTO> getOrdersByUser(Long userId) {
-        return ordersRepository.findByUsers_Id(userId)
+    public List<OrdersDTO> getOrdersByUser() {
+        var userInfo = securityUtils.getCurrentUser();
+        return ordersRepository.findByUsers_Id(userInfo.getId())
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());

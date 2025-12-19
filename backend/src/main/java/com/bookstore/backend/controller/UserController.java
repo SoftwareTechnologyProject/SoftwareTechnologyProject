@@ -49,6 +49,7 @@ public class UserController {
                 user.getPhoneNumber(),
                 user.getAddress(),
                 user.getDateOfBirth()
+
         );
 
         return ResponseEntity.ok(response);

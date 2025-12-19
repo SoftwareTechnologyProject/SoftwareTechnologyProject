@@ -27,9 +27,8 @@ public class OrdersController {
 
     // Customer: tạo đơn hàng -> trả về OrdersDTO
     @PostMapping
-    public ResponseEntity<OrdersDTO> createOrder(@RequestParam Long userId, @RequestBody OrdersDTO dto) {
+    public ResponseEntity<OrdersDTO> createOrder(@RequestBody OrdersDTO dto) {
         OrdersDTO createdOrder = ordersService.createOrder(
-                userId,
                 dto.getOrderDetails(),
                 dto.getVoucherCode(),
                 dto.getPaymentType(),
@@ -40,9 +39,9 @@ public class OrdersController {
     }
 
     // Customer: xem đơn hàng của mình -> trả về List<OrdersDTO>
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrdersDTO>> getOrdersByUser(@PathVariable Long userId) {
-        List<OrdersDTO> orders = ordersService.getOrdersByUser(userId);
+    @GetMapping("/user")
+    public ResponseEntity<List<OrdersDTO>> getOrdersByUser() {
+        List<OrdersDTO> orders = ordersService.getOrdersByUser();
         return ResponseEntity.ok(orders);
     }
 

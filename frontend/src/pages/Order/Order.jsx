@@ -1,21 +1,18 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import "./Order.css";
+
+const API_URL = "http://localhost:8080/api/orders";
 
 export default function Order() {
   const navigate = useNavigate();
-  const userId = 1;
 
-  const [ordersData, setOrdersData] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("ALL");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    axios
-      .get(`http://localhost:8080/orders/user/${userId}`)
-      .then((res) => setOrdersData(res.data))
-      .catch((err) => console.error("Error loading orders:", err));
-  }, []);
+  const token = localStorage.getItem("accessToken");
 
   const tabs = [
     { key: "ALL", label: "Tất cả" },
@@ -25,91 +22,145 @@ export default function Order() {
     { key: "CANCELLED", label: "Bị hủy" },
   ];
 
+  // Nếu không có token → về login
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    } else {
+      fetchOrders();
+    }
+  }, []);
+
+  // --- Fetch orders ---
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(`${API_URL}/user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Lỗi server");
+
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setError("Không thể tải đơn hàng.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredOrders =
     activeTab === "ALL"
-      ? ordersData
-      : ordersData.filter((o) => o.status === activeTab);
+      ? orders
+      : orders.filter((o) => o.status?.toUpperCase() === activeTab);
 
-  // 👉 Hàm tính tổng tiền của 1 order
   const calcTotal = (details) =>
-    details.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0);
+    details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+
+  // --- Cancel Order ---
+  const handleCancel = async (orderId) => {
+    if (!window.confirm("Bạn muốn hủy đơn?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: "CANCELLED"
+        }),
+      });
+
+      if (!res.ok) throw new Error("Không thể hủy đơn.");
+
+      fetchOrders();
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="order-page">
-      <div className="alert">
-        🔺 Bạn vui lòng cập nhật thông tin tài khoản:
-        <a href="/account/accountInf"> Cập nhật thông tin ngay</a>
-      </div>
-
-      {/* TAB BAR */}
+      {/* Tabs */}
       <div className="tabs">
         {tabs.map((t) => (
           <div
             key={t.key}
-            onClick={() => setActiveTab(t.key)}
             className={`tab ${activeTab === t.key ? "active" : ""}`}
+            onClick={() => setActiveTab(t.key)}
           >
-            {ordersData.filter(o => t.key === "ALL" || o.status === t.key).length} {t.label}
+            {orders.filter(
+              (o) => t.key === "ALL" || o.status?.toUpperCase() === t.key
+            ).length}{" "}
+            {t.label}
           </div>
         ))}
       </div>
 
-      {/* ORDER LIST */}
-      {filteredOrders.map((order) => {
-        const firstItem = [...order.orderDetails][0]; // lấy item đầu tiên
-        const bookTitle = firstItem?.bookTitle || "Sản phẩm";
-        const imageUrl = firstItem?.imageUrl;
-        const qty = order.orderDetails.length;
-        const total = calcTotal(order.orderDetails);
+      {loading && <div className="loading">Đang tải...</div>}
+      {error && <div className="error">{error}</div>}
 
-        return (
-          <div key={order.id} className="order-card">
-            <div className="order-header">
-              <span className="order-id">#{order.id}</span>
-              <span className="status">{order.status}</span>
-              <span className="date">
-                {new Date(order.orderDate).toLocaleString()}
-              </span>
-            </div>
-
-            <div className="order-body">
-              <div className="info">
-                <img
-                  src={imageUrl || "/book-default.png"}
-                  alt={bookTitle}
-                  className="product-img"
-                />
-
-                <div>
-                  <h4 onClick={() => navigate(`/account/order/${order.id}`)}>
-                    {bookTitle}
-                  </h4>
-                  <span>{qty} sản phẩm</span>
-                </div>
-              </div>
-
-              <div className="price-actions">
-                <div className="price">
-                  Tổng tiền: <strong>{total.toLocaleString()} đ</strong>
-                </div>
-
-                <div className="actions">
-                  {order.status === "PENDING" && (
-                    <button className="cancel">Hủy đơn</button>
-                  )}
-                  {order.status === "SUCCESS" && (
-                    <button className="buy-again">Mua lại</button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      {filteredOrders.length === 0 && (
+      {!loading && !error && filteredOrders.length === 0 && (
         <div className="empty">Không có đơn hàng nào.</div>
       )}
+
+      {!loading &&
+        !error &&
+        filteredOrders.map((order) => {
+          const firstItem = order.orderDetails?.[0];
+          const qty = order.orderDetails?.length || 0;
+          const total = calcTotal(order.orderDetails);
+
+          return (
+            <div key={order.id} className="order-card">
+              <div className="order-header">
+                <span>#{order.id}</span>
+                <span>{order.status}</span>
+              </div>
+
+              <div className="order-body">
+                <div className="info">
+                  <img
+                    src={firstItem?.imageUrl || "/book-default.png"}
+                    alt="ảnh"
+                  />
+                  <div>
+                    <h4 onClick={() => navigate(`/account/order/${order.id}`)}>
+                      {firstItem?.bookTitle || "Sản phẩm"}
+                    </h4>
+                    <span>{qty} sản phẩm</span>
+                  </div>
+                </div>
+
+                <div className="price-actions">
+                  <strong>{total.toLocaleString()} đ</strong>
+
+                  {order.status === "PENDING" && (
+                    <button className="cancel" onClick={() => handleCancel(order.id)}>
+                      Hủy đơn
+                    </button>
+                  )}
+
+                  {order.status === "SUCCESS" && (
+                    <button
+                      className="buy-again"
+                      onClick={() => navigate(`/product/${firstItem?.bookVariantId}`)}
+                    >
+                      Mua lại
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
     </div>
   );
 }
