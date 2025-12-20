@@ -16,7 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.filter.JwtResquestFilter;
 import com.bookstore.backend.repository.UserRepository;
 
@@ -50,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/books/**")
                         .hasAuthority("ROLE_ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/books/**")
-                        .hasAuthority("ROLE_ADMIN")
+.hasAuthority("ROLE_ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/books/**")
                         .hasAuthority("ROLE_ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/authors/**").permitAll()
