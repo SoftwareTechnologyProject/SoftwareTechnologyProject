@@ -6,6 +6,7 @@ import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.model.enums.UserRole;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
 import org.springframework.http.HttpStatus;
@@ -121,7 +122,16 @@ public class OrdersService {
 
     // ------------------- GET ORDER BY ID -------------------
     public OrdersDTO getOrderById(Long orderId) {
-        Orders order = ordersRepository.findById(orderId).orElse(null);
+        var currentUser = securityUtils.getCurrentUser();
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order không tồn tại"));
+        System.out.println(currentUser.getRole());
+        // Kiểm tra quyền
+        if (!order.getUsers().getId().equals(currentUser.getId())
+                && currentUser.getRole() != UserRole.ADMIN) {
+            System.out.println("Nguyễn Hữu Tâm");
+            throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
+        }
         return mapToDTO(order);
     }
 
