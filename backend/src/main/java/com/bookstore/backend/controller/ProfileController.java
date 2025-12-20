@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping; // Cần import để xử lý lỗi tốt hơn
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class ProfileController {
 
     private final ProfileService profileService;
@@ -29,15 +31,15 @@ public class ProfileController {
 
     // Xử lý các yêu cầu đăng ký
     // Endpoint này sẽ tạo user và ngay lập tức gửi OTP xác thực.
-    @PostMapping("/api/auth/register")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse register(@Valid @RequestBody ProfileRequest request){
         ProfileResponse response = profileService.createProfile(request);
         
-        // 🚨 THAY ĐỔI LỚN: GỌI HÀM GỬI OTP XÁC THỰC TÀI KHOẢN
+        // 🚨 THAY ĐỔI LỚN: GỌI HÀM GỬI EMAIL XÁC THỰC TÀI KHOẢN
         try {
-            // Hàm này (trong ProfileServiceImpl) sẽ tạo OTP, lưu vào DB và gọi EmailService để gửi mail
-            profileService.sendOtp(response.getEmail()); 
+            // Hàm này (trong ProfileServiceImpl) sẽ tạo token, lưu vào DB và gọi EmailService để gửi mail
+            profileService.sendVerificationEmail(response.getEmail()); 
             
         } catch (Exception e) {
             // QUAN TRỌNG: Cần thông báo cho người dùng biết email có vấn đề (hoặc log thật chi tiết)

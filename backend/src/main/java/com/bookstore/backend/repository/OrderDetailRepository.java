@@ -16,6 +16,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetails, Integ
     @Query("SELECT CASE WHEN COUNT(od) > 0 THEN true ELSE false END " +
             "FROM OrderDetails od " +
             "WHERE od.bookVariant.id = :variantId " +
-            "AND od.order.status != 'SUCCESS'")
+            "AND od.orders.status != 'SUCCESS'")
     boolean existsByBookVariantAndOrderNotCompleted(@Param("variantId") Long variantId);
 }

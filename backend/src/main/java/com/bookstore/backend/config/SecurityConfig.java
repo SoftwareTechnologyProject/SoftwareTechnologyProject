@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/publishers/**").permitAll()
 
                         .requestMatchers("/register").permitAll()
+                        .requestMatchers("/api/register").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll()
@@ -65,14 +66,16 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
 
+                        // Thêm từ stashed
+                        .requestMatchers("/api/chat/**", "/api/notifications").permitAll()
+
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                        .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/users/**").authenticated()
 
                         // Các request khác phải login
                         .anyRequest().authenticated())
-                // Thêm filter JWT trước UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtResquestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

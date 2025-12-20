@@ -74,7 +74,7 @@ export default function BookAdmin() {
 
   useEffect(() => {
     fetchBooks();
-  }, [page, searchTerm, searchType]);
+  }, [page]);
 
   useEffect(() => {
     fetchMetadata();
@@ -113,14 +113,33 @@ export default function BookAdmin() {
   const handleEdit = (book) => {
     setModalMode("edit");
     setSelectedBook(book);
+    
+    // Map variants to include imageUrls properly
+    const mappedVariants = (book.variants || []).map(v => ({
+      id: v.id,
+      price: v.price || 0,
+      quantity: v.quantity || 0,
+      sold: v.sold || 0,
+      status: v.status || "AVAILABLE",
+      isbn: v.isbn || "",
+      imageUrls: v.imageUrls || []
+    }));
+    
     setFormData({
       title: book.title,
       description: book.description || "",
-      publisherYear: book.publisherYear,
-      publisherId: book.publisherId,
+      publisherYear: book.publisherYear || new Date().getFullYear(),
+      publisherId: book.publisherId || "",
       authorIds: book.authorIds || [],
       categoryIds: book.categoryIds || [],
-      variants: book.variants || []
+      variants: mappedVariants.length > 0 ? mappedVariants : [{
+        price: 0,
+        quantity: 0,
+        sold: 0,
+        status: "AVAILABLE",
+        isbn: "",
+        imageUrls: []
+      }]
     });
     setShowModal(true);
   };
