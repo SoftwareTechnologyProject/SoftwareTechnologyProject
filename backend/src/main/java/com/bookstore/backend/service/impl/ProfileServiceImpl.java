@@ -45,7 +45,6 @@ public class ProfileServiceImpl implements ProfileService {
                 .username(request.getFullName()) 
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .status("ACTIVE")
                 .isAccountVerified(false)
                 .verifyOtp(null)
                 .verifyOtpExpiredAt(0L)
