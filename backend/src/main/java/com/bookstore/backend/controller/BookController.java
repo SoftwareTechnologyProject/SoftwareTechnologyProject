@@ -37,13 +37,13 @@ public class BookController {
 
     // GET /books -> lấy tất cả sách, hỗ trợ pagination và sort
     @GetMapping
-    public ResponseEntity<List<BookDTO>> getAllBooks(
+    public ResponseEntity<Page<BookDTO>> getAllBooks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<BookDTO> bookPage = bookService.getAllBooks(pageable);
-        return ResponseEntity.ok(bookPage.getContent());
+        return ResponseEntity.ok(bookPage);
     }
 
     // GET /books/{id} -> lấy sách theo ID
@@ -79,7 +79,7 @@ public class BookController {
     // GET /books/search -> tìm kiếm sách theo title, isbn, category, author hoặc
     // publisher (có phân trang)
     @GetMapping("/search")
-    public ResponseEntity<List<BookDTO>> searchBooks(
+    public ResponseEntity<Page<BookDTO>> searchBooks(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String isbn,
             @RequestParam(required = false) String category,
@@ -104,7 +104,7 @@ public class BookController {
             bookPage = bookService.getAllBooks(pageable);
         }
 
-        return ResponseEntity.ok(bookPage.getContent());
+        return ResponseEntity.ok(bookPage);
     }
 
     // GET /books/searchKey -> tìm kiếm sách theo keyword tổng hợp (title, category,
