@@ -30,7 +30,7 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
         throw new UsernameNotFoundException("Account not found for user: " + email);
     }
 
-    boolean enabled = "ACTIVE".equals(account.getStatus());
+    boolean enabled = account.getIsAccountVerified() != null && account.getIsAccountVerified();
 
     return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())

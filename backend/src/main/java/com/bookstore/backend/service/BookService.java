@@ -5,20 +5,34 @@ import com.bookstore.backend.DTO.BookDTO.BookVariantDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.BookRepository;
+import com.bookstore.backend.repository.AuthorRepository;
+import com.bookstore.backend.repository.CategoryRepository;
+import com.bookstore.backend.repository.PublisherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class BookService {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private PublisherRepository publisherRepository;
 
     // Lấy chi tiết sách theo ID
     public BookDTO getBookById(Long id) {
@@ -27,12 +41,12 @@ public class BookService {
         return convertToDTO(book);
     }
 
-    // Lấy tất cả sách với pagination
+    // Lấy tất cả sách với phân trang
     public Page<BookDTO> getAllBooks(Pageable pageable) {
         return bookRepository.findAll(pageable).map(this::convertToDTO);
     }
 
-    // Tìm sách theo title
+    // Tìm sách theo tiêu đề
     public Page<BookDTO> getBooksByTitle(String keyword, Pageable pageable) {
         return bookRepository.findByTitle(keyword, pageable).map(this::convertToDTO);
     }
@@ -52,22 +66,48 @@ public class BookService {
         return bookRepository.findByPublisherName(publisherName, pageable).map(this::convertToDTO);
     }
 
-    // Tìm sách theo keyword
-    public Page<BookDTO> getBookByKey(String keyword, Pageable pageable){
+    // Tìm sách theo keyword (title, category, author, publisher)
+    public Page<BookDTO> getBookByKey(String keyword, Pageable pageable) {
         return bookRepository.findByKey(keyword, pageable).map(this::convertToDTO);
     }
 
-    // Tạo gợi ý
+    // Gợi ý tối đa 5 tiêu đề sách theo keyword
     public List<String> suggestKey(String keyword) {
         Pageable limit = PageRequest.of(0, 5);
-        if (keyword == null){
+        if (keyword == null) {
             return List.of();
         }
         return bookRepository.findTop5Titles(keyword, limit);
     }
 
-    // Tạo sách mới
+    // Tạo sách mới (validate publisher, author, category trước khi lưu)
     public BookDTO createBook(BookDTO dto) {
+        // Kiểm tra publisher tồn tại
+        if (dto.getPublisherId() != null) {
+            publisherRepository.findById(dto.getPublisherId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Publisher not found with id: " + dto.getPublisherId()));
+        }
+
+        // Kiểm tra tất cả authors tồn tại
+        if (dto.getAuthorIds() != null && !dto.getAuthorIds().isEmpty()) {
+            for (Long authorId : dto.getAuthorIds()) {
+                authorRepository.findById(authorId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Author not found with id: " + authorId));
+            }
+        }
+
+        // Kiểm tra tất cả categories tồn tại
+        if (dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()) {
+            for (Long categoryId : dto.getCategoryIds()) {
+                categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Category not found with id: " + categoryId));
+            }
+        }
+
+        // Sau khi validate OK thì tạo book
         Book book = convertToEntity(dto);
         Book saved = bookRepository.save(book);
         return convertToDTO(saved);
@@ -78,14 +118,16 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
 
+        // Cập nhật thông tin cơ bản
         book.setTitle(dto.getTitle());
         book.setDescription(dto.getDescription());
         book.setPublisherYear(dto.getPublisherYear());
 
         // Map publisher
         if (dto.getPublisherId() != null) {
-            Publisher publisher = new Publisher();
-            publisher.setId(dto.getPublisherId());
+            Publisher publisher = publisherRepository.findById(dto.getPublisherId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Publisher not found with id: " + dto.getPublisherId()));
             book.setPublisher(publisher);
         } else {
             book.setPublisher(null);
@@ -93,23 +135,28 @@ public class BookService {
 
         // Map authors
         if (dto.getAuthorIds() != null) {
-            Set<Author> authors = dto.getAuthorIds().stream().map(aid -> {
-                Author a = new Author();
-                a.setId(aid);
-                return a;
-            }).collect(Collectors.toSet());
+            Set<Author> authors = new HashSet<>();
+            for (Long authorId : dto.getAuthorIds()) {
+                Author author = authorRepository.findById(authorId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Author not found with id: " + authorId));
+                authors.add(author);
+            }
             book.setAuthors(authors);
         } else {
             book.setAuthors(new HashSet<>());
         }
 
         // Map categories
+        // Validate & Map categories
         if (dto.getCategoryIds() != null) {
-            Set<Category> categories = dto.getCategoryIds().stream().map(cid -> {
-                Category c = new Category();
-                c.setId(cid);
-                return c;
-            }).collect(Collectors.toSet());
+            Set<Category> categories = new HashSet<>();
+            for (Long categoryId : dto.getCategoryIds()) {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Category not found with id: " + categoryId));
+                categories.add(category);
+            }
             book.setCategories(categories);
         } else {
             book.setCategories(new HashSet<>());
@@ -125,7 +172,7 @@ public class BookService {
                 variant.setSold(vdto.getSold());
                 variant.setStatus(vdto.getStatus());
                 variant.setBook(book);
-                // TODO: map image URLs nếu muốn
+                // TODO: map image URLs nếu cần
                 book.getVariants().add(variant);
             }
         }
@@ -134,14 +181,14 @@ public class BookService {
         return convertToDTO(updated);
     }
 
-    // Xóa sách
+    // Xóa sách theo ID
     public void deleteBook(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
         bookRepository.delete(book);
     }
 
-    // Chuyển entity -> DTO
+    // Chuyển entity -> DTO (để trả về client)
     public BookDTO convertToDTO(Book book) {
         BookDTO dto = new BookDTO();
         dto.setId(book.getId());
@@ -165,7 +212,8 @@ public class BookService {
         }
 
         if (book.getVariants() != null) {
-            List<BookVariantDTO> variantDTOs = book.getVariants().stream().map(this::convertVariantToDTO).collect(Collectors.toList());
+            List<BookVariantDTO> variantDTOs = book.getVariants().stream().map(this::convertVariantToDTO)
+                    .collect(Collectors.toList());
             dto.setVariants(variantDTOs);
         }
 
@@ -186,7 +234,7 @@ public class BookService {
         return vdto;
     }
 
-    // Chuyển DTO -> entity
+    // Chuyển DTO -> entity (để lưu DB)
     public Book convertToEntity(BookDTO dto) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
@@ -195,32 +243,41 @@ public class BookService {
 
         // Map publisher
         if (dto.getPublisherId() != null) {
-            Publisher publisher = new Publisher();
-            publisher.setId(dto.getPublisherId());
+            Publisher publisher = publisherRepository.findById(dto.getPublisherId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Publisher not found with id: " + dto.getPublisherId()));
             book.setPublisher(publisher);
         }
 
         // Map authors
         if (dto.getAuthorIds() != null) {
-            Set<Author> authors = dto.getAuthorIds().stream().map(aid -> {
-                Author a = new Author();
-                a.setId(aid);
-                return a;
-            }).collect(Collectors.toSet());
+            Set<Author> authors = new HashSet<>();
+            for (Long authorId : dto.getAuthorIds()) {
+                Author author = authorRepository.findById(authorId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Author not found with id: " + authorId));
+                authors.add(author);
+            }
             book.setAuthors(authors);
+        } else {
+            book.setAuthors(new HashSet<>());
         }
 
         // Map categories
         if (dto.getCategoryIds() != null) {
-            Set<Category> categories = dto.getCategoryIds().stream().map(cid -> {
-                Category c = new Category();
-                c.setId(cid);
-                return c;
-            }).collect(Collectors.toSet());
+            Set<Category> categories = new HashSet<>();
+            for (Long categoryId : dto.getCategoryIds()) {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Category not found with id: " + categoryId));
+                categories.add(category);
+            }
             book.setCategories(categories);
+        } else {
+            book.setCategories(new HashSet<>());
         }
 
-        // Map variants
+        // Map variants (các phiên bản sách: giá, số lượng, trạng thái...)
         if (dto.getVariants() != null) {
             for (BookVariantDTO vdto : dto.getVariants()) {
                 BookVariants variant = new BookVariants();
@@ -228,7 +285,7 @@ public class BookService {
                 variant.setQuantity(vdto.getQuantity());
                 variant.setSold(vdto.getSold());
                 variant.setStatus(vdto.getStatus());
-                variant.setBook(book);
+                variant.setBook(book); // gắn variant với book
                 book.getVariants().add(variant);
             }
         }
