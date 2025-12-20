@@ -55,6 +55,8 @@ public class BookDTO {
         @NotNull(message = "Trạng thái không được trống")
         private String status; // dùng String thay vì enum
 
+        private String isbn; // ISBN của phiên bản sách
+
         private List<String> imageUrls;
     }
 }

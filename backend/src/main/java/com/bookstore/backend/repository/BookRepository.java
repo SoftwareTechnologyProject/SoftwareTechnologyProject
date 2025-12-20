@@ -46,4 +46,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
     Page<Book> findByKey(@Param("keyword") String keyword, Pageable pageable);
+
+    // Tìm sách theo ISBN trong bảng variants (một sách có thể có nhiều biến thể với ISBN khác nhau)
+    @Query("""
+        SELECT DISTINCT b 
+        FROM Book b 
+        JOIN b.variants v 
+        WHERE v.isbn = :isbn
+    """)
+    List<Book> findByIsbn(@Param("isbn") String isbn);
 }

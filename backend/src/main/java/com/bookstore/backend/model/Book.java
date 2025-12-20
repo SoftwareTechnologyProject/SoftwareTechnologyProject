@@ -40,6 +40,9 @@ public class Book {
 
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "book_author",
