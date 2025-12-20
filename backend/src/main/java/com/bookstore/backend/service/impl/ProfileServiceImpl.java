@@ -1,5 +1,6 @@
 package com.bookstore.backend.service.impl;
 
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class ProfileServiceImpl implements ProfileService {
         Account account = Account.builder()
                 // Dùng getFullName() làm username (theo yêu cầu của bạn)
                 .username(request.getFullName()) 
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .isAccountVerified(false)
                 .verifyOtp(null)
@@ -165,6 +167,35 @@ public class ProfileServiceImpl implements ProfileService {
         } catch (Exception e) {
             // SỬA ĐỔI: LOG LỖI CHI TIẾT
             logger.error("LỖI GỬI EMAIL XÁC THỰC OTP cho {}: {}", email, e.getMessage(), e);
+            throw new RuntimeException("Unable to send email. Check application logs for SMTP error details.");
+        }
+    }
+
+    @Override
+    public void sendVerificationEmail(String email) {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        Account account = user.getAccount();
+        if (account == null) {
+            throw new RuntimeException("Account not found for user");
+        }
+
+        if (Boolean.TRUE.equals(account.getIsAccountVerified())) {
+            return;
+        }
+
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000); // 15 minutes
+
+        account.setVerifyOtp(otp);
+        account.setVerifyOtpExpiredAt(expiryTime);
+        userRepository.save(user);
+
+        try {
+            emailService.sendVerificationEmail(email, otp);
+        } catch (Exception e) {
+            logger.error("LỖI GỬI EMAIL XÁC THỰC cho {}: {}", email, e.getMessage(), e);
             throw new RuntimeException("Unable to send email. Check application logs for SMTP error details.");
         }
     }

@@ -24,10 +24,12 @@ import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
-import Login from "./pages/login.jsx";
+import Login from "./pages/Login/Login";
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
+import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
+import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 
 // Layout chung
 function MainLayout() {
@@ -81,6 +83,9 @@ createRoot(document.getElementById("root")).render(
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         
         {/* All other pages with common Layout */}
         <Route path="*" element={<MainLayout />} />
