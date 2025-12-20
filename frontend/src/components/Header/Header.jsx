@@ -342,7 +342,7 @@ const Header = () => {
 
           {/* Tài khoản */}
           <div className="account-menu-container group">
-            <Link to="/account/accountInf" className="account-menu-link">
+            <Link to={isLoggedIn ? "/account/accountInf" : "/login"} className="account-menu-link">
               <CiUser className="nav-icons" />
               <span>Tài Khoản</span>
             </Link>

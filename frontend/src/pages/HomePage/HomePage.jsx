@@ -10,10 +10,10 @@ import bannerVnpay from "../../assets/banner/banner-vnpay.png";
 
 import child from "../../assets/logo/child.png";
 import foreign from "../../assets/logo/foreign.png";
-import language from "../../assets/logo/language.png";
-import literature from "../../assets/logo/literature.png";
-import sgk from "../../assets/logo/sgk.png";
-import skill from "../../assets/logo/skill.png";
+import baking from "../../assets/logo/baking.png";
+import agriculture from "../../assets/logo/agriculture.png";
+import manga from "../../assets/logo/manga.png";
+import catalogue from "../../assets/logo/catalogue.png";
 import vnHistory from "../../assets/logo/vnHistory.png";
 import paper from "../../assets/logo/paper.png";
 
@@ -33,11 +33,11 @@ const catalog = [
     { img: paper, link: "/paper", content: "Giấy Photo" },
     { img: child, link: "/child-books", content: "Thiếu Nhi" },
     { img: foreign, link: "/foreign-books", content: "Ngoại Văn" },
-    { img: language, link: "/language", content: "Sách Học Ngoại Ngữ" },
-    { img: literature, link: "/literature", content: "Văn Học" },
-    { img: sgk, link: "/textbooks", content: "SGK 2026" },
-    { img: skill, link: "/skills", content: "Tâm Lý Kỹ Năng" },
-    { img: vnHistory, link: "/vietnam-history", content: "Lịch Sử Việt Nam" },
+    { img: baking, link: "/desserts", content: "Baking - Desserts" },
+    { img: agriculture, link: "/agriculture", content: "Sách Nông - Lâm - Ngư Nghiệp" },
+    { img: manga, link: "/manga", content: "Manga" },
+    { img: catalogue, link: "/magazines", content: "Tạp Chí" },
+    { img: vnHistory, link: "/vietnam", content: "Việt Nam" },
 ];
 
 const giftCard = Array(9).fill({ img: card1, link: "/card1" });
