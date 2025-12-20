@@ -7,7 +7,9 @@ import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -85,27 +87,33 @@ public class OrdersService {
 
 
     // ------------------- UPDATE STATUS -------------------
-    public OrdersDTO updateOrderStatus(int orderId, StatusOrder newStatus ) {
+    public OrdersDTO updateOrderStatus(int orderId, StatusOrder newStatus) {
         Orders order = ordersRepository.findById(orderId).orElse(null);
         if (order == null) return null;
 
-        StatusOrder oldStatus = order.getStatus(); // trạng thái cũ
+        StatusOrder oldStatus = order.getStatus();
 
-        // ------------------ 1. DELIVERY → trừ kho ------------------
-        if (oldStatus != StatusOrder.DELIVERY && newStatus == StatusOrder.DELIVERY) {
-            deductVariantStock(orderId);
+        try {
+            // 1. DELIVERY → trừ kho
+            if (oldStatus != StatusOrder.DELIVERY && newStatus == StatusOrder.DELIVERY) {
+                deductVariantStock(orderId);
+            }
+
+            // 2. DELIVERY → RESTORE → hoàn kho
+            if (oldStatus == StatusOrder.DELIVERY && newStatus == StatusOrder.RESTORE) {
+                restoreVariantStock(orderId);
+            }
+
+            // 3. Cập nhật trạng thái
+            order.setStatus(newStatus);
+            Orders updated = ordersRepository.save(order);
+
+            return mapToDTO(updated);
+
+        } catch (RuntimeException ex) {
+            // Ném exception có HTTP 400 và thông báo rõ ràng cho frontend
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
-
-        // ------------------ 2. DELIVERY → RESTORE → hoàn kho ------------------
-        if (oldStatus == StatusOrder.DELIVERY && newStatus == StatusOrder.RESTORE) {
-            restoreVariantStock(orderId);
-        }
-
-        // ------------------ 3. Update trạng thái ------------------
-        order.setStatus(newStatus);
-        Orders updated = ordersRepository.save(order);
-
-        return mapToDTO(updated);
     }
 
 

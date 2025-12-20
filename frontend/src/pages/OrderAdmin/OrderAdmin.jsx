@@ -77,7 +77,7 @@ export default function OrderAdmin() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!res.ok) throw new Error("Không thể cập nhật trạng thái đơn.");
+      if (!res.ok) throw new Error("Không thể cập nhật trạng thái đơn do thiếu hàng.");
 
       fetchOrders();
     } catch (err) {

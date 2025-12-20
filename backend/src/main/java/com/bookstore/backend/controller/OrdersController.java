@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Map;
 import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.service.OrdersService;
 
@@ -47,9 +47,19 @@ public class OrdersController {
 
     // Admin: cập nhật trạng thái đơn hàng -> trả về DTO
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<OrdersDTO> updateOrderStatus(@PathVariable int orderId, @RequestBody OrdersDTO dto) {
-        OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<?> updateOrderStatus(@PathVariable int orderId, @RequestBody OrdersDTO dto) {
+        try {
+            OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
+            if (updatedOrder == null) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("success", false, "error", "Đơn hàng không tồn tại"));
+            }
+            return ResponseEntity.ok(Map.of("success", true, "data", updatedOrder));
+        } catch (RuntimeException ex) {
+            // Trả về HTTP 400, frontend có thể hiển thị thông báo
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "error", ex.getMessage()));
+        }
     }
 
     // Admin: lấy tất cả đơn hàng -> trả về DTO

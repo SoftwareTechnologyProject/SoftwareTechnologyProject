@@ -59,7 +59,6 @@ function MainLayout() {
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
           <Route path="orderAdmin" element={<OrderAdmin />} />
-          <Route path="order/:id" element={<OrderDetail />} />
         </Route>
         <Route path="/admin/chat" element={<AdminChatBox />} />
       </Routes>
