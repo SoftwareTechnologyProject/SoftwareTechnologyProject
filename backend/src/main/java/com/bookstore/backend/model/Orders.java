@@ -1,7 +1,5 @@
 package com.bookstore.backend.model;
 
-//import com.bookstore.backend.model.enums.StatusOrder;
-//import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import jakarta.persistence.*;

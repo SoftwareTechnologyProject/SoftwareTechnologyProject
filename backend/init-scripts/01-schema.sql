@@ -141,7 +141,7 @@ CREATE TABLE orders (
     phone_number VARCHAR(50) NOT NULL,
     status StatusOrder NOT NULL,
     payment_type PaymentType NOT NULL,
-    voucher_code VARCHAR(50) REFERENCES voucher(code),
+    voucher_code BIGINT REFERENCES voucher(id),
     order_date TIMESTAMP DEFAULT NOW()
 );
 
