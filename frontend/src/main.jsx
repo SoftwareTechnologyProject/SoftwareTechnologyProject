@@ -24,6 +24,7 @@ import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
+import BookAdmin from './pages/BookAdmin/BookAdmin';
 import Login from "./pages/login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
@@ -55,7 +56,7 @@ function MainLayout() {
 
         {/* Admin */}
         <Route path="/admin" element={<HeaderAdmin />}>
-          <Route path="books" element={<Account />} />
+          <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
         </Route>
