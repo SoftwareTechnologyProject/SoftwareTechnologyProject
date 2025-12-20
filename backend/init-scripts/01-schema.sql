@@ -61,7 +61,8 @@ CREATE TABLE book (
     publisher_year INTEGER,
     description TEXT,
     published_at TIMESTAMP,
-    updated_at TIMESTAMP
+    updated_at TIMESTAMP,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ==================== MANY-TO-MANY ====================
@@ -140,7 +141,7 @@ CREATE TABLE orders (
     phone_number VARCHAR(50) NOT NULL,
     status StatusOrder NOT NULL,
     payment_type PaymentType NOT NULL,
-    voucher_code VARCHAR(50) REFERENCES voucher(code),
+    voucher_code BIGINT REFERENCES voucher(id),
     order_date TIMESTAMP DEFAULT NOW()
 );
 
@@ -260,9 +261,9 @@ INSERT INTO users (fullname, phonenumber, address, email, dateofbirth, role) VAL
 ('Staff User', '0456789123', 'Store Location', 'staff@bookstore.com', '1992-03-10', 'STAFF');
 
 INSERT INTO accounts (userid, username, email, password, is_account_verified, created_at) VALUES
-(1, 'admin', 'ndtoan.work@gmail.com', '$2a$10$example_hashed_password_admin', TRUE, NOW()),
-(2, 'customer', 'customer@test.com', '$2a$10$example_hashed_password_customer', TRUE, NOW()),
-(3, 'staff', 'staff@bookstore.com', '$2a$10$example_hashed_password_staff', TRUE, NOW());
+(1, 'admin', 'ndtoan.work@gmail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', TRUE, NOW()),
+(2, 'customer', 'customer@test.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', TRUE, NOW()),
+(3, 'staff', 'staff@bookstore.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', TRUE, NOW());
 
 -- Create default cart for test customer
 INSERT INTO cart (user_id, created_at) VALUES (2, NOW());
