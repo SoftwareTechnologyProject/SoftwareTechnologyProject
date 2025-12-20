@@ -47,7 +47,7 @@ public class OrdersController {
 
     // Admin: cập nhật trạng thái đơn hàng -> trả về DTO
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable int orderId, @RequestBody OrdersDTO dto) {
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestBody OrdersDTO dto) {
         try {
             OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
             if (updatedOrder == null) {
@@ -71,7 +71,7 @@ public class OrdersController {
 
     // Xem chi tiết đơn hàng -> trả về DTO
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable int orderId) {
+    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable Long orderId) {
         OrdersDTO order = ordersService.getOrderById(orderId);
         return ResponseEntity.ok(order);
     }

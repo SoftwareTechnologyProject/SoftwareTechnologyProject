@@ -2,12 +2,14 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.DTO.OrderDetailDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
+import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -87,7 +89,7 @@ public class OrdersService {
 
 
     // ------------------- UPDATE STATUS -------------------
-    public OrdersDTO updateOrderStatus(int orderId, StatusOrder newStatus) {
+    public OrdersDTO updateOrderStatus(Long orderId, StatusOrder newStatus) {
         Orders order = ordersRepository.findById(orderId).orElse(null);
         if (order == null) return null;
 
@@ -118,10 +120,9 @@ public class OrdersService {
 
 
     // ------------------- GET ORDER BY ID -------------------
-    public OrdersDTO getOrderById(int orderId) {
-        return ordersRepository.findById(orderId)
-                .map(this::mapToDTO)
-                .orElse(null);
+    public OrdersDTO getOrderById(Long orderId) {
+        Orders order = ordersRepository.findById(orderId).orElse(null);
+        return mapToDTO(order);
     }
 
 
@@ -176,7 +177,7 @@ public class OrdersService {
         );
         return dto;
     }
-    private void deductVariantStock(int orderId) {
+    private void deductVariantStock(Long orderId) {
 
         List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
 
@@ -196,7 +197,7 @@ public class OrdersService {
             bookVariantsRepository.save(variant);
         }
     }
-    private void restoreVariantStock(int orderId) {
+    private void restoreVariantStock(Long orderId) {
 
         List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
 

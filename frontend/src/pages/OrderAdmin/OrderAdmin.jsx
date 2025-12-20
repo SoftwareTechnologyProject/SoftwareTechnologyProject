@@ -22,7 +22,7 @@ export default function OrderAdmin() {
     { key: "PENDING", label: "Chờ xử lý" },
     { key: "DELIVERY", label: "Đang giao" },
     { key: "SUCCESS", label: "Hoàn tất" },
-    { key: "CANCELED", label: "Bị hủy" },
+    { key: "CANCELLED", label: "Bị hủy" },
   ];
 
   // check token
@@ -88,7 +88,7 @@ export default function OrderAdmin() {
   // Cancel order
   const handleCancel = (orderId) => {
     if (window.confirm("Bạn muốn hủy đơn?"))
-      updateStatus(orderId, "CANCELED");
+      updateStatus(orderId, "CANCELLED");
   };
 
   // Accept order

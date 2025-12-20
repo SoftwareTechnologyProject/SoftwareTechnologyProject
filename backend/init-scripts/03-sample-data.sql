@@ -28,28 +28,28 @@ DO $$
 BEGIN
     -- Insert vouchers (if not exists)
     IF NOT EXISTS (SELECT 1 FROM voucher WHERE code = 'WELCOME10') THEN
-        INSERT INTO voucher (code, name, discounttype, discountvalue, minordervalue, maxdiscount, startdate, enddate, quantity, usedcount, description)
-        VALUES ('WELCOME10', 'Welcome Discount', 'PERCENTAGE', 10, 0, 50000, NOW(), NOW() + INTERVAL '30 days', 100, 0, 'Welcome 10% discount for new customers');
+        INSERT INTO voucher (code, name, discount_type, discount_value, min_order_value, max_discount, start_date, end_date, quantity, used_count, description, status)
+        VALUES ('WELCOME10', 'Welcome Discount', 'PERCENTAGE', 10, 0, 50000, NOW(), NOW() + INTERVAL '30 days', 100, 0, 'Welcome 10% discount for new customers', 'ACTIVE');
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM voucher WHERE code = 'BOOK50K') THEN
-        INSERT INTO voucher (code, name, discounttype, discountvalue, minordervalue, maxdiscount, startdate, enddate, quantity, usedcount, description)
-        VALUES ('BOOK50K', 'Book 50K Off', 'FIXED_AMOUNT', 50000, 200000, 50000, NOW(), NOW() + INTERVAL '30 days', 50, 0, '50K discount for orders above 200K');
+        INSERT INTO voucher (code, name, discount_type, discount_value, min_order_value, max_discount, start_date, end_date, quantity, used_count, description, status)
+        VALUES ('BOOK50K', 'Book 50K Off', 'FIXED_AMOUNT', 50000, 200000, 50000, NOW(), NOW() + INTERVAL '30 days', 50, 0, '50K discount for orders above 200K', 'ACTIVE');
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM voucher WHERE code = 'STUDENT15') THEN
-        INSERT INTO voucher (code, name, discounttype, discountvalue, minordervalue, maxdiscount, startdate, enddate, quantity, usedcount, description)
-        VALUES ('STUDENT15', 'Student Discount', 'PERCENTAGE', 15, 100000, 100000, NOW(), NOW() + INTERVAL '60 days', 200, 0, 'Student discount 15%');
+        INSERT INTO voucher (code, name, discount_type, discount_value, min_order_value, max_discount, start_date, end_date, quantity, used_count, description, status)
+        VALUES ('STUDENT15', 'Student Discount', 'PERCENTAGE', 15, 100000, 100000, NOW(), NOW() + INTERVAL '60 days', 200, 0, 'Student discount 15%', 'ACTIVE');
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM voucher WHERE code = 'FLASH20') THEN
-        INSERT INTO voucher (code, name, discounttype, discountvalue, minordervalue, maxdiscount, startdate, enddate, quantity, usedcount, description)
-        VALUES ('FLASH20', 'Flash Sale', 'PERCENTAGE', 20, 0, 100000, NOW(), NOW() + INTERVAL '7 days', 30, 0, 'Flash sale 20% off');
+        INSERT INTO voucher (code, name, discount_type, discount_value, min_order_value, max_discount, start_date, end_date, quantity, used_count, description, status)
+        VALUES ('FLASH20', 'Flash Sale', 'PERCENTAGE', 20, 0, 100000, NOW(), NOW() + INTERVAL '7 days', 30, 0, 'Flash sale 20% off', 'ACTIVE');
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM voucher WHERE code = 'EXPIRED') THEN
-        INSERT INTO voucher (code, name, discounttype, discountvalue, minordervalue, maxdiscount, startdate, enddate, quantity, usedcount, description)
-        VALUES ('EXPIRED', 'Expired Voucher', 'PERCENTAGE', 25, 0, 150000, NOW() - INTERVAL '30 days', NOW() - INTERVAL '1 day', 10, 0, 'Expired voucher for testing');
+        INSERT INTO voucher (code, name, discount_type, discount_value, min_order_value, max_discount, start_date, end_date, quantity, used_count, description, status)
+VALUES ('EXPIRED', 'Expired Voucher', 'PERCENTAGE', 25, 0, 150000, NOW() - INTERVAL '30 days', NOW() - INTERVAL '1 day', 10, 0, 'Expired voucher for testing', 'EXPIRED');
     END IF;
     
     RAISE NOTICE 'Sample vouchers ready';
