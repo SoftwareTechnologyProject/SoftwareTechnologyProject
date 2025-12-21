@@ -8,17 +8,18 @@ public class OrderDetailDTO {
     private Integer quantity;
     private Double pricePurchased;
     private Double totalPrice;      // quantity * pricePurchased
+    private String imageUrl;
 
     public OrderDetailDTO() {}
 
-    public OrderDetailDTO(Long id, Long bookVariantId, String bookTitle,
-                                  Integer quantity, Double pricePurchased) {
+    public OrderDetailDTO(Long id, Long bookVariantId, String bookTitle, Integer quantity, Double pricePurchased, Double totalPrice, String imageUrl) {
         this.id = id;
         this.bookVariantId = bookVariantId;
         this.bookTitle = bookTitle;
         this.quantity = quantity;
         this.pricePurchased = pricePurchased;
-        this.totalPrice = quantity * pricePurchased;
+        this.totalPrice = totalPrice;
+        this.imageUrl = imageUrl;
     }
 
     // ------------ GETTER - SETTER ---------------
@@ -39,4 +40,12 @@ public class OrderDetailDTO {
 
     public Double getTotalPrice() { return totalPrice; }
     public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

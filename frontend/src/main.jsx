@@ -26,10 +26,13 @@ import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
-import Login from "./pages/login.jsx";
+import BookAdmin from './pages/BookAdmin/BookAdmin';
+import Login from "./pages/Login/Login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
+import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
+import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 
 // Layout chung
 function MainLayout() {
@@ -51,7 +54,7 @@ function MainLayout() {
           <Route path="accountInf" element={<Account />} />
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
+
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
@@ -61,9 +64,11 @@ function MainLayout() {
 
         {/* Admin */}
         <Route path="/admin" element={<HeaderAdmin />}>
-          <Route path="books" element={<Account />} />
+          <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
+          <Route path="orderAdmin" element={<OrderAdmin />} />
+          <Route path="order/:id" element={<OrderDetail />} />
         </Route>
         <Route path="/admin/chat" element={<AdminChatBox />} />
       </Routes>
@@ -86,6 +91,9 @@ createRoot(document.getElementById("root")).render(
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         
         {/* All other pages with common Layout */}
         <Route path="*" element={<MainLayout />} />

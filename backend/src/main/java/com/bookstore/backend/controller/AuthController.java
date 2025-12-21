@@ -25,6 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 import com.bookstore.backend.DTO.AuthRequest;
 import com.bookstore.backend.DTO.AuthResponse;
 import com.bookstore.backend.DTO.ResetPasswordRequest;
+import com.bookstore.backend.model.Account;
+import com.bookstore.backend.model.Users;
+import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.service.AppUserDetailsService;
 import com.bookstore.backend.service.ProfileService;
 import com.bookstore.backend.utils.JwtUtils;
@@ -41,13 +44,16 @@ public class AuthController {
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtils jwtUtil;
     private final ProfileService profileService;
+    private final UserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        System.out.println("🔐 Login attempt - Email: " + request.getEmail());
         try {
             authenticate(request.getEmail(), request.getPassword());
 
             final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
+            System.out.println("✅ UserDetails loaded: " + userDetails.getUsername());
             final String jwtToken = jwtUtil.generateToken(userDetails);
 
             // Cookie gửi cho FE
@@ -64,18 +70,22 @@ public class AuthController {
                     .body(new AuthResponse(request.getEmail(), jwtToken));
 
         } catch (BadCredentialsException ex) {
+            System.out.println("❌ BadCredentialsException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Email or Password is incorrect");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
         } catch (DisabledException ex) {
+            System.out.println("❌ DisabledException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Account is disabled");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 
         } catch (Exception ex) {
+            System.out.println("❌ Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
+            ex.printStackTrace();
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Authentication failed");
@@ -135,6 +145,56 @@ public class AuthController {
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyEmailByToken(@RequestParam String token) {
+        try {
+            Users user = userRepository.findByVerificationToken(token)
+                    .orElseThrow(() -> new RuntimeException("Invalid token"));
+            Account account = user.getAccount();
+            if (account != null) {
+                account.setIsAccountVerified(true);
+                account.setVerificationToken(null);
+                userRepository.save(user);
+            }
+            return ResponseEntity.ok("Email verified successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Verification failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-registration-otp")
+    public ResponseEntity<String> verifyRegistrationOtp(@RequestBody Map<String, Object> request) {
+        String email = (String) request.get("email");
+        String otp = (String) request.get("otp");
+        if (email == null || otp == null) {
+            return ResponseEntity.badRequest().body("Email and OTP are required");
+        }
+        try {
+            Users user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            Account account = user.getAccount();
+            if (account == null) {
+                return ResponseEntity.badRequest().body("Account not found");
+            }
+            if (Boolean.TRUE.equals(account.getIsAccountVerified())) {
+                return ResponseEntity.ok("Account already verified");
+            }
+            if (account.getVerifyOtp() == null || !account.getVerifyOtp().equals(otp)) {
+                return ResponseEntity.badRequest().body("Invalid OTP");
+            }
+            if (account.getVerifyOtpExpiredAt() < System.currentTimeMillis()) {
+                return ResponseEntity.badRequest().body("OTP expired");
+            }
+            account.setIsAccountVerified(true);
+            account.setVerifyOtp(null);
+            account.setVerifyOtpExpiredAt(0L);
+            userRepository.save(user);
+            return ResponseEntity.ok("Account verified successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Verification failed: " + e.getMessage());
         }
     }
 }

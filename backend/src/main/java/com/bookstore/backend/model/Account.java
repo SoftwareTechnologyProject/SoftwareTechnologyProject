@@ -44,12 +44,18 @@ public class Account {
     @Column(name = "password", nullable = false)
     private String password;
 
+<<<<<<< HEAD
     @NotNull
     @Column(name = "status", nullable = false)
     private String status;
 
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
     @JsonBackReference
+=======
+    // Relationship: accounts.userid -> users.id (Account is owner)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userid", referencedColumnName = "id")
+>>>>>>> 4de5fe034b9d72f272eb9ac82c883abf26e6be79
     private Users user;
 
 
@@ -60,6 +66,7 @@ public class Account {
     private Long verifyOtpExpiredAt;
     private String resetPasswordOtp;
     private Long resetOtpExpiredAt;
+    private String verificationToken;
 
     @CreationTimestamp
     @Column(updatable = false)

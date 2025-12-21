@@ -37,7 +37,7 @@ const HeaderAdmin = () => {
                     </NavLink>
 
                     <NavLink
-                        to="/admin/orders"
+                        to="/admin/OrderAdmin"
                         className={({ isActive }) =>
                             `nav-item ${isActive ? "active" : ""}`
                         }

@@ -44,10 +44,10 @@ public class Users implements UserDetails{
     private Long id;
 
     @NotBlank
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "fullname", nullable = false)
     private String fullName;
 
-    @Column(name = "phone_number")
+    @Column(name = "phonenumber")
     private String phoneNumber;
 
     @Column(name = "address", columnDefinition = "TEXT")
@@ -58,7 +58,7 @@ public class Users implements UserDetails{
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "dateofbirth")
     private Date dateOfBirth;
 
     @Enumerated(EnumType.STRING)
@@ -66,10 +66,15 @@ public class Users implements UserDetails{
     @Column(name = "role", nullable = false)
     private UserRole role;
 
+<<<<<<< HEAD
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     @JsonManagedReference
 
+=======
+    // Relationship: accounts.userid -> users.id
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+>>>>>>> 4de5fe034b9d72f272eb9ac82c883abf26e6be79
     private Account account;
 
     public boolean isAdmin() {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Map;
 import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.service.OrdersService;
 
@@ -27,9 +27,8 @@ public class OrdersController {
 
     // Customer: tạo đơn hàng -> trả về OrdersDTO
     @PostMapping
-    public ResponseEntity<OrdersDTO> createOrder(@RequestParam Long userId, @RequestBody OrdersDTO dto) {
+    public ResponseEntity<OrdersDTO> createOrder(@RequestBody OrdersDTO dto) {
         OrdersDTO createdOrder = ordersService.createOrder(
-                userId,
                 dto.getOrderDetails(),
                 dto.getVoucherCode(),
                 dto.getPaymentType(),
@@ -40,17 +39,27 @@ public class OrdersController {
     }
 
     // Customer: xem đơn hàng của mình -> trả về List<OrdersDTO>
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrdersDTO>> getOrdersByUser(@PathVariable Long userId) {
-        List<OrdersDTO> orders = ordersService.getOrdersByUser(userId);
+    @GetMapping("/user")
+    public ResponseEntity<List<OrdersDTO>> getOrdersByUser() {
+        List<OrdersDTO> orders = ordersService.getOrdersByUser();
         return ResponseEntity.ok(orders);
     }
 
     // Admin: cập nhật trạng thái đơn hàng -> trả về DTO
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<OrdersDTO> updateOrderStatus(@PathVariable int orderId, @RequestBody OrdersDTO dto) {
-        OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestBody OrdersDTO dto) {
+        try {
+            OrdersDTO updatedOrder = ordersService.updateOrderStatus(orderId, dto.getStatus());
+            if (updatedOrder == null) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("success", false, "error", "Đơn hàng không tồn tại"));
+            }
+            return ResponseEntity.ok(Map.of("success", true, "data", updatedOrder));
+        } catch (RuntimeException ex) {
+            // Trả về HTTP 400, frontend có thể hiển thị thông báo
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "error", ex.getMessage()));
+        }
     }
 
     // Admin: lấy tất cả đơn hàng -> trả về DTO
@@ -62,7 +71,7 @@ public class OrdersController {
 
     // Xem chi tiết đơn hàng -> trả về DTO
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable int orderId) {
+    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable Long orderId) {
         OrdersDTO order = ordersService.getOrderById(orderId);
         return ResponseEntity.ok(order);
     }
