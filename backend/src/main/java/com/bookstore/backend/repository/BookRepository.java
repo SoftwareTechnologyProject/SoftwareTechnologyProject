@@ -81,7 +81,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query(value = "SELECT * FROM Book ORDER BY RANDOM() LIMIT 90", nativeQuery = true)
     List<Book> findRandomBooks();
-}
 
     // Tìm sách theo ISBN trong bảng variants (một sách có thể có nhiều biến thể với ISBN khác nhau)
     @Query("""

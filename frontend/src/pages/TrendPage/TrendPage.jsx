@@ -42,7 +42,7 @@ const TrendPage = () => {
               "http://localhost:8080/api/books",
               { params: { page: 0, size: 202 } }
             );
-            setBooks(response.data || []);
+            setBooks(response.data?.content || []);
           }
 
         } catch (err) {

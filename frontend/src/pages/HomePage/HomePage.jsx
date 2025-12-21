@@ -98,7 +98,7 @@ const HomePage = () => {
         const fetchBooks = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/books?page=0&size=20');
-                const books = response.data || [];
+                const books = response.data?.content || [];
                 console.log(books);
 
                 // Use first 10 books for trending
