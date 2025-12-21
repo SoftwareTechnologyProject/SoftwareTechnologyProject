@@ -44,31 +44,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Phân quyền cho các endpoint
                 .authorizeHttpRequests(authz -> authz
-<<<<<<< HEAD
-                    // Public endpoints
-                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll() 
-                    .requestMatchers("/api/books/**", "/ws/**", "/api/notifications/**").permitAll()
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/books/*/reviews").authenticated() // Require auth for creating reviews
-                    .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**", "/register").permitAll()
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll() // Explicitly allow register
-                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll() // Allow public GET for blog
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll() // Allow public POST comments
-                    .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for blog management
-                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll() // Allow public GET vouchers list
-                    .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for voucher management
-                    
-                    // User authenticated endpoints
-                    .requestMatchers("/api/cart/**").authenticated()
-                    .requestMatchers("/api/chat/**").authenticated()
-                    .requestMatchers("/api/users/profile").authenticated()
-                    .requestMatchers("/api/orders/**").hasAnyAuthority( "ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
-                    
-                    .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                    .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
-                    
-                    .anyRequest().authenticated()
-                )
-=======
                         // Các endpoint public (không cần login)
                         .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
@@ -102,7 +77,6 @@ public class SecurityConfig {
 
                         // Các request khác phải login
                         .anyRequest().authenticated())
->>>>>>> 4de5fe034b9d72f272eb9ac82c883abf26e6be79
                 .addFilterBefore(jwtResquestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

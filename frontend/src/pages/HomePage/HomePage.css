@@ -27,7 +27,7 @@ h1 {
 }
 
 .book-view {
-    @apply px-5 transition-shadow duration-500 ease-in-out hover:shadow-xl;
+    @apply px-5 py-4 transition-shadow duration-500 ease-in-out hover:shadow-xl;
 }
 
 /* ============ End ================== */
@@ -84,7 +84,7 @@ h1 {
 }
 
 .catalog-detail {
-    @apply grid grid-cols-8 gap-4;
+    @apply grid grid-cols-6 gap-4;
 }
 
 .catalog-detail a {
@@ -122,19 +122,19 @@ h1 {
 }
 
 .trend-detail {
-    @apply grid grid-cols-5 auto-rows-[minmax(0,0.8fr)] gap-4 pb-4;
+    @apply grid grid-cols-5 auto-rows-[minmax(0,1.3fr)] gap-4 pb-4;
 }
 
 .trend-detail img {
-    @apply w-full h-[58%] mb-5;
+    @apply w-full h-[58%] mb-5 object-contain;
 }
 
 .label-price {
-    @apply pt-2;
+    @apply grid grid-rows-[2fr_0.5fr_0.8fr] pt-2;
 }
 
 h3 {
-    @apply line-clamp-2;
+    @apply line-clamp-2 self-start;
 }
 
 .special-price {
@@ -166,7 +166,7 @@ h3 {
 }
 
 .combo-detail {
-    @apply flex shrink-0 w-[25%] pb-4 gap-4;
+    @apply flex shrink-0 w-[25%] object-contain pb-4 gap-4;
 }
 
 .combo-detail img {
@@ -175,17 +175,15 @@ h3 {
 
 /* ======================= End ========================= */
 
-.recommend {
-    @apply relative mx-30 grid gap-4 rounded-2xl;
+.progress-bar {
+    @apply w-full bg-[var(--primary-color)] rounded-2xl p-2;
 }
 
-.recommend img {
-    @apply w-full h-auto rounded-2xl;
+.progress-bar span {
+    @apply text-[var(--components-color)] flex justify-center items-center;
 }
 
-.recommend-detail {
-    @apply absolute grid grid-cols-5 gap-4 mt-50 py-5 bg-[var(--components-color)] rounded-2xl; /* 5 cột ảnh */
+.description {
+    @apply grid grid-rows-[2fr_0.5fr];
 }
-
-
 

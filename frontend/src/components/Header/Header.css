@@ -78,7 +78,7 @@ nav {
 .category-dropdown-menu {
   @apply absolute top-full
          bg-white rounded-2xl shadow-2xl
-         p-5 z-[1000]
+         p-5 z-[1000] mt-4
          min-w-[900px] max-w-[1100px];
   
   /* Hidden by default */

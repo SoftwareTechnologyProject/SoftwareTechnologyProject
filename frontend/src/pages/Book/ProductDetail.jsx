@@ -8,6 +8,7 @@ import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  console.log(id);
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,9 +115,9 @@ export default function BookDetail() {
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
-        console.log('Fetching book ID:', id);
-        const response = await axiosClient.get(`/api/books/${id}`);
-        console.log('Book data:', response.data);
+    console.log('Fetching book ID:', id);
+    const response = await axiosClient.get(`/api/books/${id}`);
+    console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
         console.error('Error fetching book:', err);

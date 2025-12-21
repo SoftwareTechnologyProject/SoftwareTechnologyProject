@@ -24,7 +24,6 @@ import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
 import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
-import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import BookAdmin from './pages/BookAdmin/BookAdmin';
 import Login from "./pages/Login/Login.jsx";
@@ -33,6 +32,7 @@ import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
+import TrendPage from "./pages/TrendPage/TrendPage.jsx";
 
 // Layout chung
 function MainLayout() {
@@ -48,6 +48,9 @@ function MainLayout() {
         <Route path="/vouchers" element={<VoucherManagement />} />
         <Route path="/search" element={<SearchResult />} />
         <Route path="/voucher-management" element={<VoucherManagement />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        <Route path="/trend/:trendSlug" element={<TrendPage />} />
 
         {/* Account area */}
         <Route path="/account" element={<AccountLayout />}>
@@ -84,11 +87,6 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Blog routes - standalone without Header/Footer */}
-        <Route path="/blog" element={<BlogList />} />
-        <Route path="/blog/posts/:id" element={<BlogDetail />} />
-        <Route path="/blog/about" element={<BlogAbout />} />
-
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Login />} />

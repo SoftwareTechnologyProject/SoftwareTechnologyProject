@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import BlogHeader from './BlogHeader';
-import Footer from '../../components/Footer/Footer';
 import './BlogDetail.css';
 
 //const API_URL = 'http://localhost:8080/blog';
@@ -118,7 +116,6 @@ const BlogDetail = () => {
 
     return (
         <div className="blog-page">
-            <BlogHeader />
             <div className="blog-container">
                 <Link to="/blog" className="back-link">Quay lại</Link>
                 
@@ -196,7 +193,6 @@ const BlogDetail = () => {
                     </div>
                 </div>
             </section>
-            <Footer />
         </div>
         </div>
     );
