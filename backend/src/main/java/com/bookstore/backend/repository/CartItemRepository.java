@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CartItemRepository extends JpaRepository<CartItems, Long> {
 
+    // Kiểm tra xem có tồn tại CartItem nào với bookVariant có id tương ứng hay không
+    boolean existsByBookVariant_Id(Long variantId);
 }

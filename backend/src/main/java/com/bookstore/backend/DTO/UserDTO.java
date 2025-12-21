@@ -1,5 +1,6 @@
 package com.bookstore.backend.DTO;
 
+import com.bookstore.backend.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
