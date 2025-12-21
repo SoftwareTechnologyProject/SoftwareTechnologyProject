@@ -7,6 +7,7 @@ import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  console.log(id);
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -97,7 +98,7 @@ export default function BookDetail() {
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/books/${id}`);
+        const response = await axios.get(`http://localhost:8080/api/books/${id}`);
         setBook(response.data);
       } catch (err) {
         setError("Không thể tải thông tin sách");

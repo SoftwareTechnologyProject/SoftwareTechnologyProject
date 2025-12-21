@@ -8,14 +8,12 @@ import banner3 from "../../assets/banner/banner-5.png";
 import bannerMomo from "../../assets/banner/banner-momo.png";
 import bannerVnpay from "../../assets/banner/banner-vnpay.png";
 
-import child from "../../assets/logo/child.png";
-import foreign from "../../assets/logo/foreign.png";
-import language from "../../assets/logo/language.png";
-import literature from "../../assets/logo/literature.png";
-import sgk from "../../assets/logo/sgk.png";
-import skill from "../../assets/logo/skill.png";
+import discovery from "../../assets/logo/discovery.png";
+import baking from "../../assets/logo/baking.png";
+import agriculture from "../../assets/logo/agriculture.png";
+import manga from "../../assets/logo/manga.png";
+import catalogue from "../../assets/logo/catalogue.png";
 import vnHistory from "../../assets/logo/vnHistory.png";
-import paper from "../../assets/logo/paper.png";
 
 import card1 from "../../assets/gift-card/card-1.jpg";
 import ex1 from "../../assets/ex1.jpg";
@@ -30,14 +28,12 @@ import "./HomePage.css";
 const banners = [banner3, banner2, banner1];
 
 const catalog = [
-    { img: paper, link: "/paper", content: "Giấy Photo" },
-    { img: child, link: "/child-books", content: "Thiếu Nhi" },
-    { img: foreign, link: "/foreign-books", content: "Ngoại Văn" },
-    { img: language, link: "/language", content: "Sách Học Ngoại Ngữ" },
-    { img: literature, link: "/literature", content: "Văn Học" },
-    { img: sgk, link: "/textbooks", content: "SGK 2026" },
-    { img: skill, link: "/skills", content: "Tâm Lý Kỹ Năng" },
-    { img: vnHistory, link: "/vietnam-history", content: "Lịch Sử Việt Nam" },
+    { img: discovery, link: "/travel", content: "Discovery & Exploration" },
+    { img: baking, link: "/desserts", content: "Baking - Desserts" },
+    { img: agriculture, link: "/agriculture", content: "Sách Nông - Lâm - Ngư Nghiệp" },
+    { img: manga, link: "/manga", content: "Manga" },
+    { img: catalogue, link: "/magazines", content: "Tạp Chí" },
+    { img: vnHistory, link: "/vietnam", content: "Việt Nam" },
 ];
 
 const giftCard = Array(9).fill({ img: card1, link: "/card1" });
@@ -71,23 +67,46 @@ const HomePage = () => {
     const [trendingBooks, setTrendingBooks] = useState([]);
     const [featuredBooks, setFeaturedBooks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const category = "Truyện Tranh, Manga, Comic";
 
+    useEffect(() => {
+        const fetchTrendingManga = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/books/trendingManga", {
+                                         params: {
+                                           category,
+                                           page: 0,
+                                           size: 20
+                                         }
+                                       });
+
+                const books = response.data?.content || [];
+
+                setFeaturedBooks(books.slice(0, 20));
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                setFeaturedBooks(comboTrend);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTrendingManga();
+    }, []);
     // Fetch books from API
     useEffect(() => {
         const fetchBooks = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/books?page=0&size=20');
-                const books = response.data || [];
+                const books = response.data?.content || [];
+                console.log(books);
 
                 // Use first 10 books for trending
                 setTrendingBooks(books.slice(0, 10));
-                // Use first 20 books for combo trending
-                setFeaturedBooks(books.slice(0, 20));
             } catch (error) {
                 console.error('Error fetching books:', error);
                 // Keep static data as fallback
                 setTrendingBooks(listTrend);
-                setFeaturedBooks(comboTrend);
             } finally {
                 setLoading(false);
             }
@@ -251,13 +270,18 @@ const HomePage = () => {
                                                 e.target.src = ex1;
                                             }}
                                         />
-                                        <div className="label-price">
-                                            <h3>{book.title}</h3>
-                                            <p className="special-price">
-                                                <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                                                <span className="percent-discount">-10%</span>
-                                            </p>
-                                            <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                                        <div className="description">
+                                            <div className="label-price">
+                                                <h3>{book.title}</h3>
+                                                <p className="special-price">
+                                                    <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                                                    <span className="percent-discount">-10%</span>
+                                                </p>
+                                                <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                                            </div>
+                                            <div className="progress-bar">
+                                                <span> Đã Bán {book.variants[0].sold}</span>
+                                            </div>
                                         </div>
                                     </Link>
                                 );
@@ -266,7 +290,7 @@ const HomePage = () => {
                     </div>
 
                     <div className="button-more">
-                        <Link to="#">Xem Thêm</Link>
+                        <Link to="/trend/xu-huong">Xem thêm</Link>
                     </div>
                 </div>
 
@@ -274,7 +298,7 @@ const HomePage = () => {
                 <div className="combo-trending">
                     <div className="title-trending">
                         <RiBook3Line className="icon-title" />
-                        <h1>Combo Trending</h1>
+                        <h1>Manga Trending</h1>
                     </div>
 
                     <div className="combo-slide">
@@ -296,7 +320,7 @@ const HomePage = () => {
                                             const oldPrice = price * 1.15;
 
                                             return (
-                                                <Link className="w-[70%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
+                                                <Link className="w-[20%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
                                                     <img
                                                         src={imageUrl}
                                                         alt={book.title}
@@ -304,13 +328,19 @@ const HomePage = () => {
                                                             e.target.src = ex1;
                                                         }}
                                                     />
-                                                    <div className="label-price">
-                                                        <h3>{book.title}</h3>
-                                                        <p className="special-price">
-                                                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                                                            <span className="percent-discount">-15%</span>
-                                                        </p>
-                                                        <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+
+                                                    <div className="description">
+                                                        <div className="label-price">
+                                                            <h3>{book.title}</h3>
+                                                            <p className="special-price">
+                                                                <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                                                                <span className="percent-discount">-10%</span>
+                                                            </p>
+                                                            <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                                                        </div>
+                                                        <div className="progress-bar">
+                                                            <span> Đã Bán {book.variants[0].sold}</span>
+                                                        </div>
                                                     </div>
                                                 </Link>
                                             );
@@ -321,7 +351,7 @@ const HomePage = () => {
 
                         {comboIndex > 0 && (
                             <button
-                                className="arrow-left"
+                                className="arrow-left !bg-[var(--primary-color)] !text-[var(--components-color)]"
                                 onClick={() => setComboIndex(comboIndex - 1)}
                             >
                                 ❮
@@ -330,7 +360,7 @@ const HomePage = () => {
 
                         {comboIndex < totalComboTrendSlides - 1 && (
                             <button
-                                className="arrow-right"
+                                className="arrow-right !bg-[var(--primary-color)] !text-[var(--components-color)]"
                                 onClick={() => setComboIndex(comboIndex + 1)}
                             >
                                 ❯
@@ -338,8 +368,8 @@ const HomePage = () => {
                         )}
                     </div>
 
-                    <div className="button-more">
-                        <Link to="#">Xem Thêm</Link>
+                    <div className="button-more mt-4">
+                        <Link to="/trend/manga-trending">Xem thêm</Link>
                     </div>
                 </div>
             </main>

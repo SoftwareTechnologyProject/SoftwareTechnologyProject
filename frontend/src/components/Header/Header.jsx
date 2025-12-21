@@ -229,7 +229,7 @@ const Header = () => {
           </Link>
         </div>
 
-        <form className="nav-search" onMouseEnter={() => setShow(true)}>
+        <form className="nav-search" onClick={() => setShow(true)}>
           <input type="text" value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onFocus={() => setShow(true)}
@@ -259,8 +259,6 @@ const Header = () => {
           {/* Danh mục */}
           <div
             className="category-dropdown-container"
-            onMouseEnter={() => setOpenCategory(true)}
-            onMouseLeave={() => setOpenCategory(false)}
           >
             <button
               onClick={() => setOpenCategory(!openCategory)}
@@ -322,18 +320,18 @@ const Header = () => {
           </div>
 
           {/* 🔔 Notification (đã tách) */}
-          <NotificationBell />
+          <NotificationBell/>
 
           {/* Blog */}
           <div className="account-menu-link">
             <Link to="/blog">
               <HiOutlineNewspaper className="nav-icons" />
+              <span>Blog</span>
             </Link>
-            <span>Blog</span>
           </div>
 
           {/* Giỏ hàng */}
-          <div className="account-menu-link">
+          <div className="account-menu-link" onClick={() => setOpenCategory(false)}>
             <Link to="/cart">
               <FiShoppingCart className="nav-icons" />
             </Link>
@@ -342,7 +340,7 @@ const Header = () => {
 
           {/* Tài khoản */}
           <div className="account-menu-container group">
-            <Link to="/account/accountInf" className="account-menu-link">
+            <Link to={isLoggedIn ? "/account/accountInf" : "/login"} className="account-menu-link">
               <CiUser className="nav-icons" />
               <span>Tài Khoản</span>
             </Link>
