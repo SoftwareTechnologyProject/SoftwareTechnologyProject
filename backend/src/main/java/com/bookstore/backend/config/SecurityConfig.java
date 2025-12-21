@@ -55,6 +55,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/api/users/me").authenticated() // Allow authenticated users to get their own info
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for user management
+                    .requestMatchers("/api/statistics/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for statistics
                     
                     .anyRequest().authenticated()
                 )
