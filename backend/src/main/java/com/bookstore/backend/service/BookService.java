@@ -243,7 +243,7 @@ public class BookService {
         // Check từng variant
         for (BookVariants variant : book.getVariants()) {
             // Check cart
-            if (cartItemRepository.existsByBookVariant_Id(variant.getId())) {
+            if (cartItemRepository.existsByBookVariantId(variant.getId())) {
                 throw new BusinessException(
                         "Không thể xóa sách đang có trong giỏ hàng. " +
                                 "Hãy chuyển sang trạng thái OUT_OF_STOCK.");
