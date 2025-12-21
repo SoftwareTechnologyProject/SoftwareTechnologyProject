@@ -32,8 +32,21 @@ const UserManagement = () => {
             setLoading(true);
             const response = await axios.get('/api/users');
             console.log('Users data:', response.data);
-            // Đảm bảo response.data là array
-            setUsers(Array.isArray(response.data) ? response.data : []);
+            
+            // Xử lý circular reference: chỉ lấy thông tin cần thiết
+            const cleanedUsers = Array.isArray(response.data) 
+                ? response.data.map(user => ({
+                    id: user.id,
+                    fullName: user.fullName,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                    address: user.address,
+                    dateOfBirth: user.dateOfBirth,
+                    role: user.role
+                }))
+                : [];
+            
+            setUsers(cleanedUsers);
             setError(null);
         } catch (err) {
             setError('Không thể tải danh sách người dùng. Vui lòng thử lại.');

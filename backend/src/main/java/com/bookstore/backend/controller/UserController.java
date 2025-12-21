@@ -2,6 +2,7 @@ package com.bookstore.backend.controller;
 
 import java.util.List;
 
+import com.bookstore.backend.DTO.ChangePassRequest;
 import com.bookstore.backend.DTO.UserDTO;
 import com.bookstore.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.UserRepository;
@@ -61,7 +63,7 @@ public class UserController {
     }
 
     // Cập nhật thông tin người dùng
-    @PutMapping("/update")
+    @PutMapping("me/update")
     public ResponseEntity<UserDTO> updateInfo(
             @AuthenticationPrincipal UserDetails user,
             @RequestBody UserDTO userDTO
@@ -79,20 +81,29 @@ public class UserController {
             Users user = userRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
             
-            // Không cho phép xóa OWNER
-            if ("OWNER".equals(user.getRole().toString())) {
+            // Không cho phép xóa ADMIN
+            if ("ADMIN".equals(user.getRole().toString())) {
                 return ResponseEntity.badRequest()
-                        .body("Không thể xóa tài khoản chủ sở hữu");
+                        .body("Không thể xóa tài khoản Admin");
             }
             
             userRepository.deleteById(id);
             return ResponseEntity.ok().body("Đã xóa người dùng thành công");
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body("Không thể xóa người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Không thể xóa người dùng: User này có dữ liệu liên quan (giỏ hàng, đơn hàng...). Vui lòng xóa dữ liệu liên quan trước.");
         }
     }
 
 //    // Đổi Password
 //    @PutMapping
+    // Đổi Password
+    @PatchMapping("me/update/password")
+    public ResponseEntity<?> updatePass(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody ChangePassRequest request) {
+        String email = user.getUsername();
+        userService.changePass(request, email);
+        return ResponseEntity.ok().build();
+    }
 }

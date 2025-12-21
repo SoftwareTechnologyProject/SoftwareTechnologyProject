@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.bookstore.backend.model.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,10 +44,10 @@ public class Users implements UserDetails{
     private Long id;
 
     @NotBlank
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "fullname", nullable = false)
     private String fullName;
 
-    @Column(name = "phone_number")
+    @Column(name = "phonenumber")
     private String phoneNumber;
 
     @Column(name = "address", columnDefinition = "TEXT")
@@ -57,7 +58,7 @@ public class Users implements UserDetails{
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "dateofbirth")
     private Date dateOfBirth;
 
     @Enumerated(EnumType.STRING)
@@ -65,9 +66,9 @@ public class Users implements UserDetails{
     @Column(name = "role", nullable = false)
     private UserRole role;
 
-    // ✅ Users giờ là owner của relationship
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    // Relationship: accounts.userid -> users.id
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JsonIgnoreProperties("user")
     private Account account;
 
     // ✅ Helper methods để kiểm tra role dễ dàng
@@ -114,7 +115,7 @@ public class Users implements UserDetails{
     }
     
     @Override
-public String getPassword() {
+    public String getPassword() {
     return account != null ? account.getPassword() : null;
 }
 }

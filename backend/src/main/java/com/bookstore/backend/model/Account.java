@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp; // <--- ĐÃ SỬA: Thay thế java.security.Timestamp
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -44,12 +45,10 @@ public class Account {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @NotNull
-    @Column(name = "status", nullable = false)
-    private String status;
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
+    // Relationship: accounts.userid -> users.id (Account is owner)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userid", referencedColumnName = "id")
+    @JsonIgnoreProperties("account")
     private Users user;
 
 
@@ -60,6 +59,7 @@ public class Account {
     private Long verifyOtpExpiredAt;
     private String resetPasswordOtp;
     private Long resetOtpExpiredAt;
+    private String verificationToken;
 
     @CreationTimestamp
     @Column(updatable = false)

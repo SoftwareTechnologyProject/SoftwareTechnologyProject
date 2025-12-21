@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import ChatBox from "./ChatBox";
 import axiosClient from "../../api/axiosClient";
 
 export default function ChatFloating() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
 
-  // Load số tin nhắn chưa đọc
   const fetchUnread = async () => {
     try {
       const res = await axiosClient.get("/chat/unread");
-      setUnreadCount(res.data);
+      console.log("🔔 Unread count:", res.data);
+      setUnread(res.data);
     } catch (err) {
-      console.error("Failed to fetch unread:", err);
+      console.error("❌ Fetch unread failed:", err);
     }
   };
 
@@ -20,71 +20,75 @@ export default function ChatFloating() {
     fetchUnread();
   }, []);
 
+  const handleOpen = () => {
+    console.log("📂 Open chat box");
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    console.log("📕 Close chat box");
+    setOpen(false);
+  };
+
   return (
     <>
-      {/* Chat Button */}
+      {/* Floating Button */}
       <button
-        onClick={() => setIsChatOpen(!isChatOpen)}
+        onClick={handleOpen}
         style={{
           position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          width: "60px",
-          height: "60px",
+          bottom: 20,
+          right: 20,
+          width: 60,
+          height: 60,
           borderRadius: "50%",
-          backgroundColor: "#b20000",
+          background: "#b20000",
           color: "#fff",
-          cursor: "pointer",
-          fontSize: "24px",
+          fontSize: 24,
           border: "none",
           zIndex: 10000,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "fixed"
         }}
       >
         💬
-        {unreadCount > 0 && (
+        {unread > 0 && (
           <span
             style={{
               position: "absolute",
-              top: "5px",
-              right: "5px",
+              top: 5,
+              right: 5,
               background: "yellow",
               color: "#000",
               borderRadius: "50%",
-              width: "20px",
-              height: "20px",
+              width: 20,
+              height: 20,
+              fontSize: 12,
               display: "flex",
-              justifyContent: "center",
               alignItems: "center",
-              fontSize: "12px",
-              fontWeight: "bold"
+              justifyContent: "center",
+              fontWeight: "bold",
             }}
           >
-            {unreadCount}
+            {unread}
           </span>
         )}
       </button>
 
       {/* Chat Box */}
-      {isChatOpen && (
+      {open && (
         <div
           style={{
             position: "fixed",
-            bottom: "90px",
-            right: "20px",
-            width: "350px",
-            height: "450px",
+            bottom: 90,
+            right: 20,
+            width: 350,
+            height: 450,
             background: "#fff",
-            borderRadius: "12px",
+            borderRadius: 12,
             boxShadow: "0 4px 15px rgba(0,0,0,.25)",
-            overflow: "hidden",
             zIndex: 10000,
           }}
         >
-          <ChatBox setUnreadCount={setUnreadCount} />
+          <ChatBox onClose={handleClose} setUnreadCount={setUnread} />
         </div>
       )}
     </>

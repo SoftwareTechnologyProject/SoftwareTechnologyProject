@@ -1,69 +1,97 @@
-# 🧪 Testing Scripts
+# Testing & Automation Scripts
 
-Collection of automated testing scripts and tools for the Bookstore project.
+Collection of automated scripts and tools for the Bookstore project.
 
-## 📁 Files Overview
+## Files Overview
 
+### Development Scripts
+- `start-system.sh` - Start complete system (backend + frontend)
+- `stop-system.sh` - Stop all services cleanly
+- `test-sample-data.sh` - Validate sample data loading
+
+### Testing Scripts  
 - `quick-test.sh` - Complete backend + frontend smoke test
-- `test-frontend.sh` - Frontend-specific tests  
+- `test-frontend.sh` - Frontend-specific tests
 - `Bookstore_API_Collection.json` - Postman collection for API testing
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Run Full System Test
+### 1. Start Complete System
+```bash
+./scripts/start-system.sh
+```
+This will:
+- Start backend services with Docker Compose
+- Load sample data automatically  
+- Start React frontend development server
+- Validate system is ready
+
+### 2. Stop System
+```bash
+./scripts/stop-system.sh
+```
+This will cleanly stop all services.
+
+### 3. Test Sample Data
+```bash
+./scripts/test-sample-data.sh
+```
+This will validate that sample data was loaded correctly.
+
+### 4. Run Full System Test
 ```bash
 ./scripts/quick-test.sh
 ```
 This will test:
-- ✅ Docker services status
-- ✅ Backend health & APIs
-- ✅ Database connectivity  
-- ✅ Frontend accessibility
+- Docker services status
+- Backend health & APIs
+- Database connectivity  
+- Frontend accessibility
 
-### 2. Run Frontend Tests
+### 5. Run Frontend Tests
 ```bash
 ./scripts/test-frontend.sh
 ```
 This will test:
-- ✅ Node modules installation
-- ✅ Frontend build process
-- ✅ API integration
-- 📋 Manual test checklist
+- Node modules installation
+- Frontend build process
+- API integration
+- Manual test checklist
 
-### 3. Import Postman Collection
+### 6. Import Postman Collection
 
 1. Open Postman
 2. Click "Import" 
 3. Select `scripts/Bookstore_API_Collection.json`
 4. Run individual requests or entire collection
 
-## 📋 Collection Features
+## Collection Features
 
-### 🏥 Health Checks
+### Health Checks
 - Backend health endpoint
 - Swagger UI accessibility
 
-### 🔐 Authentication  
+### Authentication  
 - User registration
 - User login with token extraction
 
-### 📚 Books API
+### Books API
 - Get all books
 - Get book details  
 - Create new book (admin required)
 
-### 🛒 Shopping Cart
+### Shopping Cart
 - Get user cart
 - Add items to cart
 
-### 📦 Orders
+### Orders
 - Get user orders
 - Create new order
 
-### 📊 Categories
+### Categories
 - Get all categories
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 The Postman collection uses these variables:
 - `baseUrl`: Backend URL (default: http://localhost:8080)
@@ -72,31 +100,45 @@ The Postman collection uses these variables:
 - `userId`: User ID (auto-populated after registration)
 - `bookId`: Book ID (auto-populated from book list)
 
-## 🔧 Prerequisites
+## Prerequisites
 
 ### For Scripts:
 - Docker & Docker Compose running
 - `curl` installed
 - `jq` installed (optional, for JSON parsing)
+- Node.js & npm (for frontend)
 
 ### For Postman:
 - Postman Desktop App
 - Backend service running on localhost:8080
 
-## 💡 Usage Tips
+## Usage Tips
 
-### Running Tests Before PR Merge:
+### Development Workflow:
 ```bash
-# 1. Start services
-docker compose up -d
+# 1. Start complete system
+./scripts/start-system.sh
 
-# 2. Run quick test
+# 2. Run tests
+./scripts/test-sample-data.sh
 ./scripts/quick-test.sh
 
-# 3. Import & run Postman collection
+# 3. Development work...
 
-# 4. Run frontend test  
-./scripts/test-frontend.sh
+# 4. Stop system
+./scripts/stop-system.sh
+```
+
+### Team Workflow After Merge:
+```bash
+# 1. Pull latest changes
+git pull origin main
+
+# 2. Restart with latest code
+./scripts/stop-system.sh
+./scripts/start-system.sh
+
+# 3. System ready with fresh sample data
 ```
 
 ### Troubleshooting:
@@ -111,40 +153,41 @@ docker compose ps
 docker compose logs -f
 ```
 
-## 📝 Test Results
+## Test Results
 
 Expected outputs:
 
-### ✅ Success:
+### Success:
 ```
-🚀 Bookstore Quick Test Script
-✅ Docker services are running
-✅ Backend health check passed
-✅ Books API working - Found X books
-✅ Frontend is accessible
-✅ PostgreSQL is running
-```
-
-### ❌ Issues:
-```
-❌ Backend not responding on http://localhost:8080
-❌ Frontend not responding on http://localhost:5173
-❌ PostgreSQL not responding
+Bookstore Quick Test Script
+✓ Docker services are running
+✓ Backend health check passed
+✓ Books API working - Found X books
+✓ Frontend is accessible
+✓ PostgreSQL is running
 ```
 
-## 🔄 Integration with PR Workflow
+### Issues:
+```
+✗ Backend not responding on http://localhost:8080
+✗ Frontend not responding on http://localhost:5173
+✗ PostgreSQL not responding
+```
 
-Use these scripts as part of your PR testing process:
+## Integration with Development Workflow
 
-1. **Checkout PR branch**
-2. **Run `./scripts/quick-test.sh`**
-3. **Import & run Postman collection**
-4. **Document results in PR comment**
+These scripts streamline your development process:
 
-## 📞 Support
+1. **Start Development Session**: `./scripts/start-system.sh`
+2. **Validate Setup**: `./scripts/test-sample-data.sh`
+3. **Run Tests**: `./scripts/quick-test.sh`
+4. **Development Work**
+5. **End Session**: `./scripts/stop-system.sh`
+
+## Support
 
 If scripts fail:
 1. Check Docker services: `docker compose ps`
 2. Check application logs: `docker compose logs -f`
 3. Verify ports are not in use: `lsof -i :8080 -i :5173`
-4. Restart services: `docker compose down && docker compose up -d`
+4. Restart services: `./scripts/stop-system.sh && ./scripts/start-system.sh`

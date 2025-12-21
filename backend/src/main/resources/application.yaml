@@ -17,13 +17,20 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create}
     show-sql: ${SPRING_JPA_SHOW_SQL:true}
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+      data-locations: classpath:data.sql
   
   mail:
     host: smtp-relay.brevo.com

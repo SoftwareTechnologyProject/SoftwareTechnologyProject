@@ -1,11 +1,12 @@
 package com.bookstore.backend.service;
 
+import com.bookstore.backend.DTO.BoxChatDTO;
 import com.bookstore.backend.DTO.MessageResponseDTO;
-import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.Conversations;
 import com.bookstore.backend.model.Messages;
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.MessageRepository;
+import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,12 +22,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MessageService {
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
     private final ConversationService conversationService;
     private final SecurityUtils securityUtils;
 
-    public Messages createMessage(Conversations conversations, String content, Users sender){
-        Messages message = Messages.builder().conversation(conversations).sender(sender)
-                .createdAt(LocalDateTime.now()).content(content).isRead(false).build();
+    public Messages createMessage(Conversations conversations, String content, Users sender, Users receiver){
+        Messages message = Messages.builder().conversation(conversations).sender(sender).receiver(receiver)
+                .createdAt(LocalDateTime.now()).content(content).build();
 
         messageRepository.save(message);
         return message;
@@ -34,24 +36,52 @@ public class MessageService {
 
     @Transactional
     public void markAsRead(List<Long> ids) {
+        var user = securityUtils.getCurrentUser();
         List<Messages> msgs = messageRepository.findAllById(ids);
-        msgs.forEach(m -> m.setIsRead(true));
+        msgs.forEach(m ->{
+            if (user.getId().equals(m.getReceiver().getId())) {
+                m.setIsRead(true);
+            }
+        });
         messageRepository.saveAll(msgs);
     }
 
     public int getUnreadMessage(){
-        return messageRepository.getUnreadMessages();
+        var user = securityUtils.getCurrentUser();
+        if (user == null) {
+            return 0;
+        }
+        Conversations conversations = conversationService.getConversations(user);
+        if (conversations == null) {
+            return 0;
+        }
+        return messageRepository.countUnreadMessages(user.getId(), conversations.getId());
     }
 
-    public Page<MessageResponseDTO> getCustomerMessages(int page, int size){
-        var user = securityUtils.getCurrentUser();
-        if (user == null){
-            return Page.empty();
+    public Page<MessageResponseDTO> getMessages(Conversations conversation, Users currentUser,
+            int page, int size) {
+        return messageRepository.findByConversationOrderByCreatedAtAsc(conversation, PageRequest.of(page, size))
+                .map(m -> MessageResponseDTO.from(m, currentUser));
+    }
+
+    public BoxChatDTO getBoxChat(int page, int size){
+        Users user = securityUtils.getCurrentUser();
+
+        Users admin = userRepository.findByEmail("ndtoan.work@gmail.com").orElseThrow(() -> new RuntimeException("No admin available"));
+
+        Conversations conversation = conversationService.getOrCreateConversation(user, admin);
+        Page<MessageResponseDTO> chatContents = Page.empty();
+        if (conversation != null) {
+            chatContents = getMessages(conversation, user, page, size);
+            admin = conversation.getAdmin();
         }
-        Conversations conversation = conversationService.getConversations(user);
-        Page<Messages> allMessages = messageRepository.findByConversationOrderByCreatedAtAsc(conversation, PageRequest.of(page, size));
-
-
-        return allMessages.map(messages -> MessageResponseDTO.from(messages));
+        return BoxChatDTO.builder()
+                .senderId(user.getId())
+                .senderName(user.getFullName())
+                .receiverId(admin.getId())
+                .receiverName(admin.getFullName())
+                .receiverEmail(admin.getEmail())
+                .boxContent(chatContents)
+                .build();
     }
 }
