@@ -119,6 +119,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Guava for rate limiting -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.0.0-jre</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

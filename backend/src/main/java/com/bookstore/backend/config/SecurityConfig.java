@@ -17,7 +17,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.filter.JwtResquestFilter;
 import com.bookstore.backend.repository.UserRepository;
 
@@ -27,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
-    // Các dependency được inject qua constructor
+    // Inject các dependency qua constructor
     private final CorsConfigurationSource corsConfigurationSource;
     private final UserDetailsService userDetailsService;
     private final JwtResquestFilter jwtResquestFilter;
@@ -40,35 +39,33 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 // Tắt CSRF vì dùng JWT
                 .csrf(csrf -> csrf.disable())
-                // Stateless session (không lưu session server-side)
+                // Không lưu session trên server
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Phân quyền cho các endpoint
                 .authorizeHttpRequests(authz -> authz
-                        // Các endpoint public (không cần login)
+                        // Các endpoint public
                         .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/books/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/books/**")
-                        .hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/books/**")
-                        .hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/books/**")
-                        .hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/authors/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/publishers/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/books/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/books/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/authors/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/publishers/**").permitAll()
 
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/api/register").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/blog/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/blog/posts/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/blog/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/blog/posts/*/comments").permitAll()
                         .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vouchers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vouchers").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
 
-                        // Thêm từ stashed
-                        .requestMatchers("/api/chat/**", "/api/notifications").permitAll()
+                        // Chat và Notifications yêu cầu đăng nhập
+                        .requestMatchers("/api/chat/**").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
 
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
@@ -82,13 +79,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Mã hóa mật khẩu bằng BCrypt
+    // Bean mã hóa mật khẩu
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Cấu hình AuthenticationProvider dùng UserDetailsService + PasswordEncoder
+    // Bean AuthenticationProvider
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
@@ -97,7 +94,7 @@ public class SecurityConfig {
         return daoAuthenticationProvider;
     }
 
-    // AuthenticationManager để xử lý xác thực
+    // Bean AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

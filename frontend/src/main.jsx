@@ -10,6 +10,7 @@ import Recommend from './components/Recommend/Recommend.jsx';
 import HeaderAdmin from './components/HeaderAdmin/HeaderAdmin.jsx';
 import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
 import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import { PrivateRoute } from './components/PrivateRoute/PrivateRoute.jsx';
 
 // Pages
 import HomePage from './pages/HomePage/HomePage';
@@ -32,63 +33,128 @@ import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 import TrendPage from "./pages/TrendPage/TrendPage.jsx";
 
-// Layout chung
-function MainLayout() {
-  return (
-    <>
-      <Header />
-
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <BrowserRouter>
       <Routes>
-        {/* Public */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/:categorySlug" element={<CategoryPage />} />
-        <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/vouchers" element={<VoucherManagement />} />
-        <Route path="/search" element={<SearchResult />} />
-        <Route path="/voucher-management" element={<VoucherManagement />} />
+        {/* Blog routes - standalone without Header/Footer */}
         <Route path="/blog" element={<BlogList />} />
         <Route path="/blog/posts/:id" element={<BlogDetail />} />
-        <Route path="/trend/:trendSlug" element={<TrendPage />} />
 
-        {/* Account area */}
-        <Route path="/account" element={<AccountLayout />}>
+        {/* Login page - standalone without Header/Footer */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+
+        {/* Public routes with Header/Footer */}
+        <Route path="/" element={
+          <>
+            <Header />
+            <HomePage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/books/:id" element={
+          <>
+            <Header />
+            <ProductDetail />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/search" element={
+          <>
+            <Header />
+            <SearchResult />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+
+        <Route path="/trend" element={
+          <>
+            <Header />
+            <TrendPage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/vouchers" element={
+          <>
+            <Header />
+            <VoucherManagement />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/voucher-management" element={
+          <>
+            <Header />
+            <VoucherManagement />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+
+        {/* Category routes - PHẢI ĐẶT SAU CÁC ROUTES CỤ THỂ */}
+        <Route path="/:categorySlug" element={
+          <>
+            <Header />
+            <CategoryPage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+
+        {/* Account routes - YÊU CẦU ĐĂNG NHẬP */}
+        <Route path="/account" element={
+          <PrivateRoute>
+            <>
+              <Header />
+              <AccountLayout />
+              <Recommend />
+              <Footer />
+              <ChatFloating />
+            </>
+          </PrivateRoute>
+        }>
           <Route path="accountInf" element={<Account />} />
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
-
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
-        {/* Admin */}
-        <Route path="/admin" element={<HeaderAdmin />}>
+        {/* Admin routes - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
+        <Route path="/admin" element={
+          <PrivateRoute requiredRole="ADMIN">
+            <HeaderAdmin />
+          </PrivateRoute>
+        }>
           <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-        <Route path="/admin/chat" element={<AdminChatBox />} />
-      </Routes>
-
-      <Recommend />
-      <Footer />
-      <ChatFloating />
-    </>
-  );
-}
-
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        {/* Login page - standalone without Header/Footer */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
         
-        {/* All other pages with common Layout */}
-        <Route path="*" element={<MainLayout />} />
+        <Route path="/admin/chat" element={
+          <PrivateRoute requiredRole="ADMIN">
+            <AdminChatBox />
+          </PrivateRoute>
+        } />
       </Routes>
     </BrowserRouter>
   </StrictMode>
