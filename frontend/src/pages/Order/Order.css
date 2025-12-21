@@ -129,3 +129,15 @@
   align-items: flex-end;
   gap: 6px;
 }
+
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info img {
+  width: 70px;
+  height: auto;
+  object-fit: contain;
+}

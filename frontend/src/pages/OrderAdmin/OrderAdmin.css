@@ -102,7 +102,9 @@
   gap: 10px;
 }
 
-.cancel {
+.button-actions {
+  width: 100px;          /* chiều ngang cố định */
+  height: 36px;
   border: 1px solid #ddd;
   padding: 6px 12px;
   background: white;
