@@ -1,5 +1,6 @@
 package com.bookstore.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -26,6 +27,7 @@ public class Author {
 
     @ManyToMany(mappedBy = "authors")
     @ToString.Exclude
+    @JsonIgnore
     private Set<Book> books;
 
     @Override

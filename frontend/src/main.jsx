@@ -24,7 +24,8 @@ import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
-import Login from "./pages/Login/Login";
+import BookAdmin from './pages/BookAdmin/BookAdmin';
+import Login from "./pages/Login/Login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
@@ -57,7 +58,7 @@ function MainLayout() {
 
         {/* Admin */}
         <Route path="/admin" element={<HeaderAdmin />}>
-          <Route path="books" element={<Account />} />
+          <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
           <Route path="orderAdmin" element={<OrderAdmin />} />
