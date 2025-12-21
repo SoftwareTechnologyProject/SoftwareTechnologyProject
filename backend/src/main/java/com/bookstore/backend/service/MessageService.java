@@ -48,7 +48,13 @@ public class MessageService {
 
     public int getUnreadMessage(){
         var user = securityUtils.getCurrentUser();
+        if (user == null) {
+            return 0;
+        }
         Conversations conversations = conversationService.getConversations(user);
+        if (conversations == null) {
+            return 0;
+        }
         return messageRepository.countUnreadMessages(user.getId(), conversations.getId());
     }
 
@@ -61,7 +67,7 @@ public class MessageService {
     public BoxChatDTO getBoxChat(int page, int size){
         Users user = securityUtils.getCurrentUser();
 
-        Users admin = userRepository.findByEmail("admin@gmail.com").orElseThrow(() -> new RuntimeException("No admin available"));
+        Users admin = userRepository.findByEmail("ndtoan.work@gmail.com").orElseThrow(() -> new RuntimeException("No admin available"));
 
         Conversations conversation = conversationService.getOrCreateConversation(user, admin);
         Page<MessageResponseDTO> chatContents = Page.empty();
