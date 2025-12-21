@@ -23,7 +23,6 @@ import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
 import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
-import BlogAbout from './pages/Blog/BlogAbout';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import BookAdmin from './pages/BookAdmin/BookAdmin';
 import Login from "./pages/Login/Login.jsx";
@@ -32,6 +31,7 @@ import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
+import TrendPage from "./pages/TrendPage/TrendPage.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -40,7 +40,6 @@ createRoot(document.getElementById("root")).render(
         {/* Blog routes - standalone without Header/Footer */}
         <Route path="/blog" element={<BlogList />} />
         <Route path="/blog/posts/:id" element={<BlogDetail />} />
-        <Route path="/blog/about" element={<BlogAbout />} />
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
@@ -53,16 +52,6 @@ createRoot(document.getElementById("root")).render(
           <>
             <Header />
             <HomePage />
-            <Recommend />
-            <Footer />
-            <ChatFloating />
-          </>
-        } />
-        
-        <Route path="/:categorySlug" element={
-          <>
-            <Header />
-            <CategoryPage />
             <Recommend />
             <Footer />
             <ChatFloating />
@@ -88,6 +77,16 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
+
+        <Route path="/trend" element={
+          <>
+            <Header />
+            <TrendPage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
         
         <Route path="/vouchers" element={
           <>
@@ -103,6 +102,17 @@ createRoot(document.getElementById("root")).render(
           <>
             <Header />
             <VoucherManagement />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+
+        {/* Category routes - PHẢI ĐẶT SAU CÁC ROUTES CỤ THỂ */}
+        <Route path="/:categorySlug" element={
+          <>
+            <Header />
+            <CategoryPage />
             <Recommend />
             <Footer />
             <ChatFloating />

@@ -1,6 +1,6 @@
 .order-page {
-  padding: 20px;
-  background: #f5f5f5;
+  padding-left: 10px;
+  background: var(--components-color);
 }
 
 /* Alert */
