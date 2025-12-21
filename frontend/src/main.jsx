@@ -33,69 +33,6 @@ import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 
-// Layout chung
-function MainLayout() {
-  return (
-    <>
-      <Header />
-
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/:categorySlug" element={<CategoryPage />} />
-        <Route path="/books/:id" element={<ProductDetail />} />
-        <Route path="/vouchers" element={<VoucherManagement />} />
-        <Route path="/search" element={<SearchResult />} />
-        <Route path="/voucher-management" element={<VoucherManagement />} />
-
-        {/* Account area - YÊU CẦU ĐĂNG NHẬP */}
-        <Route 
-          path="/account" 
-          element={
-            <PrivateRoute>
-              <AccountLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route path="accountInf" element={<Account />} />
-          <Route path="voucher-wallet" element={<VoucherWallet />} />
-          <Route path="order" element={<Order />} />
-
-          <Route path="order/:id" element={<OrderDetail />} />
-        </Route>
-
-        {/* Admin - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
-        <Route 
-          path="/admin" 
-          element={
-            <PrivateRoute requiredRole="ADMIN">
-              <HeaderAdmin />
-            </PrivateRoute>
-          }
-        >
-          <Route path="books" element={<BookAdmin />} />
-          <Route path="vouchers" element={<VoucherManagement />} />
-          <Route path="blog" element={<BlogAdmin />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
-          <Route path="order/:id" element={<OrderDetail />} />
-        </Route>
-        <Route 
-          path="/admin/chat" 
-          element={
-            <PrivateRoute requiredRole="ADMIN">
-              <AdminChatBox />
-            </PrivateRoute>
-          } 
-        />
-      </Routes>
-
-      <Recommend />
-      <Footer />
-      <ChatFloating />
-    </>
-  );
-}
-
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
@@ -110,9 +47,104 @@ createRoot(document.getElementById("root")).render(
         <Route path="/register" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+
+        {/* Public routes with Header/Footer */}
+        <Route path="/" element={
+          <>
+            <Header />
+            <HomePage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
         
-        {/* All other pages with common Layout */}
-        <Route path="*" element={<MainLayout />} />
+        <Route path="/:categorySlug" element={
+          <>
+            <Header />
+            <CategoryPage />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/books/:id" element={
+          <>
+            <Header />
+            <ProductDetail />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/search" element={
+          <>
+            <Header />
+            <SearchResult />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/vouchers" element={
+          <>
+            <Header />
+            <VoucherManagement />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        
+        <Route path="/voucher-management" element={
+          <>
+            <Header />
+            <VoucherManagement />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+
+        {/* Account routes - YÊU CẦU ĐĂNG NHẬP */}
+        <Route path="/account" element={
+          <PrivateRoute>
+            <>
+              <Header />
+              <AccountLayout />
+              <Recommend />
+              <Footer />
+              <ChatFloating />
+            </>
+          </PrivateRoute>
+        }>
+          <Route path="accountInf" element={<Account />} />
+          <Route path="voucher-wallet" element={<VoucherWallet />} />
+          <Route path="order" element={<Order />} />
+          <Route path="order/:id" element={<OrderDetail />} />
+        </Route>
+
+        {/* Admin routes - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
+        <Route path="/admin" element={
+          <PrivateRoute requiredRole="ADMIN">
+            <HeaderAdmin />
+          </PrivateRoute>
+        }>
+          <Route path="books" element={<BookAdmin />} />
+          <Route path="vouchers" element={<VoucherManagement />} />
+          <Route path="blog" element={<BlogAdmin />} />
+          <Route path="orderAdmin" element={<OrderAdmin />} />
+          <Route path="order/:id" element={<OrderDetail />} />
+        </Route>
+        
+        <Route path="/admin/chat" element={
+          <PrivateRoute requiredRole="ADMIN">
+            <AdminChatBox />
+          </PrivateRoute>
+        } />
       </Routes>
     </BrowserRouter>
   </StrictMode>

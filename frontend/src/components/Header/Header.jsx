@@ -54,6 +54,9 @@ const Header = () => {
   useUserNotifications(handleNewNotification);
 
   useEffect(() => {
+    // CHỈ fetch notifications nếu đã đăng nhập
+    if (!isLoggedIn) return;
+    
     const fetchLatest = async () => {
       try {
         const res = await axios.get(`http://localhost:8080/api/notifications?page=0&size=6`);
@@ -64,7 +67,7 @@ const Header = () => {
       }
     };
     fetchLatest();
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
