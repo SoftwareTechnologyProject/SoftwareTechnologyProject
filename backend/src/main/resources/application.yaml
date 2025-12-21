@@ -79,4 +79,6 @@ gemini:
 # JWT configuration
 jwt:
   secret:
-    key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
+    # PRODUCTION: Đổi KEY_JWT environment variable thành key mạnh hơn (ít nhất 32 bytes)
+    # Generate: openssl rand -base64 32
+    key: ${KEY_JWT:YourVeryLongAndSecureSecretKeyForHS256AtLeast32BytesRequired2024}

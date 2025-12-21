@@ -10,6 +10,7 @@ import Recommend from './components/Recommend/Recommend.jsx';
 import HeaderAdmin from './components/HeaderAdmin/HeaderAdmin.jsx';
 import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
 import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
+import { PrivateRoute } from './components/PrivateRoute/PrivateRoute.jsx';
 
 // Pages
 import HomePage from './pages/HomePage/HomePage';
@@ -47,8 +48,15 @@ function MainLayout() {
         <Route path="/search" element={<SearchResult />} />
         <Route path="/voucher-management" element={<VoucherManagement />} />
 
-        {/* Account area */}
-        <Route path="/account" element={<AccountLayout />}>
+        {/* Account area - YÊU CẦU ĐĂNG NHẬP */}
+        <Route 
+          path="/account" 
+          element={
+            <PrivateRoute>
+              <AccountLayout />
+            </PrivateRoute>
+          }
+        >
           <Route path="accountInf" element={<Account />} />
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
@@ -56,15 +64,29 @@ function MainLayout() {
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
-        {/* Admin */}
-        <Route path="/admin" element={<HeaderAdmin />}>
+        {/* Admin - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
+        <Route 
+          path="/admin" 
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <HeaderAdmin />
+            </PrivateRoute>
+          }
+        >
           <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-        <Route path="/admin/chat" element={<AdminChatBox />} />
+        <Route 
+          path="/admin/chat" 
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminChatBox />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
 
       <Recommend />
