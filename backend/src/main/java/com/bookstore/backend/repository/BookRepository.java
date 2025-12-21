@@ -11,8 +11,40 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
+    // Lấy toàn bộ sachs sắp xếp theo sold
+    @Query(
+            value = """
+            SELECT b
+            FROM Book b
+            JOIN b.variants v
+            GROUP BY b
+            ORDER BY SUM(v.sold) DESC
+          """,
+            countQuery = """
+            SELECT COUNT(DISTINCT b)
+            FROM Book b
+          """
+    )
+    Page<Book> findAllBooks(Pageable pageable);
     // Tìm sách theo tên category (có phân trang)
-    Page<Book> findByCategoriesName(String categoryName, Pageable pageable);
+    @Query(
+            value = """
+            SELECT b
+            FROM Book b
+            JOIN b.categories c
+            JOIN b.variants v
+            WHERE c.name = :categoryName
+            GROUP BY b
+            ORDER BY SUM(v.sold) DESC
+          """,
+            countQuery = """
+            SELECT COUNT(DISTINCT b)
+            FROM Book b
+            JOIN b.categories c
+            WHERE c.name = :categoryName
+          """
+    )
+    Page<Book> findByCategoriesName(@Param("categoryName") String categoryName, Pageable pageable);
 
     // Tìm sách theo tên tác giả (có phân trang)
     Page<Book> findByAuthorsName(String authorName, Pageable pageable);
@@ -46,6 +78,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
     Page<Book> findByKey(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query(value = "SELECT * FROM Book ORDER BY RANDOM() LIMIT 90", nativeQuery = true)
+    List<Book> findRandomBooks();
 
     // Tìm sách theo ISBN trong bảng variants (một sách có thể có nhiều biến thể với ISBN khác nhau)
     @Query("""

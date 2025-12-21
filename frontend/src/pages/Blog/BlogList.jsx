@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import BlogHeader from './BlogHeader';
 import Footer from '../../components/Footer/Footer';
 import './BlogList.css';
 
@@ -72,8 +71,6 @@ const BlogList = () => {
 
     return (
         <div className="blog-page">
-            <BlogHeader />
-
             <div className="blog-layout">
                 {/* Main Content */}
                 <main className="blog-main-content">
@@ -155,7 +152,6 @@ const BlogList = () => {
                     )}
                 </aside>
             </div>
-            <Footer />
         </div>
     );
 };

@@ -61,7 +61,7 @@ public class BookService {
 
     // Lấy tất cả sách với phân trang
     public Page<BookDTO> getAllBooks(Pageable pageable) {
-        return bookRepository.findAll(pageable).map(this::convertToDTO);
+        return bookRepository.findAllBooks(pageable).map(this::convertToDTO);
     }
 
     // Tìm sách theo tiêu đề
@@ -87,6 +87,10 @@ public class BookService {
     // Tìm sách theo keyword (title, category, author, publisher)
     public Page<BookDTO> getBookByKey(String keyword, Pageable pageable) {
         return bookRepository.findByKey(keyword, pageable).map(this::convertToDTO);
+    }
+
+    public List<BookDTO> getRandomBooks(){
+        return bookRepository.findRandomBooks().stream().map(this::convertToDTO).toList();
     }
 
     // Gợi ý tối đa 5 tiêu đề sách theo keyword
