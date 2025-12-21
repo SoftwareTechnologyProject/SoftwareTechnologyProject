@@ -20,12 +20,12 @@ const PaymentSuccess = ({ orderData }) => {
                     <p>Cảm ơn bạn đã mua hàng tại EliteBooks.com</p>
                     <p>
                         Mã đơn hàng của bạn là{" "}
-                        <strong>#{orderData?.orderId || "123456"}</strong>
+                        <strong>#{orderData?.id || ""}</strong>
                     </p>
                     <p>
                         Tổng tiền:{" "}
                         <strong>
-                            {orderData?.totalPrice?.toLocaleString("vi-VN") ||
+                            {orderData?.totalAmount?.toLocaleString("vi-VN") ||
                                 "0"}{" "}
                             ₫
                         </strong>
@@ -42,7 +42,7 @@ const PaymentSuccess = ({ orderData }) => {
                     </a>
 
                     <a
-                        href={`/account/order/${orderData?.orderId || ""}`}
+                        href={`/account/order/${orderData?.id || ""}`}
                         className="payment-success__btn view-order_btn"
                     >
                         Xem chi tiết hóa đơn

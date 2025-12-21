@@ -1,6 +1,8 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.model.Orders;
+import com.bookstore.backend.service.OrdersService;
 import com.bookstore.backend.service.PaymentService;
 import com.bookstore.backend.service.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +25,13 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final VNPayService vnPayService;
+    private final OrdersService ordersService;
 
     @Autowired
-    public PaymentController(PaymentService paymentService, VNPayService vnPayService) {
+    public PaymentController(PaymentService paymentService, VNPayService vnPayService, OrdersService ordersService) {
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
+        this.ordersService = ordersService;
     }
 
     /**
@@ -272,6 +276,28 @@ public class PaymentController {
             response.put("code", "99");
             response.put("message", "Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Lấy thông tin order từ paymentKey - Frontend gọi sau khi verify thành công
+     */
+    @GetMapping("/result")
+    public ResponseEntity<OrdersDTO> getPaymentResult(@RequestParam("paymentKey") String paymentKey) {
+        try {
+            // Lấy orderId từ paymentKey
+            Long orderId = paymentService.getOrderIdByPaymentKey(paymentKey);
+            if (orderId == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            // Lấy thông tin order
+            OrdersDTO orderDTO = ordersService.getOrderById(orderId.intValue());
+            return ResponseEntity.ok(orderDTO);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

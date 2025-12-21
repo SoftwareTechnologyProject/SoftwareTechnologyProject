@@ -7,7 +7,6 @@ import com.bookstore.backend.model.Orders;
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.Voucher;
 import com.bookstore.backend.model.enums.PaymentStatus;
-import com.bookstore.backend.model.enums.PaymentStatus;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.repository.BookVariantsRepository;
@@ -54,6 +53,7 @@ public class OrdersService {
         order.setPhoneNumber(phoneNumber);
         order.setPaymentType(paymentType);
         order.setStatus(StatusOrder.PENDING);
+        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
 
         // Voucher
@@ -189,6 +189,7 @@ public class OrdersService {
         dto.setShippingAddress(order.getShippingAddress());
         dto.setPhoneNumber(order.getPhoneNumber());
         dto.setPaymentType(order.getPaymentType());
+        dto.setPaymentStatus(order.getPaymentStatus());
         dto.setStatus(order.getStatus());
         dto.setOrderDate(order.getOrderDate());
 
@@ -209,6 +210,35 @@ public class OrdersService {
                         ))
                         .collect(Collectors.toList())
         );
+
+        // Tính totalAmount trực tiếp từ order object thay vì gọi calculateOrderTotalAmount
+        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
+                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
+                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        // Áp dụng voucher discount nếu có
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            if (voucher.isValid()) {
+                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
+                    java.math.BigDecimal discount = totalAmount
+                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
+                            .divide(java.math.BigDecimal.valueOf(100));
+                    
+                    if (voucher.getMaxDiscount() != null) {
+                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
+                        discount = discount.min(maxDiscount);
+                    }
+                    totalAmount = totalAmount.subtract(discount);
+                } else {
+                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
+                    totalAmount = totalAmount.subtract(discount);
+                }
+            }
+        }
+        
+        dto.setTotalAmount(totalAmount);
 
         return dto;
     }

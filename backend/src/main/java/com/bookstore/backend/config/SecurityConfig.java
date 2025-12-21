@@ -54,6 +54,7 @@ public class SecurityConfig {
                     
                     .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/payment/**").permitAll()
+                    .requestMatchers("/api/checkout/**").authenticated()
                     
                     .anyRequest().authenticated()
                 )

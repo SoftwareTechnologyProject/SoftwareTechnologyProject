@@ -3,7 +3,6 @@ package com.bookstore.backend.service;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.PaymentStatus;
-import com.bookstore.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,5 +137,30 @@ public class PaymentService {
         
         // Tính tổng tiền thông qua OrdersService
         return ordersService.calculateOrderTotalAmount(orderId);
+    }
+
+    /**
+     * Lấy orderId từ paymentKey
+     * @param paymentKey Payment key
+     * @return orderId hoặc null nếu không tìm thấy
+     */
+    public Long getOrderIdByPaymentKey(String paymentKey) {
+        Long orderId = pendingPayments.get(paymentKey);
+        if (orderId != null) {
+            return orderId;
+        }
+        
+        // Nếu không tìm thấy trong pending, thử parse từ paymentKey
+        // Format: payment_{orderId}_{timestamp}
+        try {
+            String[] parts = paymentKey.split("_");
+            if (parts.length >= 2) {
+                return Long.parseLong(parts[1]);
+            }
+        } catch (NumberFormatException e) {
+            // Ignore
+        }
+        
+        return null;
     }
 }
