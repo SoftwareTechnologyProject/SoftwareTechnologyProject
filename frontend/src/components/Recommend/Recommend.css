@@ -5,9 +5,69 @@
 }
 
 .recommend img {
-    @apply w-full h-auto rounded-2xl;
+    @apply w-full rounded-2xl;
 }
 
 .recommend-detail {
-    @apply absolute grid grid-cols-5 gap-4 mt-50 py-5 bg-[var(--components-color)] rounded-2xl; /* 5 cột ảnh */
+    @apply absolute grid grid-cols-5 gap-4 mt-50 py-5 pb-10 bg-[var(--components-color)] rounded-2xl;
+}
+
+.recommend-detail img {
+    @apply w-full h-75 object-contain mb-5;
+}
+
+/* Loading Placeholders */
+.book-loading-placeholder {
+    @apply animate-pulse;
+}
+
+.loading-img {
+    @apply w-full bg-gray-300 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-300 rounded mt-2 w-3/4;
+}
+
+.book-view {
+    @apply px-5 transition-shadow duration-500 ease-in-out hover:shadow-xl;
+}
+
+.label-price {
+    @apply pt-2;
+}
+
+.special-price {
+    @apply pt-2;
+}
+
+.label-price .price-new {
+    @apply text-xl font-bold text-[var(--primary-color)];
+}
+
+.label-price .percent-discount {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2 mx-3;
+}
+
+.label-price .price-old {
+    @apply line-through;
+}
+
+/* Pagination */
+.pagination-fix {
+    @apply rounded-xl flex justify-center items-center mt-610 mb-10 border-3 w-fit border-[var(--primary-color)];
+}
+
+.pagination-fix button {
+    @apply min-w-12 h-12 flex items-center justify-center
+           rounded-lg font-medium text-sm
+           transition-all duration-300 ease-in-out
+           border-2 border-transparent
+           hover:bg-[var(--primary-color)] hover:text-[var(--components-color)]
+           hover:shadow-md hover:scale-105;
+}
+
+.pagination-fix button.active {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)]
+           border-[var(--primary-color)] shadow-lg scale-105;
 }

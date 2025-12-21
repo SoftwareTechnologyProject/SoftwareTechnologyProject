@@ -220,10 +220,6 @@ const VoucherWallet = () => {
                         )}
                     </div>
                 )}
-
-                <div className="back-link">
-                    <Link to="/account/accountInf">Quay lại</Link>
-                </div>
             </main>
 
         </>

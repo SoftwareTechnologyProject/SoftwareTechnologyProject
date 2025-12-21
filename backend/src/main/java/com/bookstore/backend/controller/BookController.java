@@ -2,6 +2,8 @@ package com.bookstore.backend.controller;
 
 import java.util.List;
 
+import com.bookstore.backend.model.Book;
+import com.bookstore.backend.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -124,4 +126,15 @@ public class BookController {
     public List<String> suggest (@RequestParam String keyword) {
         return bookService.suggestKey(keyword);
     }
+
+    @GetMapping("/random")
+    public ResponseEntity<List<BookDTO>> randomBooks() {
+        return ResponseEntity.ok(bookService.getRandomBooks());
+    }
+
+    @GetMapping("/trendingManga")
+    public ResponseEntity<Page<BookDTO>> getBookCategory(@RequestParam(required = false) String category, Pageable pageable) {
+        return ResponseEntity.ok(bookService.getBooksByCategory(category, pageable));
+    }
+
 }
