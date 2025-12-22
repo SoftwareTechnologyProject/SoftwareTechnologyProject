@@ -238,7 +238,6 @@ function Checkout() {
                     window.location.href = paymentUrl;
                 } else {
                     // COD - chuyển đến trang thành công
-                    alert("Đặt hàng thành công! Mã đơn hàng: " + orderId);
                     navigate("/payment/pending?orderId=" + orderId);
                 }
             } else {
