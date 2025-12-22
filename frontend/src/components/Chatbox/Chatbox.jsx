@@ -1,163 +1,117 @@
 import { useEffect, useRef, useState } from "react";
 import useUserNotifications from "../../hook/useUserNotifications";
 import axiosClient from "../../api/axiosClient";
+import "./CustomerChatBox.css";
+
+// Helper định dạng giờ
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+};
 
 const ChatBox = ({ onClose, setUnreadCount }) => {
   const [box, setBox] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
-  // 👉 chặn loadChat chạy 2 lần (React 18 StrictMode)
+  const messagesEndRef = useRef(null); // Để auto scroll
   const didLoadRef = useRef(false);
 
-  /* =======================
-     📡 WEBSOCKET LISTENER
-     ======================= */
-  const { sendChatMessage } = useUserNotifications(
-    null,
-    (msg) => {
-      console.log("📩 WS message received:", msg);
-
-      setMessages((prev) => [...prev, msg]);
-
-      // Tin của đối phương → mark read
-      if (!msg.mine && msg.id) {
-        markRead([msg.id]);
-        setUnreadCount(0);
-      }
+  // --- WEBSOCKET ---
+  const { sendChatMessage } = useUserNotifications(null, (msg) => {
+    setMessages((prev) => [...prev, msg]);
+    // Nếu tin nhắn đến từ Shop (không phải mine) -> đánh dấu đã xem
+    if (!msg.mine && msg.id) {
+      markRead([msg.id]);
+      setUnreadCount(0); // Reset unread bên ngoài
     }
-  );
+  });
 
-  /* =======================
-     📥 LOAD CHAT BOX
-     ======================= */
+  // --- API ---
   const loadChat = async () => {
     try {
-      console.log("📡 Load chat box...");
-
-      const res = await axiosClient.get("/chat", {
-        params: { page: 0, size: 50 },
-      });
-
-      console.log("📦 BoxChatDTO:", res.data);
-
+      const res = await axiosClient.get("/chat", { params: { page: 0, size: 50 } });
       setBox(res.data);
-
       const contents = res.data?.boxContent?.content || [];
       setMessages(contents);
 
-      // mark all unread
-      const unreadIds = contents
-        .filter((m) => !m.mine && !m.read)
-        .map((m) => m.id);
-
+      // Đánh dấu đã đọc các tin chưa đọc
+      const unreadIds = contents.filter((m) => !m.mine && !m.read).map((m) => m.id);
       if (unreadIds.length > 0) {
-        console.log("✅ Mark read ids:", unreadIds);
         await markRead(unreadIds);
         setUnreadCount(0);
       }
-    } catch (err) {
-      console.error("❌ Load chat failed:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  /* =======================
-     ✅ MARK READ
-     ======================= */
   const markRead = async (ids) => {
-    if (!ids || ids.length === 0) return;
-
-    try {
-      await axiosClient.put("/chat/mark-read", ids);
-      console.log("✔ Marked read:", ids);
-    } catch (err) {
-      console.error("❌ Mark read failed:", err);
-    }
+    if (!ids.length) return;
+    try { await axiosClient.put("/chat/mark-read", ids); } catch (e) {}
   };
 
-  /* =======================
-     🚀 EFFECT (RUN ONCE)
-     ======================= */
-  useEffect(() => {
-    if (didLoadRef.current) {
-      console.log("⏭ Skip duplicate loadChat");
-      return;
-    }
-
-    didLoadRef.current = true;
-    loadChat();
-  }, []);
-
-  /* =======================
-     📤 SEND MESSAGE
-     ======================= */
   const handleSend = () => {
-    if (!input.trim()) {
-      console.warn("⛔ Empty message");
-      return;
-    }
-
-    if (!box?.receiverEmail) {
-      console.warn("⛔ Missing receiverEmail");
-      return;
-    }
-
-    const payload = {
-      receiveEmail: box.receiverEmail,
-      content: input,
-    };
-
-    console.log("📤 Sending WS message:", payload);
+    if (!input.trim() || !box?.receiverEmail) return;
+    const payload = { receiveEmail: box.receiverEmail, content: input };
     sendChatMessage(payload);
     setInput("");
   };
 
-  /* =======================
-     🧱 UI
-     ======================= */
+  // --- EFFECT ---
+  useEffect(() => {
+    if (didLoadRef.current) return;
+    didLoadRef.current = true;
+    loadChat();
+  }, []);
+
+  // Auto scroll xuống cuối khi có tin nhắn mới
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // --- RENDER ---
   return (
-    <div className="flex flex-col h-full p-3 bg-white">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <b>💬 Chat với {box?.receiverName || "Admin"}</b>
-        <button onClick={onClose}>✖</button>
+    <div className="customer-chat-window">
+      {/* 1. HEADER */}
+      <div className="cc-header">
+        <div className="cc-title">
+          <h4>Hỗ trợ khách hàng</h4>
+          <span>Thường trả lời trong vài phút</span>
+        </div>
+        <button className="btn-close" onClick={onClose} title="Đóng chat">
+           ✕
+        </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-2 rounded">
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`mb-2 flex ${
-              m.mine ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`p-2 rounded max-w-[70%] ${
-                m.mine
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
+      {/* 2. BODY MESSAGES */}
+      <div className="cc-body">
+        {messages.length === 0 && (
+          <div style={{textAlign:'center', color:'#9ca3af', marginTop: 20, fontSize:'0.9rem'}}>
+            Xin chào! Bạn cần shop hỗ trợ gì không ạ? 👋
+          </div>
+        )}
+        
+        {messages.map((m, idx) => (
+          <div key={m.id || idx} className={`cc-msg ${m.mine ? "mine" : "other"}`}>
+            <div className="bubble">
               {m.content}
             </div>
+            <span className="timestamp">{formatTime(m.createdAt || new Date())}</span>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="flex mt-2 gap-2">
+      {/* 3. FOOTER INPUT */}
+      <div className="cc-footer">
         <input
-          className="flex-1 border rounded p-2"
+          className="cc-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Nhập tin nhắn..."
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          placeholder="Nhập nội dung cần hỗ trợ..."
         />
-        <button
-          className="bg-red-600 text-white px-4 rounded"
-          onClick={handleSend}
-        >
-          Gửi
+        <button className="btn-send" onClick={handleSend}>
+           Gửi
         </button>
       </div>
     </div>
