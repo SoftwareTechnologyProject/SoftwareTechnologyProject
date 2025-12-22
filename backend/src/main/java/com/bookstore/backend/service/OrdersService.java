@@ -82,7 +82,7 @@ public class OrdersService {
     // ------------------- GET ORDERS BY USER -------------------
     public List<OrdersDTO> getOrdersByUser() {
         var userInfo = securityUtils.getCurrentUser();
-        return ordersRepository.findByUsers_Id(userInfo.getId())
+        return ordersRepository.findByUsersId(userInfo.getId())
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -189,7 +189,7 @@ public class OrdersService {
     }
     private void deductVariantStock(Long orderId) {
 
-        List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
+        List<OrderDetails> details = orderDetailRepository.findByOrdersId(orderId);
 
         for (OrderDetails detail : details) {
             BookVariants variant = detail.getBookVariant();
@@ -209,7 +209,7 @@ public class OrdersService {
     }
     private void restoreVariantStock(Long orderId) {
 
-        List<OrderDetails> details = orderDetailRepository.findByOrders_Id(orderId);
+        List<OrderDetails> details = orderDetailRepository.findByOrdersId(orderId);
 
         for (OrderDetails detail : details) {
             BookVariants variant = detail.getBookVariant();

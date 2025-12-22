@@ -3,7 +3,7 @@ package com.bookstore.backend.model;
 import java.sql.Timestamp;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp; // <--- ĐÃ SỬA: Thay thế java.security.Timestamp
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
