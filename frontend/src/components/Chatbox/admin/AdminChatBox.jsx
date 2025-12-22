@@ -1,18 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+// FIX: Sửa lại đường dẫn import (../../)
 import axiosClient from "../../../api/axiosClient";
 import useUserNotifications from "../../../hook/useUserNotifications";
+import "./AdminChatBox.css";
 
-/* =======================
-   ⏰ FORMAT TIME
-   ======================= */
-const formatTime = (iso) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+// === HELPERS ===
+const getAvatarName = (name) => {
+  if (!name) return "U";
+  const parts = name.trim().split(" ");
+  return parts[parts.length - 1].charAt(0).toUpperCase();
 };
+
+const getDateLabel = (dateInput) => {
+  const d = new Date(dateInput);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Hôm nay";
+  if (d.toDateString() === yesterday.toDateString()) return "Hôm qua";
+  return d.toLocaleDateString("vi-VN");
+};
+
+const formatTimeShort = (iso) => {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+};
+
+// Quick Replies Data
+const QUICK_REPLIES = ["Xin chào 👋", "Cảm ơn bạn", "Đã chốt đơn", "Đợi shop xíu nhé"];
 
 const AdminChatBox = () => {
   const [boxChats, setBoxChats] = useState([]);
@@ -20,203 +35,246 @@ const AdminChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [unreadMap, setUnreadMap] = useState({});
+  const messagesEndRef = useRef(null);
 
-  /* =======================
-     📡 WEBSOCKET
-     ======================= */
-  const { sendChatMessage } = useUserNotifications(
-    null,
-    (msg) => {
-      console.log("📩 WS received (admin):", msg);
+  // --- NEW STATE: UI CONTROL & NOTES ---
+  const [showInfo, setShowInfo] = useState(false); // Điều khiển Panel bên phải
+  const [newNote, setNewNote] = useState("");      // Nội dung note đang nhập
+  const [noteHistory, setNoteHistory] = useState([]); // Danh sách lịch sử note
 
-      // ✅ DÙNG LOGIC GIỐNG USER: render luôn
-      setMessages((prev) => [...prev, msg]);
-
-      // chỉ mark read khi admin nhận tin từ user
-      if (!msg.mine && msg.id) {
+  // --- SOCKET CONNECTION ---
+  const { sendChatMessage } = useUserNotifications(null, (msg) => {
+    setMessages((prev) => [...prev, msg]);
+    if (activeBox && msg.conversationId === activeBox.conversationId && !msg.mine) {
         markRead([msg.id]);
-      }
+    } else {
+        fetchUnread();
     }
-  );
+  });
 
-  /* =======================
-     📥 LOAD BOX CHAT
-     ======================= */
+  // --- API CALLS ---
   const loadBoxChats = async () => {
     try {
-      const res = await axiosClient.get("/admin/chat", {
-        params: { page: 0, size: 50 },
-      });
-
+      const res = await axiosClient.get("/admin/chat", { params: { page: 0, size: 50 } });
       setBoxChats(res.data);
-    } catch (err) {
-      console.error("❌ Load box chats failed:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  /* =======================
-     🔔 LOAD UNREAD
-     ======================= */
   const fetchUnread = async () => {
     try {
       const res = await axiosClient.get("/admin/chat/unread");
-      console.log("🔔 unread:", res.data);
       setUnreadMap(res.data);
-    } catch (err) {
-      console.error("❌ Load unread failed:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  /* =======================
-     👉 SELECT BOX
-     ======================= */
   const selectBox = async (box) => {
     setActiveBox(box);
     setMessages(box.boxContent?.content || []);
-
-    const unreadIds = box.boxContent?.content
-      ?.filter((m) => !m.mine && !m.isRead)
-      .map((m) => m.id);
-
-    if (unreadIds?.length) {
-      await markRead(unreadIds);
-    }
+    
+    // Giả lập load Note từ DB (Thực tế bạn sẽ gọi API getNotes ở đây)
+    setNoteHistory([
+        { id: 1, author: "System", time: new Date().toLocaleString(), content: "Bắt đầu phiên hỗ trợ." }
+    ]);
+    
+    const unreadIds = box.boxContent?.content?.filter((m) => !m.mine && !m.isRead).map((m) => m.id);
+    if (unreadIds?.length) await markRead(unreadIds);
   };
 
-  /* =======================
-     ✅ MARK READ
-     ======================= */
   const markRead = async (ids) => {
-    if (!ids?.length) return;
-
-    try {
-      await axiosClient.put("/admin/chat/mark-read", ids);
-      fetchUnread();
-    } catch (err) {
-      console.error("❌ Mark read failed:", err);
-    }
+    try { await axiosClient.put("/admin/chat/mark-read", ids); fetchUnread(); } catch (err) { }
   };
 
-  /* =======================
-     📤 SEND MESSAGE
-     ======================= */
   const handleSend = () => {
     if (!input.trim() || !activeBox) return;
-
-    sendChatMessage({
-      receiveEmail: activeBox.receiverEmail,
-      content: input,
-    });
-
+    sendChatMessage({ receiveEmail: activeBox.receiverEmail, content: input });
     setInput("");
   };
 
-  /* =======================
-     🚀 INIT
-     ======================= */
-  useEffect(() => {
-    loadBoxChats();
-    fetchUnread();
-  }, []);
+  // --- LOGIC ADD NOTE (TIMELINE) ---
+  const handleAddNote = () => {
+    if (!newNote.trim()) return;
+    const noteObj = {
+        id: Date.now(),
+        author: "Bạn",
+        time: new Date().toLocaleString("vi-VN", { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}),
+        content: newNote
+    };
+    setNoteHistory([noteObj, ...noteHistory]);
+    setNewNote("");
+  };
 
-  /* =======================
-     🧱 UI
-     ======================= */
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { loadBoxChats(); fetchUnread(); }, []);
+
+  // --- RENDER MESSAGE ---
+  const renderMessages = () => {
+    let lastDate = "";
+    return messages.map((m, index) => {
+      const msgDate = getDateLabel(m.createdAt);
+      const showDate = msgDate !== lastDate;
+      lastDate = msgDate;
+      const nextMsg = messages[index + 1];
+      const isLastInGroup = !nextMsg || nextMsg.mine !== m.mine;
+
+      return (
+        <div key={m.id || index}>
+          {showDate && <div className="date-separator"><span>{msgDate}</span></div>}
+          
+          <div className={`msg-row ${m.mine ? "mine" : "other"} ${showDate ? "group-start" : ""}`}>
+             <div className="msg-bubble" title={formatTimeShort(m.createdAt)}>
+                {m.content}
+             </div>
+          </div>
+          
+          {isLastInGroup && (
+             <div style={{ 
+                fontSize:'0.65rem', color:'#d1d5db', marginTop:2, 
+                textAlign: m.mine ? 'right' : 'left', padding: '0 8px'
+             }}>
+                {formatTimeShort(m.createdAt)}
+             </div>
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
-    <div className="flex h-[600px] border rounded bg-white">
-      {/* LEFT - BOX LIST */}
-      <div className="w-1/3 border-r overflow-y-auto">
+    <div className={`admin-chat-container ${showInfo ? 'show-info' : ''}`}>
+      
+      {/* 1. SIDEBAR TRÁI */}
+      <div className="chat-sidebar">
         {boxChats.map((box) => {
-          const unread = unreadMap[box.conversationId] || 0;
-
-          return (
-            <div
-              key={box.conversationId}
-              onClick={() => selectBox(box)}
-              className={`p-3 cursor-pointer border-b ${
-                activeBox?.conversationId === box.conversationId
-                  ? "bg-gray-200"
-                  : ""
-              }`}
-            >
-              <div className="flex justify-between">
-                <b>{box.receiverName}</b>
-
-                {unread > 0 && (
-                  <span className="bg-red-500 text-white rounded-full px-2 text-xs">
-                    {unread}
-                  </span>
-                )}
-              </div>
-
-              <div className="text-sm text-gray-500 truncate">
-                {box.boxContent?.content?.slice(-1)[0]?.content}
-              </div>
-            </div>
-          );
+           const unreadCount = unreadMap[box.conversationId] || 0;
+           const isActive = activeBox?.conversationId === box.conversationId;
+           
+           return (
+             <div 
+                key={box.conversationId} 
+                onClick={() => selectBox(box)} 
+                className={`chat-item ${isActive ? "active" : ""}`}
+             >
+                <div className="avatar-circle">{getAvatarName(box.receiverName)}</div>
+                <div className="chat-info">
+                   <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                      <span className="chat-user-name">{box.receiverName}</span>
+                      {unreadCount > 0 && <span className="unread-badge">{unreadCount}</span>}
+                   </div>
+                   <div className="chat-last-msg">
+                      {box.boxContent?.content?.slice(-1)[0]?.content || "..."}
+                   </div>
+                </div>
+             </div>
+           );
         })}
       </div>
 
-      {/* RIGHT - CHAT */}
-      <div className="flex flex-col w-2/3">
+      {/* 2. CHAT AREA (GIỮA) */}
+      <div className="chat-main-area">
         {activeBox ? (
           <>
-            <div className="p-3 border-b font-bold">
-              Chat với {activeBox.receiverName}
+            {/* --- UPDATE: HEADER MỚI (CĂN GIỮA, ĐẸP HƠN) --- */}
+            <div className="chat-header">
+              <div className="header-info-wrapper">
+                 <div className="header-name-row">
+                    <h3 className="header-name">{activeBox.receiverName}</h3>
+                    <span className="status-dot" title="Đang hoạt động"></span>
+                 </div>
+                 <span className="header-email">{activeBox.receiverEmail}</span>
+              </div>
+              
+              <div>
+                 <button 
+                    className={`btn-text ${showInfo ? 'active' : ''}`} 
+                    onClick={() => setShowInfo(!showInfo)}
+                 >
+                    {showInfo ? "Đóng Thông tin" : "Thông tin & Ghi chú"}
+                 </button>
+              </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`mb-3 flex ${
-                    m.mine ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div className="max-w-[70%]">
-                    <div
-                      className={`p-2 rounded ${
-                        m.mine
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-300"
-                      }`}
-                    >
-                      {m.content}
-                    </div>
-
-                    <div
-                      className={`text-xs text-gray-500 mt-1 ${
-                        m.mine ? "text-right" : "text-left"
-                      }`}
-                    >
-                      {formatTime(m.createdAt)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="messages-list">
+              {renderMessages()}
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-2 border-t flex gap-2">
-              <input
-                className="flex-1 border rounded p-2"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Nhập tin nhắn..."
-              />
-              <button
-                onClick={handleSend}
-                className="bg-blue-600 text-white px-4 rounded"
-              >
-                Gửi
-              </button>
+            <div className="chat-input-area">
+              <div className="quick-replies">
+                {QUICK_REPLIES.map(text => (
+                    <span key={text} className="chip-text" onClick={() => setInput(text)}>{text}</span>
+                ))}
+              </div>
+              <div className="input-pill">
+                  <input 
+                    className="input-field" 
+                    value={input} 
+                    onChange={(e) => setInput(e.target.value)} 
+                    placeholder="Nhập tin nhắn hỗ trợ..." 
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  />
+                  <button className="btn-send-text" onClick={handleSend}>Gửi</button>
+              </div>
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Chọn 1 cuộc trò chuyện
-          </div>
+           <div className="empty-state">
+             <h2>Xin chào Admin 👋</h2>
+             <span>Chọn một cuộc hội thoại để bắt đầu</span>
+           </div>
         )}
       </div>
+
+      {/* 3. INFO PANEL (SLIDE-OVER BÊN PHẢI) */}
+      {showInfo && activeBox && (
+        <div className="info-panel">
+           <div className="info-header">
+              <div className="avatar-circle info-avatar-lg">{getAvatarName(activeBox.receiverName)}</div>
+              <div className="info-name">{activeBox.receiverName}</div>
+              <div className="info-email">{activeBox.receiverEmail}</div>
+              <div style={{marginTop: 15, display:'flex', gap: 10, justifyContent:'center'}}>
+                 <button className="btn-text" style={{border:'1px solid #e5e7eb'}}>Đơn hàng</button>
+                 <button className="btn-text" style={{color:'#ef4444', border:'1px solid #fee2e2'}}>Chặn</button>
+              </div>
+           </div>
+
+           {/* --- TIMELINE NOTE SYSTEM --- */}
+           <div className="note-section-title">Ghi chú nội bộ (Staff Only)</div>
+           
+           <div className="note-input-box">
+              <textarea 
+                 className="note-textarea" 
+                 placeholder="Viết ghi chú mới..."
+                 value={newNote}
+                 onChange={(e) => setNewNote(e.target.value)}
+                 onKeyDown={(e) => {
+                    if(e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddNote();
+                    }
+                 }}
+              />
+              <button className="btn-add-note" onClick={handleAddNote}>Lưu Note</button>
+              <div style={{clear:'both'}}></div>
+           </div>
+
+           <div className="note-section-title">Lịch sử hoạt động</div>
+           <div className="note-timeline">
+              {noteHistory.length > 0 ? (
+                  noteHistory.map((note) => (
+                    <div key={note.id} className="note-item">
+                       <div className="note-meta">
+                          <span className="note-author">{note.author}</span>
+                          <span className="note-time">{note.time}</span>
+                       </div>
+                       <div className="note-content">{note.content}</div>
+                    </div>
+                  ))
+              ) : (
+                  <span style={{fontStyle:'italic', color:'#d1d5db', fontSize:'0.8rem', textAlign:'center'}}>Chưa có ghi chú nào.</span>
+              )}
+           </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import ChatBox from "./ChatBox";
+import ChatBox from "./Chatbox";
 import axiosClient from "../../api/axiosClient";
+import "./CustomerChatBox.css"; // Import CSS
 
 export default function ChatFloating() {
   const [open, setOpen] = useState(false);
@@ -9,87 +10,29 @@ export default function ChatFloating() {
   const fetchUnread = async () => {
     try {
       const res = await axiosClient.get("/chat/unread");
-      console.log("🔔 Unread count:", res.data);
       setUnread(res.data);
-    } catch (err) {
-      console.error("❌ Fetch unread failed:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  useEffect(() => {
-    fetchUnread();
-  }, []);
-
-  const handleOpen = () => {
-    console.log("📂 Open chat box");
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    console.log("📕 Close chat box");
-    setOpen(false);
-  };
+  useEffect(() => { fetchUnread(); }, []);
 
   return (
     <>
-      {/* Floating Button */}
-      <button
-        onClick={handleOpen}
-        style={{
-          position: "fixed",
-          bottom: 20,
-          right: 20,
-          width: 60,
-          height: 60,
-          borderRadius: "50%",
-          background: "#b20000",
-          color: "#fff",
-          fontSize: 24,
-          border: "none",
-          zIndex: 10000,
-        }}
-      >
-        💬
-        {unread > 0 && (
-          <span
-            style={{
-              position: "absolute",
-              top: 5,
-              right: 5,
-              background: "yellow",
-              color: "#000",
-              borderRadius: "50%",
-              width: 20,
-              height: 20,
-              fontSize: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: "bold",
-            }}
-          >
-            {unread}
-          </span>
-        )}
-      </button>
+      {/* Nút tròn nổi (Floating Button) */}
+      {!open && (
+        <button className="chat-float-btn" onClick={() => setOpen(true)}>
+          {/* Icon tin nhắn SVG */}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          
+          {unread > 0 && <span className="chat-badge">{unread}</span>}
+        </button>
+      )}
 
-      {/* Chat Box */}
+      {/* Cửa sổ chat */}
       {open && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 90,
-            right: 20,
-            width: 350,
-            height: 450,
-            background: "#fff",
-            borderRadius: 12,
-            boxShadow: "0 4px 15px rgba(0,0,0,.25)",
-            zIndex: 10000,
-          }}
-        >
-          <ChatBox onClose={handleClose} setUnreadCount={setUnread} />
-        </div>
+        <ChatBox onClose={() => setOpen(false)} setUnreadCount={setUnread} />
       )}
     </>
   );
