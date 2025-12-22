@@ -16,7 +16,7 @@ public class CartService {
 
     private final CartRepository cartRepo;
     private final CartItemRepository cartItemRepo;
-    private final BookVariantRepository bookVariantRepo;
+    private final BookVariantsRepository bookVariantRepo;
     private final UserRepository userRepo;
 
     // Get or create cart for user

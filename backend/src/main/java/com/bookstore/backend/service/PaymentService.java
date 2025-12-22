@@ -2,6 +2,8 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.*;
+import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.model.enums.PaymentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,11 +126,11 @@ public class PaymentService {
 
         // Tạo Order mới
         Orders order = Orders.builder()
-                .user(user)
+                .users(user)
                 .shippingAddress(shippingAddress)
                 .phoneNumber(phoneNumber)
-                .status("PAID")
-                .paymentType("VNPAY:" + transactionNo)
+                .status(StatusOrder.PENDING)
+                .paymentType(PaymentType.BANKING)
                 .voucher(voucher)
                 .build();
 
@@ -136,7 +138,7 @@ public class PaymentService {
         Set<OrderDetails> orderDetailsList = new HashSet<>();
         for (CartItems cartItem : selectedItems) {
             OrderDetails orderDetail = OrderDetails.builder()
-                    .order(order)
+                    .orders(order)
                     .bookVariant(cartItem.getBookVariant())
                     .quantity(cartItem.getQuantity())
                     .pricePurchased(cartItem.getBookVariant().getPrice())

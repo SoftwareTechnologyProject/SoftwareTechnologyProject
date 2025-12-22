@@ -7,11 +7,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "book")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,6 +39,9 @@ public class Book {
     private LocalDateTime publishedAt;
 
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -71,7 +76,6 @@ public class Book {
         updatedAt = LocalDateTime.now();
     }
 
-    // Nếu muốn, có thể thêm helper method để quản lý variants
     public void addVariant(BookVariants variant) {
         variants.add(variant);
         variant.setBook(this);
@@ -80,5 +84,18 @@ public class Book {
     public void removeVariant(BookVariants variant) {
         variants.remove(variant);
         variant.setBook(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return Objects.equals(id, book.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
