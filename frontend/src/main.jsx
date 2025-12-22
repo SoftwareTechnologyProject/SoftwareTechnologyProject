@@ -139,21 +139,16 @@ createRoot(document.getElementById("root")).render(
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
-<<<<<<< HEAD
         {/* Cart and Checkout */}
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
 
-        {/* Admin */}
-        <Route path="/admin" element={<HeaderAdmin />}>
-=======
         {/* Admin routes - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
         <Route path="/admin" element={
           <PrivateRoute requiredRole="ADMIN">
             <HeaderAdmin />
           </PrivateRoute>
         }>
->>>>>>> origin/develop
           <Route path="books" element={<BookAdmin />} />
           <Route path="vouchers" element={<VoucherManagement />} />
           <Route path="blog" element={<BlogAdmin />} />

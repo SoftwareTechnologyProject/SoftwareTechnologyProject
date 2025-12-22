@@ -22,7 +22,16 @@ export default function ReviewSection({ bookId }) {
     const fetchReviews = async () => {
       try {
         const res = await axiosClient.get(`/api/books/${bookId}/reviews`);
-        setReviews(res.data || []);
+        const list = (res.data || []).map((r) => ({
+          id: r.id,
+          userName: r.userName || r.userName,
+          date: r.createdAt ? new Date(r.createdAt).toLocaleString() : r.date || "",
+          rating: r.rating || 0,
+          text: r.comment || r.text || "",
+          images: r.images || [],
+          status: r.status,
+        }));
+        setReviews(list);
       } catch (err) {
         // Loi khi lay review tu backend
         console.error("Khong the tai review", err);
@@ -53,10 +62,20 @@ export default function ReviewSection({ bookId }) {
       // Backend expects JSON body: { rating, comment }
       const payload = { rating: newReview.rating, comment: newReview.text };
       console.log('Goi API gui review, payload:', payload);
-      const res = await axiosClient.post(`/books/${bookId}/reviews`, payload);
+      // Use full API path (backend controller is under /api/books/...)
+      const res = await axiosClient.post(`/api/books/${bookId}/reviews`, payload);
       console.log('Gui review thanh cong:', res?.data);
+      // Normalize backend response to front-end review shape
+      const data = res.data || {};
+      const normalized = {
+        userName: data.userName || 'Bạn',
+        date: data.createdAt ? new Date(data.createdAt).toLocaleString() : new Date().toLocaleString(),
+        rating: data.rating || payload.rating,
+        text: data.comment || newReview.text,
+        images: data.images || newReview.images || [],
+      };
       // Sau khi gui thanh cong, them review moi len dau danh sach
-      setReviews([res.data, ...reviews]);
+      setReviews([normalized, ...reviews]);
       setNewReview({ rating: 0, text: "", images: [] });
       setCurrentPage(1);
     } catch (err) {
