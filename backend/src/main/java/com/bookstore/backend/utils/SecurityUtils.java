@@ -14,7 +14,12 @@ public class SecurityUtils {
     private final UserRepository userRepository;
 
     public Users getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
 
         if (principal instanceof Users) {
             return (Users) principal;

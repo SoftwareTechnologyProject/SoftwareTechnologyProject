@@ -29,6 +29,14 @@ public class NotificationController {
         return "Sent broadcast!";
     }
 
+    // Accept POST as well for clients that don't include a body with GET requests
+    @PostMapping("/send")
+    @ResponseBody
+    public String sendBroadcastPost(@RequestBody NotificationRequestDTO requestDTO) {
+        notificationService.sendNotification(requestDTO);
+        return "Sent broadcast (POST)!";
+    }
+
     @PutMapping("/{notificationId}/read")
     public void markAsRead(@PathVariable Long notificationId) {
         notificationService.markPrivateAsRead(notificationId);

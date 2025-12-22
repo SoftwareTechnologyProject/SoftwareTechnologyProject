@@ -18,16 +18,7 @@
 }
 
 .toast-content {
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-  color: white;
-  padding: 16px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 300px;
-  max-width: 400px;
+  /* legacy style - replaced by new structure */
 }
 
 .toast-icon {
@@ -73,4 +64,71 @@
 
 .toast-close:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* New toast layout: white box with red border and red side (25%) */
+.toast-box {
+  display: flex;
+  align-items: stretch;
+  min-width: 320px;
+  max-width: 420px;
+  border: 2px solid #dc2626;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.toast-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  flex: 3 1 0;
+  color: #111827;
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.toast-message-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.toast-message {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.toast-link {
+  color: #dc2626;
+  text-decoration: underline;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.toast-side {
+  background: #dc2626;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24%;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .toast-box { width: calc(100% - 40px); min-width: unset; }
+  .toast-side { width: 28%; }
 }

@@ -31,9 +31,10 @@ function Cart() {
       const response = await axiosClient.get(API_CART_URL);
       const backendData = response.data;
 
-      if (backendData && backendData.items) {
+        if (backendData && backendData.items) {
         const formattedItems = backendData.items.map(item => ({
           id: item.id,
+          bookId: item.bookId || null,
           name: item.bookTitle,
           price: item.price,
           originalPrice: item.price * 1.2,
@@ -218,6 +219,15 @@ function Cart() {
                     <span className="current-price">{formatPrice(item.price)}</span>
                     <span className="original-price">{formatPrice(item.originalPrice)}</span>
                   </div>
+                  {item.bookId && (
+                    <button
+                      className="view-detail-btn"
+                      style={{marginTop: '8px', padding: '6px 10px', fontSize: '13px', cursor: 'pointer'}}
+                      onClick={() => navigate(`/books/${item.bookId}`)}
+                    >
+                      Xem chi tiết
+                    </button>
+                  )}
                 </div>
                 <div className="item-quantity">
                   <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}>−</button>

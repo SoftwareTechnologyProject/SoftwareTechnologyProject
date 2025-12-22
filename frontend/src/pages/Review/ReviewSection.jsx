@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { FaStar, FaUpload } from "react-icons/fa";
 import axiosClient from "../../config/axiosConfig";
 import "./ReviewSection.css";
+import { AppContext } from "../../context/AppContext";
 
+// MO TA: ReviewSection
+// - Chuc nang: xem va viet danh gia cho sach
+// - Su dung: axiosClient de lay va gui review (co file upload anh)
+// - Tam thoi: isLoggedIn mock = true (phai thay bang auth that)
 export default function ReviewSection({ bookId }) {
   const [reviews, setReviews] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 5;
   const [newReview, setNewReview] = useState({ rating: 0, text: "", images: [] });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  // Check if user is logged in
-  useEffect(() => {
-    // TODO: Replace this with real authentication check
-    // const token = localStorage.getItem('authToken');
-    // setIsLoggedIn(!!token);
-    
-    // Mock: Temporarily set to true for development
-    setIsLoggedIn(true);
-  }, []);
+  const { isLoggedIn } = useContext(AppContext);
+  const token = localStorage.getItem('accessToken');
+  const effectiveIsLoggedIn = isLoggedIn || !!token;
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -27,7 +24,8 @@ export default function ReviewSection({ bookId }) {
         const res = await axiosClient.get(`/api/books/${bookId}/reviews`);
         setReviews(res.data || []);
       } catch (err) {
-        console.error("Không thể tải review", err);
+        // Loi khi lay review tu backend
+        console.error("Khong the tai review", err);
       }
     };
     fetchReviews();
@@ -46,24 +44,25 @@ export default function ReviewSection({ bookId }) {
   };
 
   const handleSubmitReview = async () => {
-    if (!isLoggedIn) {
+    if (!effectiveIsLoggedIn) {
       handleLoginRequired();
       return;
     }
     if (!newReview.rating || !newReview.text.trim()) return alert("Chọn sao và viết đánh giá");
     try {
-      const formData = new FormData();
-      formData.append("rating", newReview.rating);
-      formData.append("text", newReview.text);
-      newReview.images.forEach(img => formData.append("images", img));
-      const res = await axiosClient.post(`/api/books/${bookId}/reviews`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Backend expects JSON body: { rating, comment }
+      const payload = { rating: newReview.rating, comment: newReview.text };
+      console.log('Goi API gui review, payload:', payload);
+      const res = await axiosClient.post(`/books/${bookId}/reviews`, payload);
+      console.log('Gui review thanh cong:', res?.data);
+      // Sau khi gui thanh cong, them review moi len dau danh sach
       setReviews([res.data, ...reviews]);
       setNewReview({ rating: 0, text: "", images: [] });
       setCurrentPage(1);
     } catch (err) {
-      alert("Gửi review thất bại");
+      // Loi khi gui review
+      console.error('Loi khi gui review:', err.response?.data || err);
+      alert("Gửi review thất bại: " + (err.response?.data?.error || err.response?.data?.message || "Lỗi server"));
     }
   };
 
@@ -86,27 +85,27 @@ export default function ReviewSection({ bookId }) {
               key={star}
               size={20}
               color={newReview.rating >= star ? "#ffa500" : "#ddd"}
-              onClick={isLoggedIn ? () => handleRatingClick(star) : handleLoginRequired}
-              style={{ cursor: "pointer", opacity: isLoggedIn ? 1 : 0.6 }}
+              onClick={effectiveIsLoggedIn ? () => handleRatingClick(star) : handleLoginRequired}
+              style={{ cursor: "pointer", opacity: effectiveIsLoggedIn ? 1 : 0.6 }}
             />
           ))}
         </div>
         <textarea
-          placeholder={isLoggedIn ? "Viết đánh giá của bạn..." : "Đăng nhập để viết đánh giá"}
+          placeholder={effectiveIsLoggedIn ? "Viết đánh giá của bạn..." : "Đăng nhập để viết đánh giá"}
           value={newReview.text}
           onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
-          disabled={!isLoggedIn}
-          onClick={!isLoggedIn ? handleLoginRequired : undefined}
+          disabled={!effectiveIsLoggedIn}
+          onClick={!effectiveIsLoggedIn ? handleLoginRequired : undefined}
         />
         <div className="file-upload-section">
-          <label className="file-upload-btn" onClick={!isLoggedIn ? handleLoginRequired : undefined}>
+          <label className="file-upload-btn" onClick={!effectiveIsLoggedIn ? handleLoginRequired : undefined}>
             <FaUpload /> Chọn ảnh
             <input 
               type="file" 
               multiple 
               onChange={handleFileChange} 
               style={{ display: 'none' }}
-              disabled={!isLoggedIn}
+              disabled={!effectiveIsLoggedIn}
             />
           </label>
           {newReview.images.length > 0 && (
@@ -116,9 +115,9 @@ export default function ReviewSection({ bookId }) {
         <button 
           className="submit-review-btn" 
           onClick={handleSubmitReview}
-          disabled={!isLoggedIn}
+          disabled={!effectiveIsLoggedIn}
         >
-          {isLoggedIn ? 'Gửi đánh giá' : 'Đăng nhập để đánh giá'}
+          {effectiveIsLoggedIn ? 'Gửi đánh giá' : 'Đăng nhập để đánh giá'}
         </button>
       </div>
 

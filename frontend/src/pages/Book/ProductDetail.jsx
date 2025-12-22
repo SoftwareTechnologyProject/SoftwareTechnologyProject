@@ -4,6 +4,15 @@ import axiosClient from "../../config/axiosConfig";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
 import Toast from "../../components/Toast/Toast";
+import Andress from "../Andress/Andress";
+import { useContext } from "react";
+import { AppContext } from "../../context/AppContext";
+
+// MO TA: ProductDetail
+// - Chuc nang: hien thi chi tiet san pham, them vao gio hang, mua ngay, chon dia chi
+// - Su dung: axiosClient de goi API backend (baseURL tu axiosConfig), Toast de hien thong bao
+// - Khi them vao gio: goi API /api/cart/add va gui thong bao den backend (/api/notifications/send)
+// - Dia chi: da tach modal dia chi ra component Andress de su dung lai va khong fix cung dia chi
 import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
@@ -16,9 +25,10 @@ export default function BookDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [buyNowLoading, setBuyNowLoading] = useState(false);
+  const [addCartStatus, setAddCartStatus] = useState(null);
+  const [addCartLoading, setAddCartLoading] = useState(false);
   
-  // TODO: Replace with real authentication
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock: set to true for development
+  // NOTE: use authentication state from AppContext instead of local mock
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState('Long Xuyên, An Giang');
   const [addressForm, setAddressForm] = useState({
@@ -29,29 +39,73 @@ export default function BookDetail() {
   const [addressType, setAddressType] = useState('default'); // 'default' or 'other'
   
   const handleAuthRequired = (action) => {
-    if (!isLoggedIn) {
+    const token = localStorage.getItem('accessToken');
+    console.log('Auth check - isLoggedIn:', isLoggedIn, 'token?', !!token);
+    if (!isLoggedIn && !token) {
       alert(`Bạn cần đăng nhập để ${action}`);
-      // TODO: Redirect to login page
-      // window.location.href = '/login';
       return false;
     }
+    // Nếu token tồn tại nhưng AppContext chưa cập nhật, vẫn cho phép hành động (dev flow)
     return true;
   };
-  
+  // Lay thong tin dang nhap va user tu AppContext (thay cho mock)
+  const { userData, isLoggedIn } = useContext(AppContext);
+
   const handleAddToCart = async () => {
     if (handleAuthRequired('thêm vào giỏ hàng')) {
       try {
+        if (!variant?.id) {
+          alert('Không có biến thể sản phẩm để thêm vào giỏ hàng');
+          return;
+        }
         const cartItem = {
-          bookVariantId: variant?.id,
+          bookVariantId: variant.id,
           quantity: quantity
         };
-        
-        await axiosClient.post(`/api/cart/add`, cartItem);
+        console.log('Goi API them vao gio hang, payload:', cartItem);
+        // HAM: them vao gio hang
+        // - goi API /api/cart/add
+        // - neu thanh cong: hien toast va goi service gui thong bao (notification)
+        setAddCartStatus('Đang thêm vào giỏ...');
+        setAddCartLoading(true);
+        const addRes = await axiosClient.post(`/api/cart/add`, cartItem);
+        console.log('Them vao gio hang thanh cong:', addRes?.data);
+        setAddCartStatus('Thêm vào giỏ thành công');
+        // Send user notification via backend
+        try {
+          const notiPayload = {
+            content: `Đã thêm \"${book.title}\" vào giỏ hàng.`,
+            url: "/cart",
+            type: "PERSONAL",
+            userId: userData?.id || null
+          };
+          // Use POST to send notification payload (server now accepts POST)
+          await axiosClient.post('/api/notifications/send', notiPayload);
+          // Lấy noti mới nhất từ server và dispatch event để header/notification component nhận
+          try {
+            const latestRes = await axiosClient.get('/api/notifications?page=0&size=1');
+            const latest = latestRes.data?.content?.[0] ?? null;
+            if (latest) {
+              window.dispatchEvent(new CustomEvent('new-notification', { detail: latest }));
+            }
+          } catch (e) {
+            console.warn('Không lấy được thông báo mới sau khi gửi', e);
+          }
+        } catch (e) {
+          console.warn("Không thể gửi thông báo:", e);
+        }
+
         setShowToast(true);
+        setAddCartLoading(false);
       } catch (error) {
         console.error('Error adding to cart:', error);
         console.error('Error details:', error.response?.data);
+        const msg = error.response?.data || error.message || 'Không thể thêm vào giỏ hàng';
+        try {
+          setAddCartStatus('Thất bại: ' + (typeof msg === 'string' ? msg : JSON.stringify(msg)));
+        } catch (e) { /* ignore */ }
         alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại!');
+        setAddCartLoading(false);
       }
     }
   };
@@ -97,17 +151,13 @@ export default function BookDetail() {
   };
 
   const handleChangeLocation = () => {
-    console.log('handleChangeLocation clicked!'); // Debug
     if (handleAuthRequired('thay đổi địa chỉ giao hàng')) {
-      console.log('Auth passed, showing modal'); // Debug
       setShowLocationModal(true);
     }
   };
 
-  const handleAddressSubmit = () => {
-    if (addressType === 'other' && addressForm.city && addressForm.district && addressForm.ward) {
-      setSelectedAddress(`${addressForm.ward}, ${addressForm.district}, ${addressForm.city}`);
-    }
+  const handleAddressSubmit = (addr) => {
+    if (addr) setSelectedAddress(addr);
     setShowLocationModal(false);
   };
 
@@ -187,8 +237,9 @@ export default function BookDetail() {
         </div>
 
         <div className="action-buttons">
-          <button className="add-cart-btn" onClick={handleAddToCart}>
-            <FaShoppingCart /> Thêm vào giỏ
+          
+          <button className="add-cart-btn" onClick={handleAddToCart} disabled={addCartLoading}>
+            {addCartLoading ? <span className="btn-spinner" /> : <FaShoppingCart />} {addCartLoading ? 'Đang thêm...' : 'Thêm vào giỏ'}
           </button>
           <button className="buy-now-btn" onClick={handleBuyNow}>Mua ngay</button>
         </div>
@@ -323,137 +374,12 @@ export default function BookDetail() {
 
       {/* Location Modal */}
       {showLocationModal && (
-        <div className="location-modal-overlay" onClick={() => setShowLocationModal(false)}>
-          <div className="location-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Chọn địa chỉ giao hàng</h3>
-              <button 
-                className="close-btn" 
-                onClick={() => setShowLocationModal(false)}
-                title="Đóng hộp thoại"
-                aria-label="Đóng hộp thoại"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="modal-content">
-              {/* Địa chỉ mặc định */}
-              <div className="address-option">
-                <input 
-                  type="radio" 
-                  id="default-address" 
-                  name="address-type" 
-                  value="default"
-                  checked={addressType === 'default'}
-                  onChange={(e) => setAddressType(e.target.value)}
-                />
-                <label htmlFor="default-address">
-                  <strong>Giao hàng đến:</strong> Long Xuyên, An Giang (Mặc định)
-                  <br />
-                  <small>Đây là địa chỉ mặc định được thiết lập trong thông tin cá nhân</small>
-                </label>
-              </div>
-              
-              {/* Địa chỉ khác */}
-              <div className="address-option">
-                <input 
-                  type="radio" 
-                  id="other-address" 
-                  name="address-type" 
-                  value="other"
-                  checked={addressType === 'other'}
-                  onChange={(e) => setAddressType(e.target.value)}
-                />
-                <label htmlFor="other-address">
-                  <strong>Giao hàng đến địa chỉ khác</strong>
-                </label>
-              </div>
-              
-              {/* Form chọn địa chỉ */}
-              {addressType === 'other' && (
-                <div className="address-form">
-                  <h4>Chọn địa chỉ giao hàng của bạn</h4>
-                  
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Tỉnh/Thành Phố</label>
-                      <select 
-                        value={addressForm.city} 
-                        onChange={(e) => setAddressForm({...addressForm, city: e.target.value, district: '', ward: ''})}
-                      >
-                        <option value="">Chọn Tỉnh/Thành Phố</option>
-                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="An Giang">An Giang</option>
-                        <option value="Cần Thơ">Cần Thơ</option>
-                      </select>
-                    </div>
-                    
-                    <div className="form-group">
-                      <label>Quận/Huyện</label>
-                      <select 
-                        value={addressForm.district} 
-                        onChange={(e) => setAddressForm({...addressForm, district: e.target.value, ward: ''})}
-                        disabled={!addressForm.city}
-                      >
-                        <option value="">Chọn Quận/Huyện</option>
-                        {addressForm.city === 'Hồ Chí Minh' && (
-                          <>
-                            <option value="Quận 1">Quận 1</option>
-                            <option value="Quận 3">Quận 3</option>
-                            <option value="Quận 7">Quận 7</option>
-                          </>
-                        )}
-                        {addressForm.city === 'An Giang' && (
-                          <>
-                            <option value="Long Xuyên">Long Xuyên</option>
-                            <option value="Châu Đốc">Châu Đốc</option>
-                          </>
-                        )}
-                      </select>
-                    </div>
-                    
-                    <div className="form-group">
-                      <label>Phường/Xã</label>
-                      <select 
-                        value={addressForm.ward} 
-                        onChange={(e) => setAddressForm({...addressForm, ward: e.target.value})}
-                        disabled={!addressForm.district}
-                      >
-                        <option value="">Chọn Phường/Xã</option>
-                        {addressForm.district === 'Long Xuyên' && (
-                          <>
-                            <option value="Phường Mỹ Bình">Phường Mỹ Bình</option>
-                            <option value="Phường Mỹ Long">Phường Mỹ Long</option>
-                            <option value="Phường Mỹ Thịnh">Phường Mỹ Thịnh</option>
-                          </>
-                        )}
-                        {addressForm.district === 'Quận 1' && (
-                          <>
-                            <option value="Phường Bến Nghé">Phường Bến Nghé</option>
-                            <option value="Phường Bến Thành">Phường Bến Thành</option>
-                          </>
-                        )}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setShowLocationModal(false)}>Hủy</button>
-              <button 
-                className="confirm-btn" 
-                onClick={handleAddressSubmit}
-                disabled={addressType === 'other' && (!addressForm.city || !addressForm.district || !addressForm.ward)}
-              >
-                Xác nhận
-              </button>
-            </div>
-          </div>
-        </div>
+        <Andress
+          show={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onConfirm={handleAddressSubmit}
+          userAddresses={userData?.addresses || (userData?.address ? [userData.address] : [])}
+        />
       )}
       
       {/* Toast notification */}
