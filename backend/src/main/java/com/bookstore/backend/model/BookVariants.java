@@ -1,16 +1,17 @@
 package com.bookstore.backend.model;
 
-// import com.bookstore.backend.model.enums.BookStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import java.util.List;
+
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "book_variants")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -22,8 +23,6 @@ public class BookVariants {
 
     @ManyToOne
     @JoinColumn(name = "book_id")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Book book;
 
     @NotNull(message = "Giá không được trống")
@@ -40,7 +39,6 @@ public class BookVariants {
     private Integer sold = 0;
 
     @NotNull(message = "Trạng thái không được trống")
-    // @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String status;
 
@@ -51,9 +49,7 @@ public class BookVariants {
     private String isbn;
 
     @OneToMany(mappedBy = "bookVariant", cascade = CascadeType.ALL, orphanRemoval = true)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private List<BookImages> images;
+    private Set<BookImages> images;
 
     @Override
     public boolean equals(Object o) {

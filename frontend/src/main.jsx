@@ -15,11 +15,9 @@ import { PrivateRoute } from './components/PrivateRoute/PrivateRoute.jsx';
 // Pages
 import HomePage from './pages/HomePage/HomePage';
 import Account from './pages/Account/Account.jsx';
-import ProductDetail from './pages/Book/ProductDetail';
+import ProductDetail from './pages/Book/ProductDetail.jsx';
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
-import Cart from "./pages/Cart/Cart.jsx";
-import Checkout from './pages/Checkout/Checkout.jsx';
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
@@ -138,10 +136,6 @@ createRoot(document.getElementById("root")).render(
           <Route path="order" element={<Order />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-
-        {/* Cart and Checkout */}
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
 
         {/* Admin routes - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
         <Route path="/admin" element={
