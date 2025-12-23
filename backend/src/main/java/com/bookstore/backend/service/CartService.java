@@ -3,12 +3,19 @@ package com.bookstore.backend.service;
 import com.bookstore.backend.DTO.CartItemsDTO;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.*;
+import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.HashSet;
 
+import java.util.HashSet;
+import com.bookstore.backend.DTO.CartResponseDTO;
+import com.bookstore.backend.DTO.CartItemResponseDTO;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +25,52 @@ public class CartService {
     private final CartItemRepository cartItemRepo;
     private final BookVariantsRepository bookVariantRepo;
     private final UserRepository userRepo;
+    private final SecurityUtils mySecurityUtils;
+
+    private Users getCurrentUser() {
+        var user = mySecurityUtils.getCurrentUser();
+        if (user == null) {
+            throw new RuntimeException("Bạn chưa đăng nhập hoặc phiên đăng nhập hết hạn (401)");
+        }
+        return user;
+    }
+
+    public Users getMyUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Bạn chưa đăng nhập (401)");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        // Trường hợp 1: Token trả về String (Lỗi bạn đang gặp) -> Tự query DB
+        if (principal instanceof String) {
+            String emailOrUsername = (String) principal;
+            return userRepo.findByEmail(emailOrUsername)
+                    // Nếu login bằng username thì thêm dòng dưới:
+                    // .or(() -> userRepository.findByUsername(emailOrUsername))
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + emailOrUsername));
+        }
+
+        // Trường hợp 2: Token trả về đúng Object Users
+        if (principal instanceof Users) {
+            return (Users) principal;
+        }
+
+        // Trường hợp 3: Token trả về UserDetails mặc định
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            return userRepo.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + email));
+        }
+
+        throw new RuntimeException("Không xác định được người dùng!");
+    }
 
     // Get or create cart for user
-    private Cart getOrCreateCart(Long userId) {
-        return cartRepo.findByUserId(userId)
+    public Cart getOrCreateCart(Users user) {
+        return cartRepo.findByUserId(user.getId())
                 .orElseGet(() -> {
-                    Users user = userRepo.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User không tồn tại"));
                     Cart newCart = new Cart();
                     newCart.setUser(user);
                     return cartRepo.save(newCart);
@@ -33,8 +79,9 @@ public class CartService {
 
     // Add to cart
     @Transactional
-    public void addToCart(Long userId, CartItemsDTO request) {
-        Cart cart = getOrCreateCart(userId);
+    public void addToCart(CartItemsDTO request) {
+        var currentUser = getMyUser();
+        Cart cart = getOrCreateCart(currentUser);
 
         if (cart.getCartItems() == null) {
             cart.setCartItems(new HashSet<>());
@@ -61,12 +108,14 @@ public class CartService {
     }
 
     // Update item quantity in cart
-    public void updateItemQuantity(Long userId, Long cartItemId, int newQuantity) {
+    @Transactional
+    public void updateItemQuantity(Long cartItemId, int newQuantity) {
+        var currentUser = getMyUser();
         CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm không có trong giỏ"));
 
         // Check if the cart item belongs to the user's cart
-        if (!item.getCart().getUser().getId().equals(userId)) {
+        if (!item.getCart().getUser().getId().equals(currentUser.getId())) {
             throw new RuntimeException("Bạn không có quyền sửa giỏ hàng người khác");
         }
 
@@ -80,12 +129,76 @@ public class CartService {
     }
 
     // Remove item from cart
-    public void removeItem(Long userId, Long cartItemId) {
+    @Transactional
+    public void removeItem(Long cartItemId) {
+        var currentUser = getMyUser();
         CartItems item = cartItemRepo.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Mục này không tồn tại"));
 
-        if (item.getCart().getUser().getId().equals(userId)) {
+        if (item.getCart().getUser().getId().equals(currentUser.getId())) {
             cartItemRepo.delete(item);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public CartResponseDTO getMyCart() {
+        var currentUser = getMyUser();
+        Long userId = currentUser.getId();
+
+        Cart cart = cartRepo.findByUserId(userId).orElse(null);
+
+        if (cart == null) {
+            return new CartResponseDTO();
+        }
+
+        CartResponseDTO response = new CartResponseDTO();
+        response.setCartId(cart.getId());
+
+        // Convert List<CartItems> (Entity) sang List<CartItemResponseDTO> (DTO)
+        List<CartItemResponseDTO> itemDTOs = cart.getCartItems().stream().map(item -> {
+            CartItemResponseDTO dto = new CartItemResponseDTO();
+
+            dto.setId(item.getId());
+            dto.setQuantity(item.getQuantity());
+
+            var variant = item.getBookVariant();
+            if (variant != null) {
+                dto.setBookVariantId(variant.getId());
+                dto.setPrice(variant.getPrice());
+
+                List<BookImages> images = variant.getImages();
+
+                if (images != null && !images.isEmpty()) {
+                    dto.setImage(images.get(0).getImageUrl());
+                } else {
+                    dto.setImage("https://via.placeholder.com/150");
+                }
+
+                if (variant.getPrice() != null) {
+                    double price = variant.getPrice();
+                    int qty = item.getQuantity();
+                    dto.setSubTotal(price * qty);
+                }
+
+                var book = variant.getBook();
+                if (book != null) {
+                    dto.setBookTitle(book.getTitle());
+                    dto.setBookId(book.getId());
+                }
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        response.setItems(itemDTOs);
+
+        double total = 0.0;
+
+        for (CartItemResponseDTO dto : itemDTOs) {
+            total += dto.getSubTotal();
+        }
+        response.setTotalCartPrice(total);
+
+        return response;
     }
 }
