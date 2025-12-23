@@ -60,7 +60,7 @@ const Header = () => {
     const fetchLatest = async () => {
       try {
         const res = await axios.get(`http://localhost:8080/api/notifications?page=0&size=6`);
-        const list = Array.isArray(res.data) ? res.data : [];
+        const list = res.data?.content ?? [];
         setNotifications(list);
       } catch (e) {
         console.error("Lỗi load thông báo", e);
