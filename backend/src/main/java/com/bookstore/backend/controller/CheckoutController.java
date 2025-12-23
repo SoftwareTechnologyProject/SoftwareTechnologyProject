@@ -4,10 +4,8 @@ import com.bookstore.backend.DTO.OrderCreationRequestDTO;
 import com.bookstore.backend.DTO.OrderDetailDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.model.enums.PaymentType;
-import com.bookstore.backend.utils.JwtUtils;
 import com.bookstore.backend.service.OrdersService;
 import com.bookstore.backend.service.PaymentService;
-import com.bookstore.backend.service.ProfileService;
 import com.bookstore.backend.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +25,14 @@ public class CheckoutController {
     private final OrdersService ordersService;
     private final PaymentService paymentService;
     private final VNPayService vnPayService;
-    private final ProfileService profileService;
-    private final JwtUtils jwtUtils;
 
     @Autowired
     public CheckoutController(OrdersService ordersService, 
                              PaymentService paymentService,
-                             VNPayService vnPayService,
-                             ProfileService profileService,
-                             JwtUtils jwtUtils) {
+                             VNPayService vnPayService) {
         this.ordersService = ordersService;
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
-        this.profileService = profileService;
-        this.jwtUtils = jwtUtils;
     }
 
     /**
@@ -55,7 +47,7 @@ public class CheckoutController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 1. Lấy userId từ JWT token
+            // 1. Validate JWT token (user authentication)
             String token = httpRequest.getHeader("Authorization");
             if (token == null || !token.startsWith("Bearer ")) {
                 response.put("code", "401");
@@ -63,14 +55,8 @@ public class CheckoutController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            String jwt = token.substring(7);
-            String userEmail = jwtUtils.extractEmail(jwt);
-            
-            // Lấy userId từ email thông qua ProfileService
-            String userIdStr = profileService.getLoggedInUserId(userEmail);
-            Long userId = Long.parseLong(userIdStr);
-
-            System.out.println("📦 Creating order for user: " + userEmail + " (ID: " + userId + ")");
+            // OrdersService sẽ tự lấy user từ SecurityContext
+            System.out.println("📦 Creating order...");
 
             // 2. Parse PaymentType từ string
             PaymentType paymentType;
@@ -95,15 +81,14 @@ public class CheckoutController {
                             item.getBookId(), // bookVariantId
                             item.getBookTitle(),
                             item.getQuantity(),
-                            item.getPricePurchased(),
-                            item.getQuantity() * item.getPricePurchased(),
+                            item.getPricePurchased(), // Sử dụng getPrice() thay vì getPricePurchased()
+                            item.getSubTotal(), // Sử dụng getSubTotal() đã tính sẵn từ frontend
                             item.getImageUrl()
                     ))
                     .collect(Collectors.toList());
 
             // 4. Tạo order
             OrdersDTO createdOrder = ordersService.createOrder(
-                    userId,
                     orderDetails,
                     voucherCode,
                     paymentType,

@@ -61,7 +61,7 @@ const PaymentResult = () => {
             formData.append("transactionDate", transactionDate);
 
             const response = await fetch(
-                "http://localhost:8080/payment/verify",
+                "http://localhost:8080/api/payment/verify",
                 {
                     method: "POST",
                     headers: {
@@ -117,7 +117,7 @@ const PaymentResult = () => {
     const fetchOrderDetails = async (paymentKey) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/payment/result?paymentKey=${paymentKey}`
+                `http://localhost:8080/api/payment/result?paymentKey=${paymentKey}`
             );
 
             if (!response.ok) {

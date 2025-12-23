@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +42,7 @@ public class OrdersService {
     }
 
     // ------------------- CREATE ORDER -------------------
+    @Transactional
     public OrdersDTO createOrder(List<OrderDetailDTO> details, String voucherCode,
                                  PaymentType paymentType, String shippingAddress, String phoneNumber) {
         var userInfo = securityUtils.getCurrentUser();
@@ -127,13 +129,18 @@ public class OrdersService {
         var currentUser = securityUtils.getCurrentUser();
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order không tồn tại"));
-        System.out.println(currentUser.getRole());
-        // Kiểm tra quyền
-        if (!order.getUsers().getId().equals(currentUser.getId())
-                && currentUser.getRole() != UserRole.ADMIN) {
-            System.out.println("Nguyễn Hữu Tâm");
-            throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
+        
+        // Nếu có currentUser, kiểm tra quyền
+        if (currentUser != null) {
+            System.out.println(currentUser.getRole());
+            // Kiểm tra quyền
+            if (!order.getUsers().getId().equals(currentUser.getId())
+                    && currentUser.getRole() != UserRole.ADMIN) {
+                System.out.println("Nguyễn Hữu Tâm");
+                throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
+            }
         }
+        // Nếu currentUser = null (payment result callback), cho phép xem order
         return mapToDTO(order);
     }
 

@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import "./main.css";
 
 // Components
@@ -164,6 +164,24 @@ createRoot(document.getElementById("root")).render(
                     <Route path="voucher-wallet" element={<VoucherWallet />} />
                     <Route path="order" element={<Order />} />
                     <Route path="order/:id" element={<OrderDetail />} />
+                </Route>
+
+                {/* Độc lập (Không AccountLayout) nhưng CẦN LOGIN */}
+                <Route
+                    element={
+                        <PrivateRoute>
+                            <>
+                                <Header />
+                                {/* Outlet chính là nơi hiển thị Cart/Checkout */}
+                                <Outlet />
+                                <Recommend />
+                                <Footer />
+                                <ChatFloating />
+                            </>
+                        </PrivateRoute>
+                    }
+                >
+                    {/* Các đường dẫn gốc, không có prefix /account */}
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/payment/result" element={<PaymentResult />} />

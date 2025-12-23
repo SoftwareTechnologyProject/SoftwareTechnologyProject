@@ -214,7 +214,7 @@ function Checkout() {
                     bookId: item.id || item.bookVariantId,
                     bookTitle: item.name,
                     quantity: item.quantity,
-                    price: item.price,
+                    pricePurchased: item.price, // Đổi từ price thành pricePurchased để match với backend
                     subTotal: item.price * item.quantity,
                 })),
                 totalAmount: totalWithShipping,

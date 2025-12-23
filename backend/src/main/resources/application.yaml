@@ -51,13 +51,9 @@ springdoc:
     swagger-ui:
         path: /swagger-ui.html
 
-jwt:
-    secret:
-        key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
-
 vnpay:
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-    return-url: http://localhost:8080/payment/vnpay-return
+    return-url: http://localhost:8080/api/payment/vnpay-return
     tmn-code: Y7ALQVWN
     hash-secret: HP25LZ25TGFXN1X98S515TWW30PPH6KP
     api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
