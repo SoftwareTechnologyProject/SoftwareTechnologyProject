@@ -26,6 +26,5 @@ public interface MessageRepository extends JpaRepository<Messages, Long> {
     """)
     List<Object[]> countUnreadGroupByConversation(Long adminId);
 
-    Page<Messages> findByConversationOrderByCreatedAtDesc(Conversations conversation, Pageable pageable);
     Page<Messages> findByConversationOrderByCreatedAtAsc(Conversations conversation, Pageable pageable);
 }

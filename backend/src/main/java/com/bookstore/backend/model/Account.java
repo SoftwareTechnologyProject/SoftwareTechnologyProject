@@ -22,8 +22,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-import com.fasterxml.jackson.annotation.JsonBackReference; // tui test thay vong lap JSON o day
 @Entity
 @Table(name = "accounts")
 @Data

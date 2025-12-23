@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosClient from "../../config/axiosConfig";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import ex1 from "../../assets/ex1.jpg";
 import "./CategoryPage.css";
@@ -39,7 +39,7 @@ const CategoryPage = () => {
     "asia": "Asia"                                            // 3 books
   };
 
-  const categoryName = categoryMap[normalizedSlug] || "Sß║ún Phß║⌐m";
+  const categoryName = categoryMap[normalizedSlug] || "Sản Phẩm";
 
   useEffect(() => {
     const fetchBooksByCategory = async () => {
@@ -47,8 +47,8 @@ const CategoryPage = () => {
         setLoading(true);
         // Fetch all books từ API
         // Tăng size để chắc chắn lấy đủ (một category có ~108 sách)
-    const response = await axiosClient.get('/api/books?page=0&size=500');
-    const allBooks = response.data.value || response.data || [];
+        const response = await axios.get('http://localhost:8080/api/books?page=0&size=500');
+        const allBooks = response.data?.content || [];
         
         // Lọc sách theo category
         const targetCategory = categoryMap[normalizedSlug];
@@ -62,7 +62,7 @@ const CategoryPage = () => {
         }
       } catch (err) {
         console.error('Error fetching books:', err);
-        setError("Kh├┤ng thß╗â tß║úi sß║ún phß║⌐m. Vui l├▓ng thß╗¡ lß║íi!");
+        setError("Không thể tải sản phẩm. Vui lòng thử lại!");
       } finally {
         setLoading(false);
       }
@@ -108,7 +108,7 @@ const CategoryPage = () => {
   }, [books, priceRange, selectedPublishers, sortBy]);
 
   if (loading) {
-    return <div className="category-page"><p>─Éang tß║úi...</p></div>;
+    return <div className="category-page"><p>Đang tải...</p></div>;
   }
 
   if (error) {
@@ -125,27 +125,27 @@ const CategoryPage = () => {
     <div className="category-page">
       <div className="category-header">
         <h1>{categoryName}</h1>
-        <p>{filteredBooks.length} sß║ún phß║⌐m</p>
+        <p>{filteredBooks.length} sản phẩm</p>
       </div>
 
       <div className="category-container">
         {/* Filter Sidebar */}
         <aside className="filter-sidebar">
           <div className="filter-section">
-            <h3>Gi├í</h3>
+            <h3>Giá</h3>
             <div className="price-inputs">
               <input 
                 type="number" 
                 value={priceRange[0]} 
                 onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
-                placeholder="Tß╗½"
+                placeholder="Từ"
               />
               <span>-</span>
               <input 
                 type="number" 
                 value={priceRange[1]} 
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000000])}
-                placeholder="─Éß║┐n"
+                placeholder="Đến"
               />
             </div>
             <div className="price-ranges">
@@ -156,7 +156,7 @@ const CategoryPage = () => {
                   checked={priceRange[0] === 0 && priceRange[1] === 1000000}
                   onChange={() => setPriceRange([0, 1000000])}
                 />
-                Tß║Ñt cß║ú gi├í
+                Tất cả giá
               </label>
               <label className="checkbox-item">
                 <input 
@@ -165,7 +165,7 @@ const CategoryPage = () => {
                   checked={priceRange[0] === 0 && priceRange[1] === 100000}
                   onChange={() => setPriceRange([0, 100000])}
                 />
-                D╞░ß╗¢i 100K
+                Dưới 100K
               </label>
               <label className="checkbox-item">
                 <input 
@@ -183,13 +183,13 @@ const CategoryPage = () => {
                   checked={priceRange[0] === 300000 && priceRange[1] === 1000000}
                   onChange={() => setPriceRange([300000, 1000000])}
                 />
-                Tr├¬n 300K
+                Trên 300K
               </label>
             </div>
           </div>
 
           <div className="filter-section">
-            <h3>Nh├á cung cß║Ñp</h3>
+            <h3>Nhà cung cấp</h3>
             <div className="publishers-list">
               {uniquePublishers.map(publisher => (
                 <label key={publisher} className="checkbox-item">
@@ -215,7 +215,7 @@ const CategoryPage = () => {
             setSelectedPublishers([]);
             setSortBy('newest');
           }}>
-            X├│a lß╗ìc
+            Xóa lọc
           </button>
         </aside>
 
@@ -224,27 +224,18 @@ const CategoryPage = () => {
           {/* Toolbar */}
           <div className="products-toolbar">
             <div className="sort-container">
-              <label htmlFor="sort">Sß║»p xß║┐p:</label>
+              <label htmlFor="sort">Sắp xếp:</label>
               <select id="sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option value="newest">Mß╗¢i nhß║Ñt</option>
-                <option value="price-asc">Gi├í: Thß║Ñp ─æß║┐n cao</option>
-                <option value="price-desc">Gi├í: Cao ─æß║┐n thß║Ñp</option>
+                <option value="newest">Mới nhất</option>
+                <option value="price-asc">Giá: Thấp đến cao</option>
+                <option value="price-desc">Giá: Cao đến thấp</option>
               </select>
             </div>
-              <div className="items-per-page">
-                <label htmlFor="items">Hiß╗ân thß╗ï:</label>
-                <select id="items" value={itemsPerPage} onChange={(e) => setItemsPerPage(parseInt(e.target.value))}>
-                  <option value={5}>5 sß║ún phß║⌐m</option>
-                  <option value={10}>10 sß║ún phß║⌐m</option>
-                  <option value={15}>15 sß║ún phß║⌐m</option>
-                  <option value={20}>20 sß║ún phß║⌐m</option>
-                </select>
-              </div>
           </div>
 
           {paginatedBooks.length === 0 ? (
             <div className="no-products">
-              <p>Kh├┤ng c├│ sß║ún phß║⌐m n├áo ph├╣ hß╗úp vß╗¢i bß╗Ö lß╗ìc cß╗ºa bß║ín.</p>
+              <p>Không có sản phẩm nào phù hợp với bộ lọc của bạn.</p>
             </div>
           ) : (
             <>
@@ -270,8 +261,8 @@ const CategoryPage = () => {
                         <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
                         <p className="author">{book.authorNames?.join(", ")}</p>
                         <div className="price-section">
-                          <span className="price-new">{price.toLocaleString('vi-VN')} ─æ</span>
-                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} ─æ</span>
+                          <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                           <span className="discount">-10%</span>
                         </div>
                       </div>
@@ -287,7 +278,7 @@ const CategoryPage = () => {
                     onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                     disabled={currentPage === 0}
                   >
-                    Tr╞░ß╗¢c
+                    Trước
                   </button>
                   {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
                     const pageNum = currentPage > 2 ? currentPage - 2 + i : i;
