@@ -282,7 +282,7 @@ const HomePage = () => {
                                                 <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                             </div>
                                             <div className="progress-bar">
-                                                <span> Đã Bán {book.variants[0].sold}</span>
+                                                <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                             </div>
                                         </div>
                                     </Link>
@@ -341,7 +341,7 @@ const HomePage = () => {
                                                             <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                                         </div>
                                                         <div className="progress-bar">
-                                                            <span> Đã Bán {book.variants[0].sold}</span>
+                                                            <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                                         </div>
                                                     </div>
                                                 </Link>

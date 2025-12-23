@@ -6,8 +6,7 @@ import { AppContext } from "../../context/AppContext";
 
 // MO TA: ReviewSection
 // - Chuc nang: xem va viet danh gia cho sach
-// - Su dung: axiosClient de lay va gui review (co file upload anh)
-// - Tam thoi: isLoggedIn mock = true (phai thay bang auth that)
+// - Su dung: axiosClient de lay va gui review
 export default function ReviewSection({ bookId }) {
   const [reviews, setReviews] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);

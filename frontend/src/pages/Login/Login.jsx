@@ -78,7 +78,7 @@ const Login = () => {
                 }
             } else {
                 // Login logic
-                const response = await axiosClient.post("/auth/login", { email, password });
+                const response = await axiosClient.post("/api/auth/login", { email, password });
                 if (response.status === 200) {
                     localStorage.setItem("accessToken", response.data.token);
                     setIsLoggedIn(true);

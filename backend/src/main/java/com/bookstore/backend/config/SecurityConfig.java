@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/send-reset-otp", "/reset-password", "/api/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-                        // Allow authenticated users to post reviews for books
+                        // xác thực người dùng để đánh giá sách và thêm sách vào giỏ hàng
                         .requestMatchers(HttpMethod.POST, "/api/books/*/reviews").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/books/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/books/**").hasAuthority("ROLE_ADMIN")
