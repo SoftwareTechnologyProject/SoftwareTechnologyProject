@@ -1,27 +1,29 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import Chatbox from "./Chatbox";
+=======
+import { useEffect, useState } from "react";
+import ChatBox from "./Chatbox";
+>>>>>>> develop
 import axiosClient from "../../api/axiosClient";
+import "./CustomerChatBox.css"; // Import CSS
 
 export default function ChatFloating() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
 
-  // Load số tin nhắn chưa đọc
   const fetchUnread = async () => {
     try {
       const res = await axiosClient.get("/chat/unread");
-      setUnreadCount(res.data);
-    } catch (err) {
-      console.error("Failed to fetch unread:", err);
-    }
+      setUnread(res.data);
+    } catch (err) { console.error(err); }
   };
 
-  useEffect(() => {
-    fetchUnread();
-  }, []);
+  useEffect(() => { fetchUnread(); }, []);
 
   return (
     <>
+<<<<<<< HEAD
       {/* Chat Button */}
       <button
         onClick={() => setIsChatOpen(!isChatOpen)}
@@ -66,25 +68,23 @@ export default function ChatFloating() {
           </span>
         )}
       </button>
+=======
+      {/* Nút tròn nổi (Floating Button) */}
+      {!open && (
+        <button className="chat-float-btn" onClick={() => setOpen(true)}>
+          {/* Icon tin nhắn SVG */}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          
+          {unread > 0 && <span className="chat-badge">{unread}</span>}
+        </button>
+      )}
+>>>>>>> develop
 
-      {/* Chat Box */}
-      {isChatOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "90px",
-            right: "20px",
-            width: "350px",
-            height: "450px",
-            background: "#fff",
-            borderRadius: "12px",
-            boxShadow: "0 4px 15px rgba(0,0,0,.25)",
-            overflow: "hidden",
-            zIndex: 10000,
-          }}
-        >
-          <ChatBox setUnreadCount={setUnreadCount} />
-        </div>
+      {/* Cửa sổ chat */}
+      {open && (
+        <ChatBox onClose={() => setOpen(false)} setUnreadCount={setUnread} />
       )}
     </>
   );

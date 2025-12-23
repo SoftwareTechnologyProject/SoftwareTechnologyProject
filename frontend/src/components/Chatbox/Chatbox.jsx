@@ -1,83 +1,117 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useUserNotifications from "../../hook/useUserNotifications";
 import axiosClient from "../../api/axiosClient";
+import "./CustomerChatBox.css";
 
-const ChatBox = ({ setUnreadCount }) => {
+// Helper định dạng giờ
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+};
+
+const ChatBox = ({ onClose, setUnreadCount }) => {
+  const [box, setBox] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [page, setPage] = useState(0);
-  const size = 50; // load 50 tin nhắn gần nhất
+  const messagesEndRef = useRef(null); // Để auto scroll
+  const didLoadRef = useRef(false);
 
-  const { sendChatMessage } = useUserNotifications(
-    null,
-    (msg) => {
-      // Thêm tin nhắn nhận được từ WebSocket
-      setMessages((prev) => [...prev, msg]);
-      // Tăng số tin nhắn chưa đọc
-      setUnreadCount((count) => count + 1);
+  // --- WEBSOCKET ---
+  const { sendChatMessage } = useUserNotifications(null, (msg) => {
+    setMessages((prev) => [...prev, msg]);
+    // Nếu tin nhắn đến từ Shop (không phải mine) -> đánh dấu đã xem
+    if (!msg.mine && msg.id) {
+      markRead([msg.id]);
+      setUnreadCount(0); // Reset unread bên ngoài
     }
-  );
+  });
 
-  // Load tin nhắn cũ từ API
-  const loadMessages = async () => {
+  // --- API ---
+  const loadChat = async () => {
     try {
-      const res = await axiosClient.get("/chat", { params: { page, size } });
-      const newMessages = res.data.content; // đảo để hiển thị từ cũ -> mới
-      setMessages(newMessages);
+      const res = await axiosClient.get("/chat", { params: { page: 0, size: 50 } });
+      setBox(res.data);
+      const contents = res.data?.boxContent?.content || [];
+      setMessages(contents);
 
-      // Lấy id các tin nhắn chưa đọc và đánh dấu đã đọc
-      const unreadIds = newMessages.filter((m) => !m.isRead).map((m) => m.id);
+      // Đánh dấu đã đọc các tin chưa đọc
+      const unreadIds = contents.filter((m) => !m.mine && !m.read).map((m) => m.id);
       if (unreadIds.length > 0) {
-        await axiosClient.put("/chat/mark-read", unreadIds);
-        setUnreadCount(0); // reset số tin nhắn chưa đọc
+        await markRead(unreadIds);
+        setUnreadCount(0);
       }
-    } catch (err) {
-      console.error("Failed to load messages:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  useEffect(() => {
-    loadMessages();
-  }, []);
+  const markRead = async (ids) => {
+    if (!ids.length) return;
+    try { await axiosClient.put("/chat/mark-read", ids); } catch (e) {}
+  };
 
   const handleSend = () => {
-    if (!input.trim()) return;
-
-    const chatMsg = { content: input };
-    sendChatMessage(chatMsg);
-    setInput(""); // reset input, không thêm tin nhắn tạm thời
+    if (!input.trim() || !box?.receiverEmail) return;
+    const payload = { receiveEmail: box.receiverEmail, content: input };
+    sendChatMessage(payload);
+    setInput("");
   };
 
-  return (
-    <div className="flex flex-col h-full p-3 bg-white">
-      <h3 className="text-center font-bold mb-2">💬 Hỗ trợ khách hàng</h3>
+  // --- EFFECT ---
+  useEffect(() => {
+    if (didLoadRef.current) return;
+    didLoadRef.current = true;
+    loadChat();
+  }, []);
 
-      <div className="flex-1 overflow-y-auto border p-2 rounded bg-gray-50">
-        {messages.map((m, i) => (
-          <div key={i} className="mb-2">
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{m.sender}</span>
-              <span>{new Date(m.createdAt).toLocaleTimeString()}</span>
-            </div>
-            <div className="p-2 bg-blue-100 rounded w-fit max-w-[70%]">
-              {m.content}
-            </div>
-          </div>
-        ))}
+  // Auto scroll xuống cuối khi có tin nhắn mới
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // --- RENDER ---
+  return (
+    <div className="customer-chat-window">
+      {/* 1. HEADER */}
+      <div className="cc-header">
+        <div className="cc-title">
+          <h4>Hỗ trợ khách hàng</h4>
+          <span>Thường trả lời trong vài phút</span>
+        </div>
+        <button className="btn-close" onClick={onClose} title="Đóng chat">
+           ✕
+        </button>
       </div>
 
-      <div className="flex mt-3 gap-2">
+      {/* 2. BODY MESSAGES */}
+      <div className="cc-body">
+        {messages.length === 0 && (
+          <div style={{textAlign:'center', color:'#9ca3af', marginTop: 20, fontSize:'0.9rem'}}>
+            Xin chào! Bạn cần shop hỗ trợ gì không ạ? 👋
+          </div>
+        )}
+        
+        {messages.map((m, idx) => (
+          <div key={m.id || idx} className={`cc-msg ${m.mine ? "mine" : "other"}`}>
+            <div className="bubble">
+              {m.content}
+            </div>
+            <span className="timestamp">{formatTime(m.createdAt || new Date())}</span>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* 3. FOOTER INPUT */}
+      <div className="cc-footer">
         <input
-          className="flex-1 border rounded p-2"
-          placeholder="Nhập tin nhắn..."
+          className="cc-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          placeholder="Nhập nội dung cần hỗ trợ..."
         />
-        <button
-          className="bg-red-600 text-white px-4 rounded"
-          onClick={handleSend}
-        >
-          Gửi
+        <button className="btn-send" onClick={handleSend}>
+           Gửi
         </button>
       </div>
     </div>

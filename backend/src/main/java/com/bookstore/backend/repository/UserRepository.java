@@ -2,6 +2,7 @@ package com.bookstore.backend.repository;
 
 import java.util.Optional;
 
+import com.bookstore.backend.model.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,9 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     @Query("SELECT u FROM Users u JOIN FETCH u.account WHERE u.email = :email")
     Optional<Users> findByEmailWithAccount(@Param("email") String email);
+
+    @Query("SELECT u FROM Users u JOIN FETCH u.account WHERE u.account.verificationToken = :token")
+    Optional<Users> findByVerificationToken(@Param("token") String token);
     
     Boolean existsByEmail(String email);
 }

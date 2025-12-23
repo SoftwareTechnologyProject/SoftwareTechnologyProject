@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react"
 import rank from "../../assets/banner/rank-banner.png"
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
+import axios from "../../config/axiosConfig";
 
 const API_URL = 'http://localhost:8080/vouchers';
-// const API_URL = 'http://localhost:8081/vouchers';
 
 const Account = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -13,28 +13,99 @@ const Account = () => {
     const [copiedCode, setCopiedCode] = useState(null);
 
     const [formData, setFormData] = useState({
-        ho: 'Nguyễn',
-        ten: 'Thịnh',
-        phone: '0336289549',
+        ho: '',
+        ten: '',
+        phone: '',
         email: '',
-        gender: 'Nam',
-        day: '17',
-        month: '07',
-        year: '2005',
+        day: '',
+        month: '',
+        year: '',
+        currentPass: '',
+        newPass: '',
+        confirmPass: ''
     });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // ⭐ chặn reload
+
+        try {
+            const payload = {
+                fullName: `${formData.ho} ${formData.ten}`,
+                phoneNumber: formData.phone,
+                dateOfBirth: `${formData.year}-${formData.month}-${formData.day}`
+            };
+
+            const res = await axios.put("users/me/update", payload);
+
+            alert("Cập nhật thành công!");
+            console.log("User mới:", res.data);
+
+        } catch (err) {
+            console.error("Lỗi cập nhật:", err);
+
+            if (err.response?.status === 403) {
+                alert("Phiên đăng nhập hết hạn");
+            } else {
+                alert("Cập nhật thất bại");
+            }
+        }
+    };
+
+    const handleChangePass = async (e) => {
+        e.preventDefault(); 
+
+        try {
+            const payload = {
+                currentPass: formData.currentPass,
+                newPass: formData.newPass,
+                confirmPass: formData.confirmPass
+            };
+
+            const res = await axios.patch("users/me/update/password", payload);
+
+            alert("Cập nhật thành công!");
+
+        } catch (err) {
+            console.error("Lỗi cập nhật:", err);
+
+            if (err.response?.status === 403) {
+                alert("Phiên đăng nhập hết hạn");
+            } else {
+                alert("Cập nhật thất bại");
+            }
+        }
+    };
+
+    // 🟢 LẤY USER TỪ BACKEND /me
+    useEffect(() => {
+        fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+        try {
+            const { data: user } = await axios.get("users/me");
+
+            setFormData({
+                ho: user.fullName?.split(" ").slice(0, -1).join(" ") || "",
+                ten: user.fullName?.split(" ").slice(-1).join(" ") || "",
+                phone: user.phoneNumber || "",
+                email: user.email || "",
+                day: user.dateOfBirth ? new Date(user.dateOfBirth).getDate() : "",
+                month: user.dateOfBirth ? new Date(user.dateOfBirth).getMonth() + 1 : "",
+                year: user.dateOfBirth ? new Date(user.dateOfBirth).getFullYear() : "",
+            });
+
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Dữ liệu đã lưu:', formData);
-        alert('Đã lưu thay đổi!');
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     useEffect(() => {
@@ -142,12 +213,13 @@ const Account = () => {
                                 Số điện thoại
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span>{formData.phone}</span>
-                                    <button type="button" className="change-btn">
-                                        Thay đổi
-                                    </button>
-                                </div>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="form-input"
+                                />
                             </div>
                         </div>
 
@@ -157,47 +229,9 @@ const Account = () => {
                                 Email
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span className="email-placeholder">
-                                        {formData.email || 'Chưa có email'}
-                                    </span>
-                                    <button type="button" className="change-btn">
-                                        Thêm mới
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Field: Giới tính */}
-                        <div className="form-row">
-                            <label className="form-label">
-                                Giới tính<span className="required">*</span>
-                            </label>
-                            <div className="form-input-wrapper">
-                                <div className="radio-group">
-                                    <label className="radio-label">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="Nam"
-                                            checked={formData.gender === 'Nam'}
-                                            onChange={handleChange}
-                                            className="radio-input"
-                                        />
-                                        <span>Nam</span>
-                                    </label>
-                                    <label className="radio-label">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="Nữ"
-                                            checked={formData.gender === 'Nữ'}
-                                            onChange={handleChange}
-                                            className="radio-input"
-                                        />
-                                        <span>Nữ</span>
-                                    </label>
-                                </div>
+                                <div
+                                    className="form-input bg-gray-200"
+                                >{formData.email}</div>
                             </div>
                         </div>
 
@@ -249,18 +283,18 @@ const Account = () => {
                         Đổi Mật Khẩu
                     </h1>
 
-                    <form onSubmit={handleSubmit} className="account-form">
+                    <form onSubmit={handleChangePass} className="account-form">
                         <div className="form-row">
                             <label className="form-label">
                                 Mật Khẩu Hiện Tại<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
                                 <input
-                                    type="text"
-                                    name="ho"
-                                    value={formData.ho}
+                                    type="password"
+                                    name="currentPass"
+                                    value={formData.currentPass}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input"                                
                                 />
                             </div>
                         </div>
@@ -270,12 +304,13 @@ const Account = () => {
                                 Mật Khẩu Mới<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span>{formData.phone}</span>
-                                    <button type="button" className="change-btn">
-                                        Thay đổi
-                                    </button>
-                                </div>
+                                <input
+                                    type="password"
+                                    name="newPass"
+                                    value={formData.newPass}
+                                    onChange={handleChange}
+                                    className="form-input" 
+                                />
                             </div>
                         </div>
 
@@ -284,12 +319,13 @@ const Account = () => {
                                 Nhập Lại Mật Khẩu Mới<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
-                                <div className="readonly-field">
-                                    <span>{formData.phone}</span>
-                                    <button type="button" className="change-btn">
-                                        Thay đổi
-                                    </button>
-                                </div>
+                                <input
+                                    type="password"
+                                    name="confirmPass"
+                                    value={formData.confirmPass}
+                                    onChange={handleChange}
+                                    className="form-input" 
+                                />
                             </div>
                         </div>
 

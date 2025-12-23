@@ -8,7 +8,6 @@ services:
             - "${SERVER_PORT}:8080"
         environment:
             - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-            # - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
             - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
@@ -16,6 +15,12 @@ services:
             - KEY_JWT=${KEY_JWT}
             - MAIL_USERNAME=${MAIL_USERNAME}
             - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_REGION=${AWS_REGION}
+            - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+            - AWS_S3_BLOG_BUCKET_NAME=${AWS_S3_BLOG_BUCKET_NAME}
+            - GEMINI_API_KEY=${GEMINI_API_KEY}
         depends_on:
             - db
 
@@ -32,8 +37,6 @@ services:
             - "5432:5432"
         volumes:
             - db_data:/var/lib/postgresql/data
-            - ./fix_region.sql:/docker-entrypoint-initdb.d/fix_region.sql
-            - ./script_defined.sql:/sql/script_defined.sql
 
     data-seeder:
         build: ./seeder
@@ -46,20 +49,20 @@ services:
             - DB_PASS=${POSTGRES_PASSWORD}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+            - AWS_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
             - AWS_REGION=${AWS_REGION}
         depends_on:
             - db
 
-    pgadmin:
-        image: dpage/pgadmin4
-        container_name: bookstore_pgadmin
-        environment:
-            - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-            - PGADMIN_DEFAULT_PASSWORD=root
-        ports:
-            - "8085:80"
-        depends_on:
-            - db
+        pgadmin:
+            image: dpage/pgadmin4
+            container_name: bookstore_pgadmin
+            environment:
+                - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+                - PGADMIN_DEFAULT_PASSWORD=root
+            ports:
+                - "8085:80"
+            depends_on:
+                - db
 volumes:
     db_data:

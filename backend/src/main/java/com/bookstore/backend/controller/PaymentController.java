@@ -222,7 +222,7 @@ public class PaymentController {
             }
 
             // Lấy thông tin order
-            OrdersDTO orderDTO = ordersService.getOrderById(orderId.intValue());
+            OrdersDTO orderDTO = ordersService.getOrderById(orderId);
             return ResponseEntity.ok(orderDTO);
 
         } catch (Exception e) {

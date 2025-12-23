@@ -95,7 +95,9 @@ public class CheckoutController {
                             item.getBookId(), // bookVariantId
                             item.getBookTitle(),
                             item.getQuantity(),
-                            item.getPrice()
+                            item.getPricePurchased(),
+                            item.getQuantity() * item.getPricePurchased(),
+                            item.getImageUrl()
                     ))
                     .collect(Collectors.toList());
 

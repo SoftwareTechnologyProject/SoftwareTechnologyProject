@@ -41,13 +41,21 @@
 }
 
 .account-nav .main-nav .nav-link {
-  @apply flex flex-row justify-start py-2 px-7 gap-4 text-[#080909] rounded mb-1 transition-all duration-300 no-underline;
+  @apply flex flex-row justify-start py-2 px-7 gap-4 text-[#080909] rounded mb-1 transition-all duration-300 no-underline border-0;
 }
 
 .account-nav .main-nav .nav-link:hover {
-  @apply bg-[#c74d4d] text-white;
+  @apply bg-[var(--primary-color)] text-white;
 }
 
 .account-nav .main-nav .nav-link.active {
-  @apply bg-[#c74d4d] text-white font-semibold;
+  @apply bg-[var(--primary-color)] text-white font-semibold;
+}
+
+.account-logged-avatar {
+    @apply w-22 h-22 m-auto;
+}
+
+.account-logged-avatar-text {
+    @apply text-3xl;
 }

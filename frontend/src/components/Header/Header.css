@@ -21,34 +21,354 @@ nav {
 }
 
 .nav-right {
-  @apply flex items-center mx-auto;
+  @apply grid grid-cols-5 place-items-center;
 }
 
 .nav-icons {
-  @apply w-7 h-7 cursor-pointer;
-}
-
-.notification-dropdown {
-  max-height: 350px; /* tăng chiều cao dropdown */
-  overflow-y: auto;
-  min-width: 320px; /* đảm bảo rộng hơn button */
-  transition: all 0.2s ease-in-out;
-}
-
-.notification-item {
-  transition: background-color 0.2s, transform 0.1s;
-  border-radius: 0.375rem; /* rounded-md */
-}
-
-.notification-item:hover {
-  background-color: #DBEAFE; /* light blue hover */
-  transform: translateX(2px);
+  @apply w-7 h-7
+         hover:text-[var(--primary-color)] transition-colors;
 }
 
 .nav-search {
-  @apply grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
+  @apply relative grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
 }
 
 .input-search {
   @apply px-4 py-2 outline-none;
+}
+
+/* Button Search */
+.btn-search {
+  @apply p-2 text-gray-500 hover:text-gray-800 transition-colors duration-200 rounded-full hover:bg-gray-100;
+}
+
+/* Hộp gợi ý (Dropdown) */
+.suggest-box {
+  @apply absolute left-0 right-0 mt-15 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50;
+}
+
+/* Từng dòng gợi ý */
+.suggest-item {
+  @apply px-4 py-3 text-sm text-gray-700 cursor-pointer transition-colors duration-150 border-b border-gray-50 last:border-none;
+}
+
+.suggest-item:hover {
+  @apply bg-gray-50 text-gray-900 font-medium;
+}
+
+/* Animation nhẹ khi mở box gợi ý */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== DANH MỤC DROPDOWN (HOVER) ==================== */
+/* Category Dropdown Container */
+.category-dropdown-container {
+  @apply relative;
+}
+
+/* Category Button */
+.category-button {
+  @apply flex flex-col items-center cursor-pointer 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+/* Dropdown Menu */
+.category-dropdown-menu {
+  @apply absolute top-full
+         bg-white rounded-2xl shadow-2xl
+         p-5 z-[1000] mt-4
+         min-w-[900px] max-w-[1100px];
+  
+  /* Hidden by default */
+  @apply opacity-0 invisible pointer-events-none;
+  transform: translateX(-50%) translateY(-10px);
+  
+  /* Smooth transition */
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Show dropdown when open */
+.category-dropdown-open {
+  @apply opacity-100 visible pointer-events-auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Category Grid */
+.category-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 
+         gap-3 mb-4;
+}
+
+/* Category Item */
+.category-item {
+  @apply flex items-center gap-3 p-3.5 
+         bg-white border-2 border-gray-200 rounded-xl 
+         hover:bg-[var(--components-color)] 
+         hover:-translate-y-1 hover:shadow-lg 
+         transition-all duration-300 
+         relative overflow-hidden;
+}
+
+/* Background overlay on hover */
+.category-item-overlay {
+  @apply absolute inset-0 
+         transition-all duration-300 -z-10;
+}
+
+/* Icon with gradient */
+.category-item-icon {
+  @apply w-11 h-11 rounded-lg 
+         flex items-center justify-center flex-shrink-0 
+         transition-all duration-300 ;
+}
+
+.category-item-icon-inner {
+  @apply text-[black] text-xl;
+}
+
+/* Content */
+.category-item-content {
+  @apply flex-1 min-w-0 flex items-center justify-between gap-2;
+}
+
+.category-item-title {
+  @apply text-sm font-semibold text-gray-800 
+         line-clamp-2 transition-colors;
+}
+
+.category-item-arrow {
+  @apply w-4 h-4 text-gray-400  
+         transition-all flex-shrink-0;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  @apply overflow-hidden;
+}
+
+/* Category Footer */
+.category-footer {
+  @apply pt-3 border-t-2 border-gray-100;
+}
+
+/* View All Button */
+.category-view-all {
+  @apply flex items-center justify-center gap-2 
+         w-full py-3 px-4 
+         bg-gradient-to-r from-[var(--primary-color)] to-red-600 
+         hover:from-red-600 hover:to-[var(--primary-color)] 
+         text-white rounded-lg font-semibold 
+         shadow-md hover:shadow-lg hover:-translate-y-0.5 
+         transition-all duration-300;
+}
+
+/* ==================== THÔNG BÁO DROPDOWN (CLICK) ==================== */
+.notification-container {
+  @apply relative;
+}
+
+.notification-dropdown {
+  @apply absolute top-full left-1/2 -translate-x-1/2 mt-2
+         bg-white shadow-xl/30 rounded-lg 
+         z-[9999]
+         min-w-[320px] max-h-[400px]
+         overflow-y-auto
+         transition-all duration-200 ease-in-out;
+}
+
+.notification-item {
+  @apply p-3 border-b last:border-b-0
+         transition-all duration-150
+         hover:bg-blue-50 hover:translate-x-1;
+  border-radius: 0.375rem;
+}
+
+.notification-unread {
+  @apply bg-blue-50;
+}
+
+.notification-link {
+  @apply font-medium text-gray-800
+         hover:text-[var(--primary-color)] hover:underline
+         block;
+}
+
+.notification-time {
+  @apply text-xs text-gray-400 mt-1;
+}
+
+.notification-empty {
+  @apply p-4 text-center text-gray-400;
+}
+
+.notification-more-btn {
+  @apply w-full py-2 text-blue-500 font-medium
+         hover:underline hover:bg-blue-50
+         transition-colors duration-150;
+}
+
+/* ==================== TÀI KHOẢN ==================== */
+.account-menu-container {
+  @apply relative mx-4;
+}
+
+.account-menu-link {
+  @apply flex flex-col items-center text-inherit 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+/* Account popup cho trạng thái chưa đăng nhập */
+.account-popup {
+  @apply absolute top-full -translate-x-[75%] mt-2
+         bg-white shadow-xl rounded-lg p-2
+         z-50 min-w-[10rem]
+         opacity-0 invisible 
+         transition-all duration-200 ease-in-out
+}
+
+.account-popup-link {
+  @apply block text-center py-2 px-4 rounded-md w-2xs
+         text-lg font-medium transition-all duration-150;
+}
+
+.account-menu-container:hover .account-popup,
+.account-menu-container:hover .account-logged-popup {
+  @apply opacity-100 visible;
+}
+
+.login {
+  @apply bg-[var(--primary-color)] text-[var(--components-color)]
+         hover:opacity-90;
+}
+
+.register {
+  @apply bg-[var(--components-color)] border-2 text-[var(--primary-color)]
+         hover:bg-gray-50;
+}
+
+.account-popup-link + .account-popup-link {
+  @apply mt-1;
+}
+
+/* Account popup cho trạng thái đã đăng nhập */
+.account-logged-popup {
+  @apply absolute top-full -translate-x-[75%] mt-2 
+         w-[280px] bg-white rounded-lg shadow-xl 
+         z-50 opacity-0 invisible 
+         transition-all duration-200 overflow-hidden;
+}
+
+.account-logged-header {
+  @apply flex items-center gap-3 p-4 
+         cursor-pointer hover:bg-gray-50 
+         transition-colors;
+}
+
+.account-logged-avatar {
+  @apply w-12 h-12 rounded-full 
+         bg-gradient-to-br from-red-400 to-pink-500 
+         flex items-center justify-center flex-shrink-0 
+         overflow-hidden;
+}
+
+.account-logged-avatar-text {
+  @apply text-white font-semibold text-lg;
+}
+
+.account-logged-info {
+  @apply flex-1 min-w-0;
+}
+
+.account-logged-name {
+  @apply text-base font-semibold text-gray-800 truncate;
+}
+
+.account-logged-subtitle {
+  @apply text-sm text-gray-500 truncate;
+}
+
+.account-logged-arrow {
+  @apply w-5 h-5 text-gray-400 flex-shrink-0;
+}
+
+.account-logged-divider {
+  @apply h-px bg-gray-200;
+}
+
+.account-logged-menu {
+  @apply py-2 w-full grid grid-rows-4 grid-cols-1;
+}
+
+.account-logged-menu-item {
+  @apply flex items-center gap-3 px-4 py-3 text-sm 
+         transition-colors;
+}
+
+.account-logged-menu-item:not(.active) {
+  @apply text-gray-700 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.account-logged-menu-item.active {
+  @apply bg-gray-100 text-[var(--primary-color)] font-medium;
+}
+
+.account-logged-logout {
+  @apply flex items-center gap-3 px-4 py-3 text-sm 
+         text-gray-700 hover:bg-gray-50 hover:text-gray-900 
+         transition-colors w-full;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .category-dropdown-menu {
+    @apply min-w-[800px] max-w-[900px];
+  }
+}
+
+@media (max-width: 992px) {
+  .category-dropdown-menu {
+    @apply min-w-[600px] max-w-[700px];
+  }
+}
+
+@media (max-width: 768px) {
+  .category-dropdown-menu {
+    @apply min-w-[90vw] max-w-[90vw] p-4;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .category-dropdown-open {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .account-menu-container,
+  .category-container,
+  .notification-container {
+    @apply mx-2;
+  }
+  
+  .nav-icons {
+    @apply w-6 h-6;
+  }
+  
+  .account-popup,
+  .category-dropdown {
+    @apply min-w-[8rem];
+  }
+  
+  .notification-dropdown {
+    @apply min-w-[280px];
+  }
+}
+
+@media (max-width: 640px) {
+  .category-dropdown-menu {
+    @apply min-w-[95vw] max-w-[95vw];
+  }
 }
