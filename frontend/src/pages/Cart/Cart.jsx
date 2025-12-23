@@ -34,6 +34,7 @@ function Cart() {
                 const formattedItems = backendData.items.map((item) => ({
                     id: item.id,
                     bookVariantId: item.bookVariantId,
+                    bookId: item.bookId || null,
                     name: item.bookTitle,
                     price: item.price,
                     originalPrice: item.price * 1.2,
@@ -314,6 +315,24 @@ function Cart() {
                                             {formatPrice(item.originalPrice)}
                                         </span>
                                     </div>
+                                    {item.bookId && (
+                                        <button
+                                            className="view-detail-btn"
+                                            style={{
+                                                marginTop: "8px",
+                                                padding: "6px 10px",
+                                                fontSize: "13px",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={() =>
+                                                navigate(
+                                                    `/books/${item.bookId}`
+                                                )
+                                            }
+                                        >
+                                            Xem chi tiết
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="item-quantity">
                                     <button

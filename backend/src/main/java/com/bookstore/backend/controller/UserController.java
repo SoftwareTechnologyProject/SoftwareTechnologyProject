@@ -18,43 +18,8 @@ import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.UserRepository;
 
 @RestController
-@RequestMapping("/api/users")
-@RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
-
-    private final UserRepository userRepo;
-
-    public Users getMyUser() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Bạn chưa đăng nhập (401)");
-        }
-
-        Object principal = authentication.getPrincipal();
-
-        // Trường hợp 1: Token trả về String (Lỗi bạn đang gặp) -> Tự query DB
-        if (principal instanceof String) {
-            String emailOrUsername = (String) principal;
-            return userRepo.findByEmail(emailOrUsername)
-                    // Nếu login bằng username thì thêm dòng dưới:
-                    // .or(() -> userRepository.findByUsername(emailOrUsername))
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + emailOrUsername));
-        }
-
-        // Trường hợp 2: Token trả về đúng Object Users
-        if (principal instanceof Users) {
-            return (Users) principal;
-        }
-
-        // Trường hợp 3: Token trả về UserDetails mặc định
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-            String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
-            return userRepo.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User: " + email));
-        }
-
-        throw new RuntimeException("Không xác định được người dùng!");
-    }
 
     @Autowired
     private UserRepository userRepository;

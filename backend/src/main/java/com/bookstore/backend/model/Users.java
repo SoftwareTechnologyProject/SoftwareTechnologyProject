@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.bookstore.backend.model.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -69,7 +70,6 @@ public class Users implements UserDetails{
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private Account account;
 
-    // ✅ Helper methods để kiểm tra role dễ dàng
     public boolean isAdmin() {
         return role == UserRole.ADMIN;
     }

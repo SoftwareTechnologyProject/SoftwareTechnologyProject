@@ -9,7 +9,7 @@ h2 {
 }
 
 .footer-container {
-    @apply w-full max-w-[1400px] bg-[var(--components-color)] grid grid-cols-2 p-8 mx-auto px-5;
+    @apply w-full bg-[var(--components-color)] grid grid-cols-2 p-4 mx-auto;
 }
 
 .footer-left {

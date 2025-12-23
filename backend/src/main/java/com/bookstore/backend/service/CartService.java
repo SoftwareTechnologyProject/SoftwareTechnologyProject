@@ -183,6 +183,7 @@ public class CartService {
                 var book = variant.getBook();
                 if (book != null) {
                     dto.setBookTitle(book.getTitle());
+                    dto.setBookId(book.getId());
                 }
             }
 
