@@ -201,4 +201,27 @@ public class CartService {
 
         return response;
     }
+
+    @Transactional
+    public void removePurchasedItems(List<Long> purchasedVariantIds) {
+        Users currentUser = getMyUser();
+        Cart cart = getOrCreateCart(currentUser);
+
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            return;
+        }
+
+        // Lọc ra những CartItem nào có BookVariant nằm trong danh sách vừa mua
+        List<CartItems> itemsToDelete = cart.getCartItems().stream()
+                .filter(item -> purchasedVariantIds.contains(item.getBookVariant().getId()))
+                .collect(Collectors.toList());
+
+        if (!itemsToDelete.isEmpty()) {
+            // Xóa khỏi Database
+            cartItemRepo.deleteAll(itemsToDelete);
+
+            cart.getCartItems().removeAll(itemsToDelete);
+            cartRepo.save(cart);
+        }
+    }
 }

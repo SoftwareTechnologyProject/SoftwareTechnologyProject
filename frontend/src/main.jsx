@@ -26,6 +26,7 @@ import Checkout from "./pages/Checkout/Checkout.jsx";
 import PaymentResult from "./pages/PaymentResult/PaymentResult.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess.jsx";
 import PaymentPending from "./pages/PaymentPending/PaymentPending.jsx";
+import PaymentFailed from "./pages/PaymentFailed/PaymentFailed.jsx";
 import BlogList from "./pages/Blog/BlogList";
 import BlogDetail from "./pages/Blog/BlogDetail";
 import BlogAdmin from "./pages/Blog/BlogAdmin";
@@ -131,20 +132,6 @@ createRoot(document.getElementById("root")).render(
                     }
                 />
 
-                {/* Category routes - PHẢI ĐẶT SAU CÁC ROUTES CỤ THỂ */}
-                <Route
-                    path="/:categorySlug"
-                    element={
-                        <>
-                            <Header />
-                            <CategoryPage />
-                            <Recommend />
-                            <Footer />
-                            <ChatFloating />
-                        </>
-                    }
-                />
-
                 {/* Account routes - YÊU CẦU ĐĂNG NHẬP */}
                 <Route
                     path="/account"
@@ -189,6 +176,7 @@ createRoot(document.getElementById("root")).render(
                         path="/payment/success"
                         element={<PaymentSuccess />}
                     />
+                    <Route path="/payment/failed" element={<PaymentFailed />} />
                     <Route
                         path="/payment/pending"
                         element={<PaymentPending />}
@@ -217,6 +205,20 @@ createRoot(document.getElementById("root")).render(
                         <PrivateRoute requiredRole="ADMIN">
                             <AdminChatBox />
                         </PrivateRoute>
+                    }
+                />
+
+                {/* Category routes - PHẢI ĐẶT SAU CÁC ROUTES CỤ THỂ */}
+                <Route
+                    path="/:categorySlug"
+                    element={
+                        <>
+                            <Header />
+                            <CategoryPage />
+                            <Recommend />
+                            <Footer />
+                            <ChatFloating />
+                        </>
                     }
                 />
             </Routes>

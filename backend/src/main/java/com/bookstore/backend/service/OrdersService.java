@@ -30,15 +30,17 @@ public class OrdersService {
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final SecurityUtils securityUtils;
+    private final CartService cartService;
 
 
-    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils) {
+    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils, CartService cartService) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
         this.userRepository = userRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.securityUtils = securityUtils;
+        this.cartService = cartService;
     }
 
     // ------------------- CREATE ORDER -------------------
@@ -79,6 +81,13 @@ public class OrdersService {
         order.setOrderDetails(orderDetails);
 
         Orders savedOrder = ordersRepository.save(order);
+
+        List<Long> purchasedVariantIds = details.stream()
+                .map(OrderDetailDTO::getBookVariantId)
+                .collect(Collectors.toList());
+
+        cartService.removePurchasedItems(purchasedVariantIds);
+
         return mapToDTO(savedOrder);
     }
 
