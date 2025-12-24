@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "book")
@@ -30,8 +29,6 @@ public class Book {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "publisher_id")
-    @JsonIgnore
-    @ToString.Exclude
     private Publisher publisher;
 
     private Integer publisherYear;
@@ -53,9 +50,6 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
     @Builder.Default
-    @JsonIgnore
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<Author> authors = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -65,16 +59,10 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     @Builder.Default
-    @JsonIgnore
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @JsonIgnore
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private List<BookVariants> variants = new ArrayList<>();
 
     @PrePersist

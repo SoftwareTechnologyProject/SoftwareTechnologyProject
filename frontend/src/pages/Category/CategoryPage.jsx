@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosClient from "../../config/axiosConfig";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import ex1 from "../../assets/ex1.jpg";
 import "./CategoryPage.css";

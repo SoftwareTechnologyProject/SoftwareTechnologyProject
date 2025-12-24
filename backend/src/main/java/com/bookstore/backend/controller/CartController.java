@@ -1,7 +1,6 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.DTO.CartItemsDTO;
-import com.bookstore.backend.DTO.CartResponseDTO;
 import com.bookstore.backend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,27 +14,24 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addToCart(@RequestBody CartItemsDTO request) {
-        cartService.addToCart(request);
+    public ResponseEntity<String> addToCart(@RequestParam Long userId,
+                                            @RequestBody CartItemsDTO request) {
+        cartService.addToCart(userId, request);
         return ResponseEntity.ok("Đã thêm sản phẩm vào giỏ hàng thành công!");
     }
 
     @PutMapping("/update/{cartItemId}")
     public ResponseEntity<String> updateQuantity(@PathVariable Long cartItemId,
+                                                 @RequestParam Long userId,
                                                  @RequestParam int quantity) {
-        cartService.updateItemQuantity(cartItemId, quantity);
+        cartService.updateItemQuantity(userId, cartItemId, quantity);
         return ResponseEntity.ok("Cập nhật số lượng thành công!");
     }
 
     @DeleteMapping("/remove/{cartItemId}")
-    public ResponseEntity<String> removeItem(@PathVariable Long cartItemId) {
-        cartService.removeItem(cartItemId);
+    public ResponseEntity<String> removeItem(@PathVariable Long cartItemId,
+                                             @RequestParam Long userId) {
+        cartService.removeItem(userId, cartItemId);
         return ResponseEntity.ok("Đã xóa sản phẩm khỏi giỏ!");
-    }
-
-    @GetMapping("")
-    public ResponseEntity<CartResponseDTO> getCart() {
-        CartResponseDTO cartDTO = cartService.getMyCart();
-        return ResponseEntity.ok(cartDTO);
     }
 }

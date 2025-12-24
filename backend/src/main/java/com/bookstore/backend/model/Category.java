@@ -29,8 +29,6 @@ public class Category {
     @ManyToMany(mappedBy = "categories")
     @JsonIgnore
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<Book> books = new HashSet<>();
 
     public void addBook(Book book) {

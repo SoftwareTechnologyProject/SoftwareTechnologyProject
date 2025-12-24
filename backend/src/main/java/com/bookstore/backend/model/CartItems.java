@@ -19,14 +19,10 @@ public class CartItems {
     @ManyToOne
     @JoinColumn(name = "cart_id")
     @JsonIgnore
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Cart cart;
 
     @ManyToOne
     @JoinColumn(name = "book_variant_id")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private BookVariants bookVariant;
 
     @Column(nullable = false)

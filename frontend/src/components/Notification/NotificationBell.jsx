@@ -16,16 +16,6 @@ const NotificationBell = () => {
 
   useUserNotifications(handleNewNotification);
 
-  // Listen to in-page dispatched notifications (e.g. after add-to-cart)
-  useEffect(() => {
-    const handler = (e) => {
-      if (!e?.detail) return;
-      setNotifications(prev => [e.detail, ...prev]);
-    };
-    window.addEventListener('new-notification', handler);
-    return () => window.removeEventListener('new-notification', handler);
-  }, []);
-
   // ✅ load lần đầu
   useEffect(() => {
     fetchNotifications(0);
