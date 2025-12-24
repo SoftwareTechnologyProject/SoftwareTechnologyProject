@@ -118,7 +118,7 @@ public class PaymentController {
                 
                 try {
                     // Cập nhật payment status trong database
-                    paymentService.markPaymentSuccess(paymentKey, transactionNo);
+                    paymentService.markPaymentSuccess(paymentKey, transactionNo, transactionDate);
                 } catch (Exception e) {
                     // Nếu payment đã được xử lý rồi, ignore exception
                     System.out.println("⚠️ Payment already processed or expired: " + e.getMessage());
@@ -193,7 +193,7 @@ public class PaymentController {
                 System.out.println("✅ Transaction confirmed as SUCCESS by query");
                 try {
                     // Cập nhật payment status
-                    paymentService.markPaymentSuccess(paymentKey, vnpayResponse.get("vnp_TransactionNo").getAsString());
+                    paymentService.markPaymentSuccess(paymentKey, vnpayResponse.get("vnp_TransactionNo").getAsString(), transactionDate);
                 } catch (Exception e) {
                     System.out.println("⚠️ Payment already processed or expired: " + e.getMessage());
                 }

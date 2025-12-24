@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bookstore.backend.DTO.ChangePassRequest;
 import com.bookstore.backend.DTO.UserDTO;
+import com.bookstore.backend.DTO.UserResponseDTO;
 import com.bookstore.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

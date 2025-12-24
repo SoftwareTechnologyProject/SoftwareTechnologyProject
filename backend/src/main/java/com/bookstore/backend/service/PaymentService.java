@@ -2,10 +2,12 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.utils.SecurityUtils;
 import com.bookstore.backend.model.enums.PaymentStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.bookstore.backend.DTO.NotificationRequestDTO;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,13 +17,17 @@ import java.util.Map;
 public class PaymentService {
 
     private final OrdersService ordersService;
+    private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
     
     // Lưu trữ tạm thông tin thanh toán (paymentKey -> OrderId)
     private final Map<String, Long> pendingPayments = new HashMap<>();
 
     @Autowired
-    public PaymentService(OrdersService ordersService) {
+    public PaymentService(OrdersService ordersService, NotificationService notificationService, SecurityUtils securityUtils) {
         this.ordersService = ordersService;
+        this.notificationService = notificationService;
+        this.securityUtils = securityUtils;
     }
 
     /**
@@ -59,12 +65,15 @@ public class PaymentService {
      * @param transactionNo Mã giao dịch VNPay
      */
     @Transactional
-    public void markPaymentSuccess(String paymentKey, String transactionNo) throws Exception {
+    public void markPaymentSuccess(String paymentKey, String transactionNo, String transactionDate) throws Exception {
         // Lấy orderId từ paymentKey
         Long orderId = pendingPayments.get(paymentKey);
         if (orderId == null) {
             throw new Exception("Payment information not found or expired");
         }
+
+        Orders order = ordersService.getOrderEntityById(orderId);
+        Long userIdFromOrder = order.getUsers().getId();
 
         // Cập nhật payment status thông qua OrdersService
         ordersService.updatePaymentStatus(orderId, PaymentStatus.PAID, PaymentType.BANKING);
@@ -73,6 +82,13 @@ public class PaymentService {
         pendingPayments.remove(paymentKey);
         
         System.out.println("✅ Order #" + orderId + " marked as PAID. Transaction: " + transactionNo);
+        NotificationRequestDTO notificationRequest = NotificationRequestDTO.builder()
+                .content("Thanh toán thành công cho đơn hàng #" + orderId + " của bạn")
+                .url("http://localhost:5173/payment/result?paymentKey=" + paymentKey + "&transactionDate=" + transactionDate)
+                .type(com.bookstore.backend.model.enums.NotificationType.PERSONAL)
+                .userId(userIdFromOrder)
+                .build();
+        notificationService.sendNotification(notificationRequest);
     }
 
     /**

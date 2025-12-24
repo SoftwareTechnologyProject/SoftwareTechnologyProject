@@ -115,7 +115,7 @@ function Checkout() {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await axiosClient.get("/users/profile");
+                const response = await axiosClient.get("/users/me");
                 const user = response.data;
 
                 setFormData((prev) => ({
@@ -211,7 +211,7 @@ function Checkout() {
                 paymentMethod: paymentMethod,
                 couponCode: appliedPromo || null,
                 items: receivedItems.map((item) => ({
-                    bookId: item.id || item.bookVariantId,
+                    bookId: item.bookVariantId || item.id,
                     bookTitle: item.name,
                     quantity: item.quantity,
                     pricePurchased: item.price, // Đổi từ price thành pricePurchased để match với backend

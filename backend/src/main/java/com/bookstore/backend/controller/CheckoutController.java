@@ -1,12 +1,16 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.DTO.NotificationRequestDTO;
 import com.bookstore.backend.DTO.OrderCreationRequestDTO;
 import com.bookstore.backend.DTO.OrderDetailDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
 import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.service.NotificationService;
 import com.bookstore.backend.service.OrdersService;
 import com.bookstore.backend.service.PaymentService;
 import com.bookstore.backend.service.VNPayService;
+import com.bookstore.backend.utils.SecurityUtils;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,14 +29,20 @@ public class CheckoutController {
     private final OrdersService ordersService;
     private final PaymentService paymentService;
     private final VNPayService vnPayService;
+    private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
     public CheckoutController(OrdersService ordersService, 
                              PaymentService paymentService,
-                             VNPayService vnPayService) {
+                             VNPayService vnPayService, 
+                             NotificationService notificationService, 
+                             SecurityUtils securityUtils) {
         this.ordersService = ordersService;
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
+        this.notificationService = notificationService;
+        this.securityUtils = securityUtils;
     }
 
     /**
@@ -118,6 +128,13 @@ public class CheckoutController {
                 response.put("message", "Order created successfully (COD)");
                 response.put("orderId", createdOrder.getId());
                 response.put("requiresPayment", false);
+                NotificationRequestDTO notificationRequest = NotificationRequestDTO.builder()
+                    .content("Thanh toán thành công cho đơn hàng #" + createdOrder.getId() + " của bạn")
+                    .url("http://localhost:5173/payment/pending?orderId=" + createdOrder.getId())
+                    .type(com.bookstore.backend.model.enums.NotificationType.PERSONAL)
+                    .userId(securityUtils.getCurrentUser().getId())
+                    .build();
+                notificationService.sendNotification(notificationRequest);
             }
 
             return ResponseEntity.ok(response);
