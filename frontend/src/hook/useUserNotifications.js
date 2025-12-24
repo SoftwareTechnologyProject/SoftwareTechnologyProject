@@ -19,7 +19,6 @@ const useUserNotifications = (onNotification, onChatMessage) => {
 
     const token = localStorage.getItem("accessToken");
     const stompClient = new Client({
-      // Backend WS endpoint runs on port 8081 per RUN_PROJECT.md
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
       connectHeaders: { Authorization: "Bearer " + token },
       reconnectDelay: 5000,

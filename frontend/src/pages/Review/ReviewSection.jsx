@@ -3,9 +3,6 @@ import { FaStar, FaUpload } from "react-icons/fa";
 import axios from "axios";
 import "./ReviewSection.css";
 
-// MO TA: ReviewSection
-// - Chuc nang: xem va viet danh gia cho sach
-// - Su dung: axiosClient de lay va gui review
 export default function ReviewSection({ bookId }) {
   const [reviews, setReviews] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
