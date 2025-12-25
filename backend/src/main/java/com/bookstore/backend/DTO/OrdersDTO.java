@@ -2,10 +2,12 @@ package com.bookstore.backend.DTO;
 
 import com.bookstore.backend.model.OrderDetails;
 import com.bookstore.backend.model.Voucher;
+import com.bookstore.backend.model.enums.PaymentStatus;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -17,10 +19,12 @@ public class OrdersDTO {
     private String shippingAddress;
     private String phoneNumber;
     private PaymentType paymentType;
+    private PaymentStatus paymentStatus;
     private StatusOrder status;
     private LocalDateTime orderDate;
     private String voucherCode;
     private List<OrderDetailDTO> orderDetails;
+    private BigDecimal totalAmount;
 
     public OrdersDTO(long id, Long userId, String shippingAddress, String phoneNumber, PaymentType paymentType, StatusOrder status, LocalDateTime orderDate, String voucherCode, List<OrderDetailDTO> orderDetails) {
         this.id = id;

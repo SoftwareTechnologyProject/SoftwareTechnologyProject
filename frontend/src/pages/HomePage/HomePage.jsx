@@ -25,7 +25,7 @@ import { RiBook3Line } from "react-icons/ri";
 
 import "./HomePage.css";
 
-const banners = [banner3, banner2, banner1];
+const banners = [banner1, banner2, banner3];
 
 const catalog = [
     { img: discovery, link: "/travel", content: "Discovery & Exploration" },
@@ -56,13 +56,14 @@ const comboTrend = Array(20).fill({
     discount: "-10%",
 });
 
+
 const HomePage = () => {
     const [index, setIndex] = useState(0);
     const [giftIndex, setGiftIndex] = useState(0);
     const totalGiftSlides = Math.ceil(giftCard.length / 3);
     const [comboIndex, setComboIndex] = useState(0);
     const totalComboTrendSlides = Math.ceil(comboTrend.length / 5);
-
+    
     // State for real book data
     const [trendingBooks, setTrendingBooks] = useState([]);
     const [featuredBooks, setFeaturedBooks] = useState([]);
@@ -260,12 +261,13 @@ const HomePage = () => {
                                 const imageUrl = variant?.imageUrls?.[0] || ex1;
                                 const price = variant?.price || 0;
                                 const oldPrice = price * 1.1; // Mock old price
-
+                                
                                 return (
-                                    <Link className="book-view" key={book.id || index} to={`/books/${book.id}`}>
-                                        <img
-                                            src={imageUrl}
-                                            alt={book.title}
+                                    <Link key={book.id || index} to={`/books/${book.id}`}>
+                                        <img 
+                                            src={imageUrl} 
+                                            alt={book.title} 
+                                            className="w-full h-auto"
                                             onError={(e) => {
                                                 e.target.src = ex1;
                                             }}
@@ -280,7 +282,7 @@ const HomePage = () => {
                                                 <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                             </div>
                                             <div className="progress-bar">
-                                                <span> Đã Bán {book.variants[0].sold}</span>
+                                                <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                             </div>
                                         </div>
                                     </Link>
@@ -318,7 +320,7 @@ const HomePage = () => {
                                             const imageUrl = variant?.imageUrls?.[0] || ex1;
                                             const price = variant?.price || 0;
                                             const oldPrice = price * 1.15;
-
+                                            
                                             return (
                                                 <Link className="w-[20%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
                                                     <img
@@ -339,7 +341,7 @@ const HomePage = () => {
                                                             <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                                         </div>
                                                         <div className="progress-bar">
-                                                            <span> Đã Bán {book.variants[0].sold}</span>
+                                                            <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                                         </div>
                                                     </div>
                                                 </Link>

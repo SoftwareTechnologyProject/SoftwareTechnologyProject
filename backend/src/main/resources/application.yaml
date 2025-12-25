@@ -1,82 +1,90 @@
 server:
-  port: 8080
-  servlet:
-    encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
-  http2:
-    enabled: true
+    port: 8080
+    servlet:
+        encoding:
+            charset: UTF-8
+            enabled: true
+            force: true
+    http2:
+        enabled: true
 
 spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bookstore}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:123456}
-    driver-class-name: org.postgresql.Driver
+    datasource:
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bookstore}
+        username: ${SPRING_DATASOURCE_USERNAME:postgres}
+        password: ${SPRING_DATASOURCE_PASSWORD:123456}
+        driver-class-name: org.postgresql.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create}
-    show-sql: ${SPRING_JPA_SHOW_SQL:true}
-    defer-datasource-initialization: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          time_zone: Asia/Ho_Chi_Minh
+    jpa:
+        hibernate:
+            ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create}
+        show-sql: ${SPRING_JPA_SHOW_SQL:true}
+        defer-datasource-initialization: true
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                jdbc:
+                    time_zone: Asia/Ho_Chi_Minh
 
-  sql:
-    init:
-      mode: always
-      continue-on-error: true
-      data-locations: classpath:data.sql
-  
-  mail:
-    host: smtp-relay.brevo.com
-    port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          from: ndtoan.work@gmail.com
+    sql:
+        init:
+            mode: always
+            continue-on-error: true
+            data-locations: classpath:data.sql
+
+    mail:
+        host: smtp-relay.brevo.com
+        port: 587
+        username: ${MAIL_USERNAME}
+        password: ${MAIL_PASSWORD}
+        protocol: smtp
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                    from: ndtoan.work@gmail.com
 springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
+    api-docs:
+        path: /v3/api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+
+vnpay:
+    pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    return-url: http://localhost:8080/api/payment/vnpay-return
+    tmn-code: Y7ALQVWN
+    hash-secret: HP25LZ25TGFXN1X98S515TWW30PPH6KP
+    api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+    api-version: 2.1.0
 
 # Spring Boot Actuator configuration
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: when-authorized
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics
+    endpoint:
+        health:
+            show-details: when-authorized
 
 # AWS S3 configuration
 aws:
-  s3:
-    access-key: ${AWS_ACCESS_KEY_ID:your-access-key}
-    secret-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key}
-    region: ${AWS_REGION:us-east-1}
-    bucket-name: ${AWS_S3_BUCKET_NAME:bookstore-images-dev}
-    blog-bucket-name: ${AWS_S3_BLOG_BUCKET_NAME:blogadmin-s3}
+    s3:
+        access-key: ${AWS_ACCESS_KEY_ID:your-access-key}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key}
+        region: ${AWS_REGION:us-east-1}
+        bucket-name: ${AWS_S3_BUCKET_NAME:bookstore-images-dev}
+        blog-bucket-name: ${AWS_S3_BLOG_BUCKET_NAME:blogadmin-s3}
 
 # Gemini AI configuration
 gemini:
-  api:
-    key: ${GEMINI_API_KEY:your-api-key}
-    url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
+    api:
+        key: ${GEMINI_API_KEY:your-api-key}
+        url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
 
 # JWT configuration
 jwt:
-  secret:
-    key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
+    secret:
+        key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}

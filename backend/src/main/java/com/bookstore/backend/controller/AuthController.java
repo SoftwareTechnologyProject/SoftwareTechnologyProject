@@ -30,6 +30,7 @@ import com.bookstore.backend.model.Users;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.service.AppUserDetailsService;
 import com.bookstore.backend.service.ProfileService;
+import com.bookstore.backend.service.RateLimitService;
 import com.bookstore.backend.utils.JwtUtils;
 
 import jakarta.validation.Valid;
@@ -45,18 +46,32 @@ public class AuthController {
     private final JwtUtils jwtUtil;
     private final ProfileService profileService;
     private final UserRepository userRepository;
+    private final RateLimitService rateLimitService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        System.out.println("🔐 Login attempt - Email: " + request.getEmail());
+        System.out.println("Login attempt - Email: " + request.getEmail());
+        
+        // Kiểm tra giới hạn số lần đăng nhập
+        if (!rateLimitService.tryAcquire(request.getEmail())) {
+            System.out.println("Rate limit exceeded for: " + request.getEmail());
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", true);
+            error.put("message", "Too many login attempts. Please try again after 15 minutes.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
+        }
+        
         try {
             authenticate(request.getEmail(), request.getPassword());
 
             final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
-            System.out.println("✅ UserDetails loaded: " + userDetails.getUsername());
+            System.out.println("UserDetails loaded: " + userDetails.getUsername());
             final String jwtToken = jwtUtil.generateToken(userDetails);
 
-            // Cookie gửi cho FE
+            // Reset giới hạn sau khi đăng nhập thành công
+            rateLimitService.resetLimit(request.getEmail());
+
+            // Tạo cookie JWT
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
                     .httpOnly(true)
                     .secure(true)
@@ -70,21 +85,21 @@ public class AuthController {
                     .body(new AuthResponse(request.getEmail(), jwtToken));
 
         } catch (BadCredentialsException ex) {
-            System.out.println("❌ BadCredentialsException: " + ex.getMessage());
+            System.out.println("BadCredentialsException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Email or Password is incorrect");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
         } catch (DisabledException ex) {
-            System.out.println("❌ DisabledException: " + ex.getMessage());
+            System.out.println("DisabledException: " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
             error.put("message", "Account is disabled");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 
         } catch (Exception ex) {
-            System.out.println("❌ Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
+            System.out.println("Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
             ex.printStackTrace();
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
@@ -97,14 +112,13 @@ public class AuthController {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
 
-
-    //Kiểm tra trạng thái người dùng hiện tại
+    // Kiểm tra trạng thái đăng nhập
     @GetMapping("/is-authenticated")
     public ResponseEntity<Boolean> isAuthenticated(@CurrentSecurityContext(expression = "authentication?.name") String email) {
         return ResponseEntity.ok(email != null);
     }
 
-    // Bắt đầu quy trình đặt lại mật khẩu bằng cách gửi OTP đến mail người dùng
+    // Gửi OTP đặt lại mật khẩu
     @PostMapping("/send-reset-otp")
     public void sendResetOtp(@RequestParam String email) {
         try{
@@ -114,27 +128,27 @@ public class AuthController {
         }
     }
 
-    // Sau khi đã có OTP thì người dùng nhập OTP hợp lệ thì sẽ đặt lại mật khẩu
+    // Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         try {
             profileService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
-
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
-    // Xác thực mail
+
+    // Gửi OTP xác thực email
     @PostMapping("/send-otp") 
     public void sendVerifyOtp(@CurrentSecurityContext(expression= "authentication?.name") String email) {
         try{
             profileService.sendOtp(email);
-
         } catch (Exception e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
     
+    // Xác thực email bằng OTP
     @PostMapping("/verify-otp")
     public void verifyEmail(@RequestBody Map<String, Object> request, @CurrentSecurityContext(expression = "authentication?.name") String email) {
         if(request.get("otp").toString() == null) {
@@ -142,12 +156,12 @@ public class AuthController {
         }        
         try{
             profileService.verifyOtp(email, request.get("otp").toString());
-
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
+    // Xác thực email bằng token
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyEmailByToken(@RequestParam String token) {
         try {
@@ -165,6 +179,7 @@ public class AuthController {
         }
     }
 
+    // Xác thực tài khoản bằng OTP khi đăng ký
     @PostMapping("/verify-registration-otp")
     public ResponseEntity<String> verifyRegistrationOtp(@RequestBody Map<String, Object> request) {
         String email = (String) request.get("email");

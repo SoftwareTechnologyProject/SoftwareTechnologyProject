@@ -3,7 +3,10 @@ package com.bookstore.backend.model;
 import java.sql.Timestamp;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp; // <--- ĐÃ SỬA: Thay thế java.security.Timestamp
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,6 +25,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+import com.fasterxml.jackson.annotation.JsonBackReference; // tui test thay vong lap JSON o day
 @Entity
 @Table(name = "accounts")
 @Data
@@ -45,6 +50,7 @@ public class Account {
     // Relationship: accounts.userid -> users.id (Account is owner)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", referencedColumnName = "id")
+    @JsonIgnoreProperties("account")
     private Users user;
 
 

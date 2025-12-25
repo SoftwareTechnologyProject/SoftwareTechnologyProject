@@ -54,17 +54,20 @@ const Header = () => {
   useUserNotifications(handleNewNotification);
 
   useEffect(() => {
+    // CHỈ fetch notifications nếu đã đăng nhập
+    if (!isLoggedIn) return;
+    
     const fetchLatest = async () => {
       try {
         const res = await axios.get(`http://localhost:8080/api/notifications?page=0&size=6`);
-        const list = Array.isArray(res.data) ? res.data : [];
+        const list = res.data?.content ?? [];
         setNotifications(list);
       } catch (e) {
         console.error("Lỗi load thông báo", e);
       }
     };
     fetchLatest();
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -167,6 +170,7 @@ const Header = () => {
     }
   ];
 
+  // 🟢 LẤY USER TỪ BACKEND /me (CHỈ KHI ĐÃ LOGIN)
   useEffect(() => {
     if (isLoggedIn) {
       fetchUserInfo();
