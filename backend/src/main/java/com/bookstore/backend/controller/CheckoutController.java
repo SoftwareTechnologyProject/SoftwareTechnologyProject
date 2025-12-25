@@ -4,7 +4,9 @@ import com.bookstore.backend.DTO.NotificationRequestDTO;
 import com.bookstore.backend.DTO.OrderCreationRequestDTO;
 import com.bookstore.backend.DTO.OrderDetailDTO;
 import com.bookstore.backend.DTO.OrdersDTO;
+import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.enums.PaymentType;
+import com.bookstore.backend.service.EmailService;
 import com.bookstore.backend.service.NotificationService;
 import com.bookstore.backend.service.OrdersService;
 import com.bookstore.backend.service.PaymentService;
@@ -17,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,7 @@ public class CheckoutController {
     private final PaymentService paymentService;
     private final VNPayService vnPayService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
     private final SecurityUtils securityUtils;
 
     @Autowired
@@ -37,18 +42,16 @@ public class CheckoutController {
                              PaymentService paymentService,
                              VNPayService vnPayService, 
                              NotificationService notificationService, 
+                             EmailService emailService,
                              SecurityUtils securityUtils) {
         this.ordersService = ordersService;
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
         this.notificationService = notificationService;
+        this.emailService = emailService;
         this.securityUtils = securityUtils;
     }
 
-    /**
-     * Tạo order và trả về URL thanh toán
-     * Frontend gọi endpoint này khi user click "Xác nhận thanh toán"
-     */
     @PostMapping("")
     public ResponseEntity<Map<String, Object>> createOrderAndGetPaymentUrl(
             @RequestBody OrderCreationRequestDTO request,
@@ -57,7 +60,6 @@ public class CheckoutController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 1. Validate JWT token (user authentication)
             String token = httpRequest.getHeader("Authorization");
             if (token == null || !token.startsWith("Bearer ")) {
                 response.put("code", "401");
@@ -65,10 +67,8 @@ public class CheckoutController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // OrdersService sẽ tự lấy user từ SecurityContext
-            System.out.println("📦 Creating order...");
+            System.out.println("Creating order...");
 
-            // 2. Parse PaymentType từ string
             PaymentType paymentType;
             String paymentMethodStr = request.getPaymentMethod().toUpperCase();
             
@@ -77,7 +77,7 @@ public class CheckoutController {
             } else if (paymentMethodStr.equals("VNPAY") || paymentMethodStr.equals("BANKING")) {
                 paymentType = PaymentType.BANKING;
             } else {
-                paymentType = PaymentType.BANKING; // Default
+                paymentType = PaymentType.BANKING; 
             }
 
             // 3. Map OrderCreationRequestDTO -> OrdersService parameters
@@ -87,17 +87,16 @@ public class CheckoutController {
 
             List<OrderDetailDTO> orderDetails = request.getItems().stream()
                     .map(item -> new OrderDetailDTO(
-                            null, // id sẽ được tạo sau
+                            null, 
                             item.getBookId(), // bookVariantId
                             item.getBookTitle(),
                             item.getQuantity(),
-                            item.getPricePurchased(), // Sử dụng getPrice() thay vì getPricePurchased()
-                            item.getSubTotal(), // Sử dụng getSubTotal() đã tính sẵn từ frontend
+                            item.getPricePurchased(), 
+                            item.getSubTotal(), 
                             item.getImageUrl()
                     ))
                     .collect(Collectors.toList());
 
-            // 4. Tạo order
             OrdersDTO createdOrder = ordersService.createOrder(
                     orderDetails,
                     voucherCode,
@@ -106,14 +105,11 @@ public class CheckoutController {
                     phoneNumber
             );
 
-            System.out.println("✅ Order created: #" + createdOrder.getId());
+            System.out.println("Order created: #" + createdOrder.getId());
 
-            // 5. Nếu thanh toán online, tạo payment URL
             if (paymentType == PaymentType.BANKING) {
-                // Khởi tạo payment transaction
                 String paymentKey = paymentService.initiatePaymentTransaction(createdOrder.getId());
                 
-                // Tạo VNPay payment URL
                 String paymentUrl = vnPayService.createPaymentUrl(paymentKey, httpRequest);
 
                 response.put("code", "00");
@@ -123,18 +119,31 @@ public class CheckoutController {
                 response.put("paymentKey", paymentKey);
                 response.put("requiresPayment", true);
             } else {
-                // COD - không cần thanh toán online
                 response.put("code", "00");
                 response.put("message", "Order created successfully (COD)");
                 response.put("orderId", createdOrder.getId());
                 response.put("requiresPayment", false);
+                
+                Users currentUser = securityUtils.getCurrentUser();
                 NotificationRequestDTO notificationRequest = NotificationRequestDTO.builder()
                     .content("Thanh toán thành công cho đơn hàng #" + createdOrder.getId() + " của bạn")
                     .url("http://localhost:5173/payment/pending?orderId=" + createdOrder.getId())
                     .type(com.bookstore.backend.model.enums.NotificationType.PERSONAL)
-                    .userId(securityUtils.getCurrentUser().getId())
+                    .userId(currentUser.getId())
                     .build();
                 notificationService.sendNotification(notificationRequest);
+                
+                // Gửi email xác nhận đơn hàng cho COD
+                try {
+                    emailService.sendOrderConfirmationEmail(
+                        currentUser.getEmail(),
+                        currentUser.getFullName(),
+                        createdOrder
+                    );
+                    System.out.println("📧 Order confirmation email sent to: " + currentUser.getEmail());
+                } catch (Exception e) {
+                    System.err.println("⚠️ Failed to send order confirmation email: " + e.getMessage());
+                }
             }
 
             return ResponseEntity.ok(response);

@@ -10,7 +10,7 @@ const PaymentResult = () => {
     const [loading, setLoading] = useState(true);
     const [paymentData, setPaymentData] = useState(null);
     const [error, setError] = useState(null);
-    const [verificationStatus, setVerificationStatus] = useState("verifying"); // verifying | success | failed
+    const [verificationStatus, setVerificationStatus] = useState("verifying");
 
     // 🔒 useRef để khóa API call (chống React Strict Mode chạy 2 lần)
     const hasVerified = useRef(false);
@@ -96,7 +96,7 @@ const PaymentResult = () => {
                 );
             }
 
-            console.log("✅ Verification result:", data);
+            console.log("Verification result:", data);
 
             if (data.paymentStatus === "SUCCESS") {
                 setVerificationStatus("success");
@@ -189,7 +189,6 @@ const PaymentResult = () => {
         );
     }
 
-    // Thanh toán thành công và đã verify
     if (
         verificationStatus === "success" &&
         paymentData?.paymentStatus === "PAID"
@@ -197,7 +196,6 @@ const PaymentResult = () => {
         return <PaymentSuccess orderData={paymentData} />;
     }
 
-    // Thanh toán thất bại hoặc không verify được
     return (
         <PaymentFailed error={error} verificationStatus={verificationStatus} />
     );
