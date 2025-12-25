@@ -387,7 +387,7 @@ const Header = () => {
 
                 {/* Menu items */}
                 <div className="account-logged-menu">
-                  <NavLink to="/orders" className="account-logged-menu-item">
+                  <NavLink to="/account/order" className="account-logged-menu-item">
                     <TfiReceipt className="w-5 h-5 flex-shrink-0" />
                     <span className="flex-1 truncate">Đơn hàng của tôi</span>
                   </NavLink>
