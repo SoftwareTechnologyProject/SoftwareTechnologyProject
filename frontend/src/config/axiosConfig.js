@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
+  // Keep default baseURL for the team; dev server proxies to backend port 8081
   baseURL: "http://localhost:8080",
 });
 
