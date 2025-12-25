@@ -232,6 +232,7 @@ public class OrdersService {
 
         dto.setId(order.getId());
         dto.setUserId(order.getUsers() != null ? order.getUsers().getId() : null);
+        dto.setUserFullName(order.getUsers().getFullName());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setPhoneNumber(order.getPhoneNumber());
         dto.setPaymentType(order.getPaymentType());
