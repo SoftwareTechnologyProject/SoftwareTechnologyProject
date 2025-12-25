@@ -1,6 +1,5 @@
 package com.bookstore.backend.model;
 
-// import com.bookstore.backend.model.enums.BookStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +12,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "book_variants")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -43,7 +43,6 @@ public class BookVariants {
     private Integer sold = 0;
 
     @NotNull(message = "Trạng thái không được trống")
-    // @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String status;
 

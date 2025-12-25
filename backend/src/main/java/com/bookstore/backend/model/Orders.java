@@ -2,6 +2,7 @@ package com.bookstore.backend.model;
 
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -32,6 +33,10 @@ public class Orders {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusOrder status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -6,6 +6,7 @@ import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.model.enums.PaymentStatus;
 import com.bookstore.backend.model.enums.UserRole;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,18 +30,21 @@ public class OrdersService {
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final SecurityUtils securityUtils;
+    private final CartService cartService;
 
 
-    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils) {
+    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils, CartService cartService) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
         this.userRepository = userRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.securityUtils = securityUtils;
+        this.cartService = cartService;
     }
 
     // ------------------- CREATE ORDER -------------------
+    @Transactional
     public OrdersDTO createOrder(List<OrderDetailDTO> details, String voucherCode,
                                  PaymentType paymentType, String shippingAddress, String phoneNumber) {
         var userInfo = securityUtils.getCurrentUser();
@@ -54,6 +59,7 @@ public class OrdersService {
         order.setPhoneNumber(phoneNumber);
         order.setPaymentType(paymentType);
         order.setStatus(StatusOrder.PENDING);
+        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
 
         // Voucher
@@ -75,6 +81,13 @@ public class OrdersService {
         order.setOrderDetails(orderDetails);
 
         Orders savedOrder = ordersRepository.save(order);
+
+        List<Long> purchasedVariantIds = details.stream()
+                .map(OrderDetailDTO::getBookVariantId)
+                .collect(Collectors.toList());
+
+        cartService.removePurchasedItems(purchasedVariantIds);
+
         return mapToDTO(savedOrder);
     }
 
@@ -125,13 +138,18 @@ public class OrdersService {
         var currentUser = securityUtils.getCurrentUser();
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order không tồn tại"));
-        System.out.println(currentUser.getRole());
-        // Kiểm tra quyền
-        if (!order.getUsers().getId().equals(currentUser.getId())
-                && currentUser.getRole() != UserRole.ADMIN) {
-            System.out.println("Nguyễn Hữu Tâm");
-            throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
+        
+        // Nếu có currentUser, kiểm tra quyền
+        if (currentUser != null) {
+            System.out.println(currentUser.getRole());
+            // Kiểm tra quyền
+            if (!order.getUsers().getId().equals(currentUser.getId())
+                    && currentUser.getRole() != UserRole.ADMIN) {
+                System.out.println("Nguyễn Hữu Tâm");
+                throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
+            }
         }
+        // Nếu currentUser = null (payment result callback), cho phép xem order
         return mapToDTO(order);
     }
 
@@ -145,6 +163,67 @@ public class OrdersService {
     }
 
 
+    // ------------------- CALCULATE ORDER TOTAL AMOUNT -------------------
+    public java.math.BigDecimal calculateOrderTotalAmount(Long orderId) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        // Tính tổng tiền từ order details
+        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
+                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
+                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        // Áp dụng giảm giá từ voucher nếu có
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            if (voucher.isValid()) {
+                // Xử lý theo loại giảm giá
+                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
+                    // Giảm theo phần trăm
+                    java.math.BigDecimal discount = totalAmount
+                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
+                            .divide(java.math.BigDecimal.valueOf(100));
+                    
+                    // Áp dụng giới hạn giảm giá tối đa nếu có
+                    if (voucher.getMaxDiscount() != null) {
+                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
+                        discount = discount.min(maxDiscount);
+                    }
+                    totalAmount = totalAmount.subtract(discount);
+                } else {
+                    // Giảm số tiền cố định
+                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
+                    totalAmount = totalAmount.subtract(discount);
+                }
+            }
+        }
+
+        return totalAmount;
+    }
+
+
+    // ------------------- UPDATE PAYMENT STATUS -------------------
+    public void updatePaymentStatus(Long orderId, PaymentStatus paymentStatus, PaymentType paymentType) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        order.setPaymentStatus(paymentStatus);
+        if (paymentType != null) {
+            order.setPaymentType(paymentType);
+        }
+        
+        ordersRepository.save(order);
+    }
+
+
+    // ------------------- GET ORDER BY ID (Long version) -------------------
+    public Orders getOrderEntityById(Long orderId) {
+        return ordersRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+    }
+
+
     // ------------------- MAPPER: Orders -> OrdersDTO -------------------
     private OrdersDTO mapToDTO(Orders order) {
         if (order == null) return null;
@@ -153,9 +232,11 @@ public class OrdersService {
 
         dto.setId(order.getId());
         dto.setUserId(order.getUsers() != null ? order.getUsers().getId() : null);
+        dto.setUserFullName(order.getUsers().getFullName());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setPhoneNumber(order.getPhoneNumber());
         dto.setPaymentType(order.getPaymentType());
+        dto.setPaymentStatus(order.getPaymentStatus());
         dto.setStatus(order.getStatus());
         dto.setOrderDate(order.getOrderDate());
 
@@ -185,6 +266,36 @@ public class OrdersService {
                         ))
                         .collect(Collectors.toList())
         );
+
+        // Tính totalAmount trực tiếp từ order object thay vì gọi calculateOrderTotalAmount
+        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
+                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
+                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        // Áp dụng voucher discount nếu có
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            if (voucher.isValid()) {
+                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
+                    java.math.BigDecimal discount = totalAmount
+                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
+                            .divide(java.math.BigDecimal.valueOf(100));
+                    
+                    if (voucher.getMaxDiscount() != null) {
+                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
+                        discount = discount.min(maxDiscount);
+                    }
+                    totalAmount = totalAmount.subtract(discount);
+                } else {
+                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
+                    totalAmount = totalAmount.subtract(discount);
+                }
+            }
+        }
+        
+        dto.setTotalAmount(totalAmount);
+
         return dto;
     }
     private void deductVariantStock(Long orderId) {
