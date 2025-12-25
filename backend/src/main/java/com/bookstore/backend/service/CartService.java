@@ -15,6 +15,7 @@ import com.bookstore.backend.DTO.CartItemResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -166,13 +167,21 @@ public class CartService {
                 dto.setBookVariantId(variant.getId());
                 dto.setPrice(variant.getPrice());
 
-                List<BookImages> images = variant.getImages();
+                Set<BookImages> images = variant.getImages();
 
                 if (images != null && !images.isEmpty()) {
-                    dto.setImage(images.get(0).getImageUrl());
-                } else {
-                    dto.setImage("https://via.placeholder.com/150");
+                    // Lấy phần tử bất kỳ đầu tiên tìm thấy
+                    Optional<BookImages> firstImage = images.stream().findFirst();
+                    if (firstImage.isPresent()) {
+                        dto.setImage(firstImage.get().getImageUrl());
+                    }
                 }
+
+//                if (images != null && !images.isEmpty()) {
+//                    dto.setImage(images.get(0).getImageUrl());
+//                } else {
+//                    dto.setImage("https://via.placeholder.com/150");
+//                }
 
                 if (variant.getPrice() != null) {
                     double price = variant.getPrice();
@@ -200,5 +209,28 @@ public class CartService {
         response.setTotalCartPrice(total);
 
         return response;
+    }
+
+    @Transactional
+    public void removePurchasedItems(List<Long> purchasedVariantIds) {
+        Users currentUser = getMyUser();
+        Cart cart = getOrCreateCart(currentUser);
+
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            return;
+        }
+
+        // Lọc ra những CartItem nào có BookVariant nằm trong danh sách vừa mua
+        List<CartItems> itemsToDelete = cart.getCartItems().stream()
+                .filter(item -> purchasedVariantIds.contains(item.getBookVariant().getId()))
+                .collect(Collectors.toList());
+
+        if (!itemsToDelete.isEmpty()) {
+            // Xóa khỏi Database
+            cartItemRepo.deleteAll(itemsToDelete);
+
+            cart.getCartItems().removeAll(itemsToDelete);
+            cartRepo.save(cart);
+        }
     }
 }

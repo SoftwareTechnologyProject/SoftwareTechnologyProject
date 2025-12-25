@@ -5,8 +5,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "book_variants")
@@ -53,7 +56,7 @@ public class BookVariants {
     @OneToMany(mappedBy = "bookVariant", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private List<BookImages> images;
+    private Set<BookImages> images = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/blog/posts/*/comments").permitAll()
                         .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/vouchers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vouchers/active").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
 
                         // Chat và Notifications yêu cầu đăng nhập

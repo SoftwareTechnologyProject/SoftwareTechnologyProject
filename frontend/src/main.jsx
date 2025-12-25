@@ -59,7 +59,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/books/:id" element={
           <>
             <Header />
@@ -69,7 +69,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/search" element={
           <>
             <Header />
@@ -89,7 +89,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/vouchers" element={
           <>
             <Header />
@@ -99,7 +99,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/voucher-management" element={
           <>
             <Header />
@@ -155,7 +155,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="orderAdmin" element={<OrderAdmin />} />
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
-        
+
         <Route path="/admin/chat" element={
           <PrivateRoute requiredRole="ADMIN">
             <AdminChatBox />

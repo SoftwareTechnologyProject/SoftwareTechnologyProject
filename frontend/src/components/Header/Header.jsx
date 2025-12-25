@@ -27,7 +27,7 @@ import {
   FaAppleAlt,
   FaGraduationCap
 } from 'react-icons/fa';
-import NotificationBell from "../notification/NotificationBell";
+import NotificationBell from "../Notification/NotificationBell";
 import { HiOutlineNewspaper } from "react-icons/hi";
 
 import useUserNotifications from "../../hook/useUserNotifications";

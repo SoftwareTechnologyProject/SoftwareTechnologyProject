@@ -36,11 +36,14 @@ public class BookImages {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BookImages that = (BookImages) o;
-        return Objects.equals(id, that.id);
+        if (this.id != null && that.id != null) {
+            return Objects.equals(this.id, that.id);
+        }
+        return Objects.equals(this.imageUrl, that.imageUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(imageUrl);
     }
 }

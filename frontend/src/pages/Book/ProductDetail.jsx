@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import axiosClient from "../../config/axiosConfig";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
@@ -7,6 +6,7 @@ import Toast from "../../components/Toast/Toast";
 import Andress from "../Andress/Andress";
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
+import { useParams, useNavigate } from "react-router-dom";
 
 // MO TA: ProductDetail
 // - Chuc nang: hien thi chi tiet san pham, them vao gio hang, mua ngay, chon dia chi
@@ -17,6 +17,7 @@ import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   console.log(id);
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState(null);
@@ -125,22 +126,20 @@ export default function BookDetail() {
         // Fetch cart to get items with proper data
         const cartResponse = await axiosClient.get('/api/cart');
         const cartData = cartResponse.data;
-        
-        if (cartData && cartData.items) {
-          const formattedItems = cartData.items.map(item => ({
-            id: item.id,
-            name: item.bookTitle,
-            price: item.price,
-            originalPrice: item.price * 1.2,
-            quantity: item.quantity,
-            image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
-            checked: true,
-          }));
-          
-          // Navigate to checkout with cart items
-          window.location.href = '/checkout';
-          // Or better: navigate('/checkout', { state: { items: formattedItems } });
-        }
+
+        const instantItem = {
+           id: Date.now(), // ID tạm (Checkout dùng để làm key, không ảnh hưởng logic đặt hàng)
+           bookVariantId: variant.id,
+           name: book.title,
+           price: variant.price,
+           originalPrice: originalPrice,
+           quantity: quantity,
+           image: (images && images.length > 0) ? images[0] : "https://via.placeholder.com/150",
+           checked: true
+        };
+
+        navigate('/checkout', { state: { items: [instantItem] } });
+
       } catch (error) {
         console.error('Error during buy now:', error);
         console.error('Error details:', error.response?.data);

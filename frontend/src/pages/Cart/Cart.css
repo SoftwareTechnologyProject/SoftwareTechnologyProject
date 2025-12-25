@@ -529,7 +529,7 @@
 /* --- VOUCHER MODAL STYLES --- */
 
 .voucher-modal {
-  width: 500px; /* Rộng hơn modal xóa */
+  width: 500px;
   text-align: left;
   padding: 0;
   overflow: hidden;
@@ -602,29 +602,32 @@
 }
 
 .voucher-left {
-  width: 100px;
+  width: 80px;
   background: #c92a2a; /* Màu đỏ */
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
+  font-size: 11px;
   padding: 10px;
   border-right: 2px dashed #f5f5f5; /* Tạo hiệu ứng xé vé */
+  flex-shrink: 0;
 }
 
 .voucher-left img {
+  width: 90px; /* Chỉnh icon nhỏ lại */
+  height: 90px;
   filter: brightness(0) invert(1); /* Chuyển icon sang trắng */
   margin-bottom: 5px;
 }
 
 .voucher-right {
   flex: 1;
-  padding: 12px;
+  padding: 12px 12px 12px 25px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .voucher-right h4 {
@@ -676,4 +679,231 @@
 
 .use-btn:hover {
   background: #0b5ed7;
+}
+
+
+/* Style cho thẻ Voucher đã áp dụng (Giống Fahasa) */
+.fahasa-applied-coupon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fef2e0; /* Màu be đặc trưng Fahasa */
+    border: 1px solid #fcdab0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    position: relative;
+}
+
+/* Tạo hiệu ứng vé (Optional - trang trí thêm) */
+.fahasa-applied-coupon::before,
+.fahasa-applied-coupon::after {
+    content: "";
+    position: absolute;
+    height: 10px;
+    width: 10px;
+    background-color: #fff; /* Trùng màu nền web */
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid #fcdab0;
+}
+.fahasa-applied-coupon::before { left: -6px; border-right-color: transparent; }
+.fahasa-applied-coupon::after { right: -6px; border-left-color: transparent; }
+
+.coupon-tag-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #f7941e; /* Màu cam chữ */
+    font-weight: 600;
+}
+
+.btn-remove-coupon {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+}
+.btn-remove-coupon:hover {
+    color: #d32f2f;
+}
+
+/* Phần tổng kết giá ở dưới */
+.summary-discount-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+}
+.summary-discount-value {
+    color: #2eb85c; /* Màu xanh lá hiển thị số tiền giảm */
+    font-weight: bold;
+}
+
+/* Dòng thông báo mua thêm trong thẻ voucher */
+.buy-more-hint {
+  font-size: 12px;
+  color: #C92127; /* Màu đỏ nổi bật */
+  margin-top: 4px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.buy-more-hint::before {
+  content: "⚡"; /* Icon tia sét nhỏ */
+  font-size: 10px;
+}
+
+.btn-buy-more-quick {
+    background-color: #0d6efd; /* Màu xanh dương */
+    color: white;
+    border: none;
+    padding: 5px 15px; /* Kích thước nút */
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: 10px;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+.btn-buy-more-quick:hover {
+    background-color: #0b5ed7; /* Màu xanh đậm hơn khi hover */
+    transform: translateY(-1px);
+}
+
+
+.checkout-btn:disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+  border: 1px solid #d9d9d9;
+  transform: none;
+}
+
+.checkout-btn:disabled:hover {
+  background-color: #e0e0e0;
+  transform: none;
+}
+
+/* --- STYLE GỢI Ý MUA THÊM (FAHASA STYLE) --- */
+
+.fahasa-promo-suggestion {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+}
+
+/* 1. Header: Tên voucher + Icon ! */
+.suggestion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.suggestion-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    flex: 1;
+}
+
+.info-icon {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #1890ff;
+    color: #1890ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* 2. Nội dung text */
+.suggestion-desc {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Giới hạn 2 dòng nếu dài quá */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.suggestion-expiry {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+/* 3. Footer: Progress bar + Nút Mua thêm */
+.suggestion-footer {
+    display: flex;
+    align-items: flex-end; /* Căn đáy để nút và text thẳng hàng dưới */
+    gap: 12px;
+}
+
+/* Cột bên trái: Thanh progress + text mua thêm */
+.progress-area {
+    flex: 1;
+}
+
+.fahasa-progress-track {
+    width: 100%;
+    height: 6px;
+    background-color: #bfdbfe; /* Màu xanh nhạt nền */
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.fahasa-progress-fill {
+    height: 100%;
+    background-color: #1890ff; /* Xanh dương đậm */
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.missing-text {
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+}
+
+/* Cột bên phải: Nút mua thêm to đẹp */
+.btn-buy-more-fahasa {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    height: 36px; /* Cố định chiều cao cho đẹp */
+}
+
+.btn-buy-more-fahasa:hover {
+    background-color: #096dd9;
 }

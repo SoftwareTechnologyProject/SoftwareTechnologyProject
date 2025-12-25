@@ -3,42 +3,19 @@ import axiosClient from '../../api/axiosClient';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "./Checkout.css";
 import axios from 'axios';
+import vnpayIcon from "../../assets/vnpay.png";
+import cashIcon from "../../assets/money.png";
 
 function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Nhận danh sách sản phẩm từ trang Cart (được truyền qua state) và Nếu không có (người dùng vào thẳng link), mặc định là mảng rỗng
-  const [receivedItems, setReceivedItems] = useState(location.state?.items || []);
-
-  // Fetch cart if no items passed from Cart page
-  useEffect(() => {
-    const fetchCartIfNeeded = async () => {
-      if (!receivedItems || receivedItems.length === 0) {
-        try {
-          const response = await axiosClient.get('/api/cart');
-          const cartData = response.data;
-          
-          if (cartData && cartData.items) {
-            const formattedItems = cartData.items.map(item => ({
-              id: item.id,
-              name: item.bookTitle,
-              price: item.price,
-              originalPrice: item.price * 1.2,
-              quantity: item.quantity,
-              image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
-              checked: true,
-            }));
-            setReceivedItems(formattedItems);
-          }
-        } catch (error) {
-          console.error("Lỗi load cart:", error);
-        }
-      }
-    };
-    
-    fetchCartIfNeeded();
-  }, []);
+  const {
+        items: receivedItems = [],
+        discountAmount: receivedDiscount = 0,
+        couponCode: receivedCoupon = ''
+  } = location.state || {};
 
   const [formData, setFormData] = useState({
       fullName: '',
@@ -104,19 +81,19 @@ function Checkout() {
     };
 
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [promoCode, setPromoCode] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState('Mã giảm 10k');
+  const [appliedPromo, setAppliedPromo] = useState(receivedCoupon);
+  const [promoCode, setPromoCode] = useState(receivedCoupon);
   const [useFPoint, setUseFPoint] = useState(false);
   const [useFreeship, setUseFreeship] = useState(false);
   const [exportInvoice, setExportInvoice] = useState(false);
 
-  // Kiểm tra xem có hàng để thanh toán không
-//   useEffect(() => {
-//       if (!receivedItems || receivedItems.length === 0) {
-//         alert("Bạn chưa chọn sản phẩm nào để thanh toán!");
-//         navigate("/cart");
-//       }
-//   }, [receivedItems, navigate]);
+  //Kiểm tra xem có hàng để thanh toán không
+  useEffect(() => {
+      if (!receivedItems || receivedItems.length === 0) {
+        alert("Bạn chưa chọn sản phẩm nào để thanh toán!");
+        navigate("/cart");
+      }
+  }, [receivedItems, navigate]);
 
     useEffect(() => {
       const fetchUserProfile = async () => {
@@ -168,12 +145,15 @@ function Checkout() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = 10000;
-  const total = subtotal - discount;
+  const discount = receivedDiscount;
+  const shippingFee = 32000;
+
+  const total = subtotal - discount > 0 ? subtotal - discount : 0;
+  const totalWithShipping = total + shippingFee;
   const formatPrice = (price) => price.toLocaleString('vi-VN') + 'đ';
 
   // Create Object ORDER
-  const handleOrderSubmit = () => {
+  const handleOrderSubmit = async () => {
       if (!formData.fullName || !formData.phone || !formData.address || !formData.province || !formData.district || !formData.ward) {
         alert("Vui lòng điền đầy đủ thông tin giao hàng!");
         return;
@@ -203,16 +183,16 @@ function Checkout() {
         paymentMethod: paymentMethod,
         couponCode: appliedPromo || null,
 
-        items: orderItems.map(item => ({
-          bookId: item.id || item.bookVariantId,
+        items: receivedItems.map(item => ({
+          bookId: item.bookVariantId || item.id,
           bookTitle: item.name,
           quantity: item.quantity,
           price: item.price,
           subTotal: item.price * item.quantity
         })),
 
-        totalAmount: total,
-        shippingFee: 0,
+        totalAmount: totalWithShipping,
+        shippingFee: 32000,
         note: "Giao giờ hành chính"
 
       };
@@ -224,8 +204,16 @@ function Checkout() {
 
       alert("Đã tạo dữ liệu đơn hàng! Hãy kiểm tra Console (F12).");
 
-      // TODO: Gửi jsonString này xuống Backend API
-      // await axios.post('http://localhost:8080/api/orders', orderData);
+      try {
+            const response = await axiosClient.post('/orders', orderPayload);
+            if (response.status === 200 || response.status === 201) {
+               alert("Đặt hàng thành công!");
+               navigate("/");
+            }
+        } catch (error) {
+            console.error("Lỗi đặt hàng:", error);
+            alert("Đặt hàng thất bại!");
+          }
     };
 
 
@@ -316,24 +304,50 @@ function Checkout() {
           </div>
 
           {/* SHIPPING METHOD */}
-          <div className="form-section bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">PHƯƠNG THỨC VẬN CHUYỂN</h2>
-            <p className="text-sm text-gray-600">Vui lòng điền đầy đủ địa chỉ trước.</p>
-          </div>
+          <div className="form-section">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">PHƯƠNG THỨC VẬN CHUYỂN</h2>
 
+              {/* Luôn hiển thị ô này, không cần điều kiện if/else nữa */}
+              <div className="payment-option selected" style={{
+                  cursor: 'default', /* Để chuột thường vì chỉ có 1 option */
+                  border: '1px solid #C92127',
+                  background: '#fff5f5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '16px',
+                  borderRadius: '8px'
+              }}>
+
+                    {/* Tạo hình nút Radio tròn đỏ */}
+                    <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        border: '6px solid #C92127',
+                        marginRight: '12px',
+                        backgroundColor: 'white',
+                        flexShrink: 0
+                    }}></div>
+
+                    {/* Nội dung chữ */}
+                    <div>
+                       <div style={{ fontWeight: '700', color: '#333', fontSize: '13px' }}>
+                          Giao hàng tiêu chuẩn: 32.000 đ
+                       </div>
+                       <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                          Giao hàng từ 2-4 ngày làm việc
+                       </div>
+                    </div>
+              </div>
+            </div>
           {/* PAYMENT METHOD */}
           <div className="form-section bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">PHƯƠNG THỨC THANH TOÁN</h2>
 
             <div className="space-y-3">
               {[
-                { id: 'zalopay', label: 'Ví ZaloPay', icon: '💳' },
-                { id: 'vnpay', label: 'VNPAY', icon: '💳' },
-                { id: 'shopeepay', label: 'Ví ShopeePay', icon: '🛍️' },
-                { id: 'momo', label: 'Ví MoMo', icon: '💰' },
-                { id: 'atm', label: 'ATM / Internet Banking', icon: '🏧' },
-                { id: 'visa', label: 'Visa / Master / JCB', icon: '💳' },
-                { id: 'cash', label: 'Tiền mặt khi nhận hàng', icon: '💵' }
+                { id: 'vnpay', label: 'VNPAY ', icon: vnpayIcon },
+                { id: 'cash', label: 'Thanh toán bằng tiền mặt khi nhận hàng ', icon: cashIcon }
               ].map((method) => (
                 <label
                   key={method.id}
@@ -346,86 +360,83 @@ function Checkout() {
                     onChange={() => setPaymentMethod(method.id)}
                     className="w-4 h-4"
                   />
-                  <span className="ml-3 text-xl">{method.icon}</span>
-                  <span className="ml-2 text-sm">{method.label}</span>
+                  <img
+                      src={method.icon}
+                      alt={method.label}
+                      className="ml-3 w-8 h-8 object-contain"
+                    />
+
+                  <span
+                      className="ml-3"
+                      style={{
+                          fontSize: '13px',
+                          color: '#333',
+                          marginLeft: '12px'
+                      }}
+                    >
+                      {method.label}
+                    </span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* MEMBER */}
-          <div className="form-section bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">THÀNH VIÊN FAHASA</h2>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>Số F-Point hiện có:</span>
-                <span className="text-orange-500 font-semibold">0</span>
-              </div>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={useFPoint}
-                  onChange={(e) => setUseFPoint(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="ml-2 text-sm text-gray-600">Dùng 0 F-Point</span>
-              </label>
-
-              <div className="flex justify-between text-sm">
-                <span>Số lần freeship:</span>
-                <span className="text-orange-500 font-semibold">0</span>
-              </div>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={useFreeship}
-                  onChange={(e) => setUseFreeship(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="ml-2 text-sm text-gray-600">Sử dụng freeship</span>
-              </label>
-            </div>
-          </div>
 
           {/* PROMO */}
           <div className="form-section bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">MÃ KHUYẾN MÃI / GIFT CARD</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">MÃ KHUYẾN MÃI / GIFT CARD</h2>
 
-            <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Nhập mã khuyến mãi"
-                className="flex-1 px-3 py-2 border rounded-md text-sm"
-              />
-              <button onClick={applyPromoCode} className="px-6 py-2 bg-blue-600 text-white rounded-md">
-                Áp dụng
-              </button>
+              {/* Sử dụng toán tử 3 ngôi để kiểm tra điều kiện */}
+              {appliedPromo ? (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: '#fef2e0', // Màu nền vàng nhạt Fahasa
+                    border: '1px solid #fcdab0', // Viền màu cam nhạt
+                    borderRadius: '6px',        // Bo góc giống ô input
+                    padding: '10px 12px',       // Padding để tạo khoảng cách
+                    fontSize: '14px',
+                    height: '42px',             // Chiều cao cố định bằng ô input để không bị nhảy layout
+                    boxSizing: 'border-box'
+                }}>
+                  {/* Mã code và icon */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ border: '1px solid #f7941e', color: '#f7941e', padding: '1px 4px', borderRadius: '3px', fontSize: '10px', fontWeight: 'bold' }}>VOUCHER</span>
+                      <span style={{ color: '#f7941e', fontWeight: '600', fontSize: '15px' }}>
+                        {appliedPromo}
+                      </span>
+                  </div>
+
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    placeholder="Nhập mã khuyến mãi"
+                    className="flex-1 px-3 py-2 border rounded-md text-sm"
+                    style={{ height: '42px' }} // Cố định chiều cao
+                  />
+
+                </div>
+              )}
             </div>
-
-            {appliedPromo && (
-              <div className="promo-tag mt-3 flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-md">
-                <span className="text-orange-600 font-medium text-sm">{appliedPromo}</span>
-                <button onClick={removePromo} className="ml-auto text-orange-600">✕</button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* RIGHT SIDE (ORDER SUMMARY) */}
-        <div className="w-[360px]">
-          <div className="sticky-sidebar bg-white rounded-lg shadow p-6 sticky top-4">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">KIỂM TRA ĐƠN HÀNG</h2>
+        <div className="w-full md:w-[380px]">
+          <div className="sticky-sidebar">
+            <h3 style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px'}}>
+                KIỂM TRA ĐƠN HÀNG
+            </h3>
 
-            <div className="order-summary space-y-4 max-h-[300px] overflow-y-auto mb-4">
+            <div className="order-items-scroll" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '5px', marginBottom: '15px' }}>
               {receivedItems.map((item) => (
-                <div key={item.id} className="flex gap-3">
+                <div key={item.id} style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
                   <div className="relative">
-                    <img src={item.image} className="product-image w-16 h-20 rounded object-cover" />
+                    <img src={item.image} className="summary-img" />
                     {item.badge && (
                       <span className="discount-badge badge-pulse absolute -top-1 -right-1 px-2 py-0.5 text-white text-xs rounded">
                         {item.badge}
@@ -434,40 +445,61 @@ function Checkout() {
                   </div>
 
                   <div className="flex-1">
-                    <h4 className="text-xs text-gray-700 line-clamp-2">{item.name}</h4>
-                    <div className="flex gap-2 text-xs mt-1">
+                    <h4 style={{
+                        fontSize: '15px',     // Cỡ chữ tên sách
+                        fontWeight: '600',
+                        lineHeight: '1.4',
+                        marginBottom: '4px',
+                        color: '#333',
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' // Giới hạn 2 dòng
+                    }}>
+                        {item.name}
+                    </h4>
+                    <div className="flex gap-2 mt-1" style={{ fontSize: '14px' }}>
                       <span className="text-red-600 font-semibold">{formatPrice(item.price)}</span>
-                      <span className="text-gray-400 line-through">{formatPrice(item.originalPrice)}</span>
+                        {item.price !== item.originalPrice && (
+                           <span className="text-gray-400 line-through">{formatPrice(item.originalPrice)}</span>
+                        )}
                     </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-500">x{item.quantity}</span>
-                      <span className="text-sm text-red-600 font-semibold">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
+                    <div className="flex justify-between items-center mt-2" style={{ fontSize: '14px' }}>
+                      <span className="text-gray-500">x{item.quantity}</span>
+                        <span className="text-red-600 font-semibold">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Thành tiền:</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
+            <div className="border-t pt-4 space-y-2" style={{ fontSize: '18px', color: '#444' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
+                  <span>Thành tiền:</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
 
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Giảm giá:</span>
-                <span className="text-red-600">-{formatPrice(discount)}</span>
-              </div>
+              {discount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
+                     <span>Giảm giá:</span>
+                     <span style={{ color: '#2eb85c', fontWeight: 'bold' }}>-{formatPrice(discount)}</span>
+                  </div>
+                )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
+                  <span>Phí vận chuyển:</span>
+                  <span>{formatPrice(32000)}</span>
+                </div>
 
               <div className="flex justify-between text-base font-semibold pt-2 border-t total-price">
                 <span>Tổng tiền:</span>
-                <span className="text-red-600 text-xl">{formatPrice(total)}</span>
+                <span className="text-red-600 text-xl">{formatPrice(totalWithShipping)}</span>
               </div>
             </div>
 
-            <button className="checkout-button mt-4 w-full py-3 bg-red-600 text-white rounded-md">
+            <button
+                onClick={handleOrderSubmit}
+                className="checkout-button mt-4 w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+            >
               Xác nhận thanh toán
             </button>
           </div>
