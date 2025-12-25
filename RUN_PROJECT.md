@@ -69,8 +69,8 @@ Tôi đã tạo sẵn 2 file script:
 | Service | URL |
 |---------|-----|
 | **Frontend** | http://localhost:5173 |
-| **Backend API** | http://localhost:8081 |
-| **Swagger UI** | http://localhost:8081/swagger-ui/index.html |
+| **Backend API** | http://localhost:8080 |
+| **Swagger UI** | http://localhost:8080/swagger-ui/index.html |
 
 ---
 
@@ -80,11 +80,11 @@ Tôi đã tạo sẵn 2 file script:
 **Nguyên nhân**: Chưa cài Node.js  
 **Giải pháp**: Cài Node.js theo Bước 1 ở trên
 
-### 2. "Port 8081 already in use"
+### 2. "Port 8080 already in use"
 **Nguyên nhân**: Backend đang chạy ở process khác  
 **Giải pháp**:
 ```powershell
-netstat -ano | findstr :8081
+netstat -ano | findstr :8080
 taskkill /PID <PID_number> /F
 ```
 

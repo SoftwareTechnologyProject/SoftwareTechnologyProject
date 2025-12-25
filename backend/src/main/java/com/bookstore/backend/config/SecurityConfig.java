@@ -79,7 +79,8 @@ public class SecurityConfig {
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for user management
+                        .requestMatchers("/api/statistics/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for statistics
 
                         // Các request khác phải login
                         .anyRequest().authenticated())

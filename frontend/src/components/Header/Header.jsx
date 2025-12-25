@@ -170,6 +170,7 @@ const Header = () => {
     }
   ];
 
+  // 🟢 LẤY USER TỪ BACKEND /me (CHỈ KHI ĐÃ LOGIN)
   useEffect(() => {
     if (isLoggedIn) {
       fetchUserInfo();

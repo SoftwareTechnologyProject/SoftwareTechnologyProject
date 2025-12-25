@@ -32,6 +32,8 @@ import BlogDetail from "./pages/Blog/BlogDetail";
 import BlogAdmin from "./pages/Blog/BlogAdmin";
 import BookAdmin from "./pages/BookAdmin/BookAdmin";
 import Login from "./pages/Login/Login.jsx";
+import UserManagement from './pages/User/UserManagement';
+import RevenueStatistics from './pages/Statistics/RevenueStatistics';
 import CategoryPage from "./pages/Category/CategoryPage";
 import SearchResult from "./pages/SearchResult/SearchResult.jsx";
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
@@ -197,6 +199,8 @@ createRoot(document.getElementById("root")).render(
                     <Route path="blog" element={<BlogAdmin />} />
                     <Route path="orderAdmin" element={<OrderAdmin />} />
                     <Route path="order/:id" element={<OrderDetail />} />
+                    <Route path="customers" element={<UserManagement />} />
+                    <Route path="statistics" element={<RevenueStatistics />} />
                 </Route>
 
                 <Route
