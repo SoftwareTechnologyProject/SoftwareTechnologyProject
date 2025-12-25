@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
+  // Keep default baseURL for the team; dev server proxies to backend port 8081
   baseURL: "http://localhost:8080",
 });
 
@@ -14,6 +15,22 @@ instance.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+instance.interceptors.response.use(
+  res => res,
+  err => {
+    // CHỈ redirect nếu đang ở trang yêu cầu authentication (không phải public pages)
+    const publicPaths = ['/', '/books', '/search', '/login', '/register', '/blog'];
+    const currentPath = window.location.pathname;
+    const isPublicPage = publicPaths.some(path => currentPath === path || currentPath.startsWith('/books/') || currentPath.startsWith('/blog/'));
+    
+    if ((err.response?.status === 401 || err.response?.status === 403) && !isPublicPage) {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
 );
 
 export default instance;

@@ -44,9 +44,9 @@
 }
 
 .login-logo-img {
-  height: 32px;
-  width: 32px;
-  object-fit: contain;
+  height: 70%;
+  width: 20%;
+  object-fit: cover;
 }
 
 .login-logo-text {

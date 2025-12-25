@@ -1,7 +1,7 @@
 // File: Login.js
 
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import logoImage from "../../assets/logo/logo2.png";
+import logoImage from "../../assets/logo/logo-removebg-preview.png";
 import { useState, useContext, useEffect } from "react";
 import './Login.css';
 import { AppContext } from "../../context/AppContext";
@@ -189,7 +189,6 @@ const Login = () => {
             <div className="login-logo-section">
                 <Link to="/" className="login-logo-link">
                     <img src={logoImage} alt="logo" className="login-logo-img" />
-                    <span className="login-logo-text">Elitibook</span>
                 </Link>
 
             </div>

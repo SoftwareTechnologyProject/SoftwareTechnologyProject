@@ -178,29 +178,24 @@
   @apply flex flex-col md:flex-row justify-between items-start md:items-center gap-5 px-5 py-5 bg-gray-50 border-b border-gray-200;
 }
 
-/* .sort-container, .items-per-page */
-.sort-container,
-.items-per-page {
+/* .sort-container*/
+.sort-container {
   @apply flex items-center gap-2.5 text-sm w-full md:w-auto;
 }
 
-.sort-container label,
-.items-per-page label {
+.sort-container label {
   @apply font-semibold text-gray-800;
 }
 
-.sort-container select,
-.items-per-page select {
+.sort-container select {
   @apply px-3 py-2 border border-gray-300 rounded text-sm bg-white cursor-pointer transition-colors w-full md:w-auto;
 }
 
-.sort-container select:hover,
-.items-per-page select:hover {
+.sort-container select:hover {
   @apply border-gray-600;
 }
 
-.sort-container select:focus,
-.items-per-page select:focus {
+.sort-container select:focus{
   @apply outline-none border-blue-600 ring-2 ring-blue-100;
 }
 
@@ -227,13 +222,11 @@
     @apply flex-col items-start;
   }
   
-  .sort-container,
-  .items-per-page {
+  .sort-container{
     @apply w-full;
   }
   
-  .sort-container select,
-  .items-per-page select {
+  .sort-container select {
     @apply w-full;
   }
   

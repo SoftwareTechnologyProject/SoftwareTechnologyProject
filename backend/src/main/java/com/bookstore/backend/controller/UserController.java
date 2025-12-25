@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.bookstore.backend.DTO.ChangePassRequest;
 import com.bookstore.backend.DTO.UserDTO;
+import com.bookstore.backend.DTO.UserResponseDTO;
 import com.bookstore.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +59,7 @@ public class UserController {
                 user.getPhoneNumber(),
                 user.getAddress(),
                 user.getDateOfBirth()
+
         );
 
         return ResponseEntity.ok(response);
