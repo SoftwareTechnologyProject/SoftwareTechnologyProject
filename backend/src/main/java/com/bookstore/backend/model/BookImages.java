@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Objects;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "book_images")
 @Getter

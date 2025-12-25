@@ -33,8 +33,9 @@ public class OrderCreationRequestDTO {
     public static class OrderItemDTO {
         private Long bookId;
         private String bookTitle;
-        private Double price;
+        private Double pricePurchased; // Giữ lại cho backward compatibility
         private Integer quantity;
         private Double subTotal;
+        private String imageUrl;
     }
 }
