@@ -12,7 +12,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetails, Integ
     // Lấy danh sách OrderDetail theo orderId
     List<OrderDetails> findByOrders_Id(Long orderId);
 
-    
+
     // Kiểm tra xem một BookVariant có tồn tại trong OrderDetails của các đơn hàng
     // chưa hoàn thành (status != 'SUCCESS')
 
