@@ -30,8 +30,8 @@ export function PrivateRoute({ children, requiredRole }) {
       const hasRole = userRole.includes(requiredRole);
       
       if (!hasRole) {
-        // Không đủ quyền → redirect về home
-        return <Navigate to="/" replace />;
+        // Không đủ quyền → redirect về login
+        return <Navigate to="/login" replace />;
       }
     }
 

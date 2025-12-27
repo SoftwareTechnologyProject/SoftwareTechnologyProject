@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react"
 import rank from "../../assets/banner/rank-banner.png"
+import { IoEyeSharp } from "react-icons/io5";
+import { FaEyeSlash } from "react-icons/fa";
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 import axios from "../../config/axiosConfig";
-
-const API_URL = 'http://localhost:8080/vouchers';
+import { showError, showSuccess } from "../../util/alert";
 
 const Account = () => {
-    const [activeTab, setActiveTab] = useState('profile');
-    const [vouchers, setVouchers] = useState([]);
-    const [loadingVouchers, setLoadingVouchers] = useState(false);
-    const [copiedCode, setCopiedCode] = useState(null);
+    const [showCurrentPass, setShowCurrentPass] = useState(false);
+    const [showNewPass, setShowNewPass] = useState(false);
+    const [showConfirmPass, setShowConfirmPass] = useState(false);
 
     const [formData, setFormData] = useState({
         ho: '',
@@ -29,52 +29,84 @@ const Account = () => {
         e.preventDefault(); // ⭐ chặn reload
 
         try {
+            const pad = (n) => String(n).padStart(2, "0");
+
             const payload = {
                 fullName: `${formData.ho} ${formData.ten}`,
                 phoneNumber: formData.phone,
-                dateOfBirth: `${formData.year}-${formData.month}-${formData.day}`
+                dateOfBirth: `${formData.year}-${pad(formData.month)}-${pad(formData.day)}`
             };
 
             const res = await axios.put("users/me/update", payload);
 
-            alert("Cập nhật thành công!");
+            showSuccess("Cập nhật thành công!");
             console.log("User mới:", res.data);
 
         } catch (err) {
             console.error("Lỗi cập nhật:", err);
 
             if (err.response?.status === 403) {
-                alert("Phiên đăng nhập hết hạn");
+                showError("Phiên đăng nhập hết hạn");
             } else {
-                alert("Cập nhật thất bại");
+                showError("Cập nhật thất bại");
             }
         }
     };
 
     const handleChangePass = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
 
+        // ===== FRONTEND VALIDATION =====
+        if (!formData.currentPass || !formData.newPass || !formData.confirmPass) {
+            showError("Vui lòng nhập đầy đủ thông tin");
+            return;
+        }
+
+        if (formData.newPass.length < 6) {
+            showError("Mật khẩu mới phải có ít nhất 6 ký tự");
+            return;
+        }
+
+        if (formData.newPass !== formData.confirmPass) {
+            showError("Mật khẩu nhập lại không khớp");
+            return;
+        }
+
+        // ===== CALL API =====
         try {
             const payload = {
                 currentPass: formData.currentPass,
                 newPass: formData.newPass,
-                confirmPass: formData.confirmPass
+                confirmPass: formData.confirmPass,
             };
 
-            const res = await axios.patch("users/me/update/password", payload);
+            const res = await axios.patch(
+                "users/me/update/password",
+                payload
+            );
 
-            alert("Cập nhật thành công!");
+            showSuccess("Cập nhật mật khẩu thành công");
+
+            // reset form (tránh controlled/uncontrolled)
+            setFormData({
+                currentPass: "",
+                newPass: "",
+                confirmPass: "",
+            });
 
         } catch (err) {
             console.error("Lỗi cập nhật:", err);
 
             if (err.response?.status === 403) {
-                alert("Phiên đăng nhập hết hạn");
+                showError("Phiên đăng nhập hết hạn");
+            } else if (err.response?.status === 400) {
+                showError(err.response.data?.message || "Mật khẩu không hợp lệ");
             } else {
-                alert("Cập nhật thất bại");
+                showError("Cập nhật thất bại");
             }
         }
     };
+
 
     // 🟢 LẤY USER TỪ BACKEND /me
     useEffect(() => {
@@ -84,16 +116,23 @@ const Account = () => {
     const fetchUserInfo = async () => {
         try {
             const { data: user } = await axios.get("users/me");
+            const date = user.dateOfBirth
+                ? user.dateOfBirth.split("T")[0]
+                : "";
+            const [year, month, day] = date ? date.split("-") : ["", "", ""];
 
-            setFormData({
+
+            setFormData(prev => ({
+                ...prev,
                 ho: user.fullName?.split(" ").slice(0, -1).join(" ") || "",
                 ten: user.fullName?.split(" ").slice(-1).join(" ") || "",
                 phone: user.phoneNumber || "",
                 email: user.email || "",
-                day: user.dateOfBirth ? new Date(user.dateOfBirth).getDate() : "",
-                month: user.dateOfBirth ? new Date(user.dateOfBirth).getMonth() + 1 : "",
-                year: user.dateOfBirth ? new Date(user.dateOfBirth).getFullYear() : "",
-            });
+                day: day || "",
+                month: month || "",
+                year: year || "",
+            }));
+
 
         } catch (err) {
             console.error("Lỗi lấy thông tin user:", err);
@@ -106,59 +145,6 @@ const Account = () => {
             ...prev,
             [name]: value
         }));
-    };
-
-    useEffect(() => {
-        if (activeTab === 'vouchers') {
-            fetchVouchers();
-        }
-    }, [activeTab]);
-
-    const fetchVouchers = async () => {
-        try {
-            setLoadingVouchers(true);
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error('Không thể tải danh sách voucher');
-            }
-            const data = await response.json();
-            setVouchers(data);
-        } catch (err) {
-            console.error('Error fetching vouchers:', err);
-            alert('Lỗi khi tải voucher: ' + err.message);
-        } finally {
-            setLoadingVouchers(false);
-        }
-    };
-
-    const copyVoucherCode = (code) => {
-        navigator.clipboard.writeText(code).then(() => {
-            setCopiedCode(code);
-            setTimeout(() => setCopiedCode(null), 2000);
-        });
-    };
-
-    const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(price);
-    };
-
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
-    const isVoucherExpired = (endDate) => {
-        return new Date(endDate) < new Date();
-    };
-
-    const isVoucherAvailable = (voucher) => {
-        return voucher.quantity > voucher.usedCount && !isVoucherExpired(voucher.endDate);
     };
 
     return (
@@ -288,14 +274,20 @@ const Account = () => {
                             <label className="form-label">
                                 Mật Khẩu Hiện Tại<span className="required">*</span>
                             </label>
-                            <div className="form-input-wrapper">
+                            <div className="form-input-wrapper password-wrapper">
                                 <input
-                                    type="password"
+                                    type={showCurrentPass ? "text" : "password"}
                                     name="currentPass"
                                     value={formData.currentPass}
                                     onChange={handleChange}
-                                    className="form-input"                                
+                                    className="form-input"
                                 />
+                                <span
+                                    className="toggle-password"
+                                    onClick={() => setShowCurrentPass(!showCurrentPass)}
+                                >
+                                    {showCurrentPass ? <FaEyeSlash /> : <IoEyeSharp />}
+                                </span>
                             </div>
                         </div>
 
@@ -303,14 +295,20 @@ const Account = () => {
                             <label className="form-label">
                                 Mật Khẩu Mới<span className="required">*</span>
                             </label>
-                            <div className="form-input-wrapper">
+                            <div className="form-input-wrapper password-wrapper">
                                 <input
-                                    type="password"
+                                    type={showNewPass ? "text" : "password"}
                                     name="newPass"
                                     value={formData.newPass}
                                     onChange={handleChange}
-                                    className="form-input" 
+                                    className="form-input"
                                 />
+                                <span
+                                    className="toggle-password"
+                                    onClick={() => setShowNewPass(!showNewPass)}
+                                >
+                                    {showNewPass ? <FaEyeSlash /> : <IoEyeSharp />}
+                                </span>
                             </div>
                         </div>
 
@@ -318,16 +316,26 @@ const Account = () => {
                             <label className="form-label">
                                 Nhập Lại Mật Khẩu Mới<span className="required">*</span>
                             </label>
-                            <div className="form-input-wrapper">
+
+                            <div className="form-input-wrapper password-wrapper">
                                 <input
-                                    type="password"
+                                    type={showConfirmPass ? "text" : "password"}
                                     name="confirmPass"
                                     value={formData.confirmPass}
                                     onChange={handleChange}
-                                    className="form-input" 
-                                />
+                                    className="form-input">
+
+                                </input>
+
+                                <span
+                                    className="toggle-password"
+                                    onClick={() => setShowConfirmPass(!showConfirmPass)}
+                                >
+                                    {showConfirmPass ? <FaEyeSlash /> : <IoEyeSharp />}
+                                </span>
                             </div>
                         </div>
+
 
                         {/* Submit Button */}
                         <div className="form-submit">

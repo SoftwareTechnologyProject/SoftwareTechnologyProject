@@ -33,6 +33,10 @@ nav {
   @apply relative grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
 }
 
+.nav-search input:focus {
+  @apply border-0! shadow-none!;
+}
+
 .input-search {
   @apply px-4 py-2 outline-none;
 }

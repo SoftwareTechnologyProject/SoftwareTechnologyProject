@@ -34,4 +34,6 @@ build/
 
 # Environment and config files
 .env
+.env.*
 backend/src/main/resources/application.yaml
+/seeder/

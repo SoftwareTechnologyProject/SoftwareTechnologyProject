@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosClient from "../../config/axiosConfig";
+import axiosClient from "../../api/axiosClient";
 import { Link } from "react-router-dom";
 import ex1 from "../../assets/ex1.jpg";
 import "./CategoryPage.css";
@@ -19,23 +19,23 @@ const CategoryPage = () => {
   const [selectedPublishers, setSelectedPublishers] = useState([]);
 
   const categoryMap = {
-    agriculture: "Sách Nông - Lâm - Ngư Nghiệp",
-    manga: "Truyện Tranh, Manga, Comic",
-    magazines: "Tạp Chí - Catalogue",
-    cooking: "Ingredients, Methods & Appliances",
-    desserts: "Baking - Desserts",
-    "magazines-alt": "Magazines",
-    "beverages-wine": "Beverages & Wine",
-    drinks: "Drinks & Beverages",
-    travel: "Discovery & Exploration",
-    vietnam: "Vietnam",
-    vegetarian: "Vegetarian & Vegan",
-    anthropology: "Anthropology",
-    europe: "Europe",
-    guidebook: "Guidebook series",
-    diet: "Diets - Weight Loss - Nutrition",
-    "cooking-education": "Cooking Education & Reference",
-    asia: "Asia",
+    "agriculture": "Sách Nông - Lâm - Ngư Nghiệp",           
+    "manga": "Truyện Tranh, Manga, Comic",                   
+    "magazines": "Tạp Chí - Catalogue",                       
+    "cooking": "Ingredients, Methods & Appliances",          
+    "desserts": "Baking - Desserts",                         
+    "magazines-alt": "Magazines",                             
+    "beverages-wine": "Beverages & Wine",                 
+    "drinks": "Drinks & Beverages",                        
+    "travel": "Discovery & Exploration",                  
+    "vietnam": "Vietnam",                                 
+    "vegetarian": "Vegetarian & Vegan",                      
+    "anthropology": "Anthropology",                          
+    "europe": "Europe",                                     
+    "guidebook": "Guidebook series",                         
+    "diet": "Diets - Weight Loss - Nutrition",               
+    "cooking-education": "Cooking Education & Reference",     
+    "asia": "Asia"                                           
   };
 
   const categoryName = categoryMap[normalizedSlug] || "Sản Phẩm";
@@ -45,7 +45,7 @@ const CategoryPage = () => {
     const fetchBooksByCategory = async () => {
       try {
         setLoading(true);
-        const response = await axiosClient.get("/api/books?page=0&size=500");
+        const response = await axiosClient.get("/books?page=0&size=500");
         const respData = response.data || {};
         let allBooks = [];
         if (Array.isArray(respData)) {
@@ -259,20 +259,6 @@ const CategoryPage = () => {
                 <option value="price-desc">Giá: Cao đến thấp</option>
               </select>
             </div>
-
-            <div className="items-per-page">
-              <label htmlFor="items">Hiển thị:</label>
-              <select
-                id="items"
-                value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
-              >
-                <option value={5}>5 sản phẩm</option>
-                <option value={10}>10 sản phẩm</option>
-                <option value={15}>15 sản phẩm</option>
-                <option value={20}>20 sản phẩm</option>
-              </select>
-            </div>
           </div>
 
           {paginatedBooks.length === 0 ? (
@@ -304,19 +290,14 @@ const CategoryPage = () => {
                         />
                       </div>
                       <div className="product-info">
-                        <h3>
-                          {book.title?.substring(0, 50) +
-                            (book.title?.length > 50 ? "..." : "")}
-                        </h3>
-                        <p className="author">{book.authorNames?.join(", ")}</p>
-                        <div className="price-section">
-                          <span className="price-new">
-                            {price.toLocaleString("vi-VN")} đ
-                          </span>
-                          <span className="price-old">
-                            {oldPrice.toLocaleString("vi-VN")} đ
-                          </span>
-                          <span className="discount">-10%</span>
+                        <div className="label-price">
+                          <h3>{book.title}</h3>
+                          <p className="author">{book.authorNames?.join(", ")}</p>
+                          <p className="special-price">
+                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                            <span className="percent-discount">-10%</span>
+                          </p>
+                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                         </div>
                       </div>
                     </Link>

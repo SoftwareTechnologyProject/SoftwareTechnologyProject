@@ -60,11 +60,15 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(request.getCurrentPass(), currentAccount.getPassword())) {
-            throw new IllegalStateException("Password incorrect");
+            throw new IllegalStateException("Password sai");
         }
 
         if (!request.getConfirmPass().equals(request.getNewPass())) {
-            throw new IllegalStateException("Password are not the same");
+            throw new IllegalStateException("Password khong khop");
+        }
+
+        if (request.getNewPass().length() < 6) {
+            throw new IllegalStateException("Password phai lon hon 6 ki tu");
         }
 
         currentAccount.setPassword(passwordEncoder.encode(request.getNewPass()));

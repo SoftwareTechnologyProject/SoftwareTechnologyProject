@@ -47,7 +47,7 @@
 /* === CHAT WINDOW CONTAINER === */
 .customer-chat-window {
   position: fixed;
-  bottom: 100px; /* Cách nút chat một chút */
+  bottom: 2rem;
   right: 24px;
   width: 360px;
   height: 500px;

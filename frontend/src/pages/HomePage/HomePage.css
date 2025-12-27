@@ -15,7 +15,7 @@
 
 /* ========== Common ================= */
 .product-catalog {
-    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[3fr_7fr] px-5 rounded-xl;
+    @apply bg-[var(--components-color)] mx-30 mb-5 px-5 rounded-xl;
 }
 
 .icon-title {
@@ -88,7 +88,7 @@ h1 {
 }
 
 .catalog-detail a {
-    @apply grid grid-rows-[5fr_2fr] p-5 gap-2 hover:opacity-80 transition text-center text-xl;
+    @apply p-5 gap-2 text-center text-xl;
 }
 
 /* ==================================== End =================================== */
@@ -106,11 +106,19 @@ h1 {
     @apply grid grid-cols-3 gap-3 w-full flex-shrink-0 px-2;
 }
 
+.card > div {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.card > div:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
 /* ==================================== End =================================== */
 
 /* ================================== Trending ================================ */
 .trending {
-    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[0.8fr_5fr] px-5 rounded-xl;
+    @apply bg-[var(--components-color)] mx-30 mb-5 px-5 rounded-xl;
 }
 
 .title-trending {
@@ -125,8 +133,20 @@ h1 {
     @apply grid grid-cols-5 auto-rows-[minmax(0,1.3fr)] gap-4 pb-4;
 }
 
+/* Thêm wrapper cho trend items */
+.trend-detail > div,
+.trend-detail > a {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.trend-detail > div:hover,
+.trend-detail > a:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+/* Cập nhật khung chứa ảnh giống file CSS đầu */
 .trend-detail img {
-    @apply w-full h-[58%] mb-5 object-contain;
+    @apply w-full h-[250px] object-contain p-2.5 bg-gray-100;
 }
 
 .label-price {
@@ -154,7 +174,7 @@ h3 {
 }
 
 .combo-trending {
-    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid-rows-[0.8fr_minmax(0,60%)] px-5 rounded-xl;
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid grid-rows-[0.8fr_5fr] px-5 rounded-xl;
 }
 
 .combo-slide {
@@ -169,14 +189,26 @@ h3 {
     @apply flex shrink-0 w-[25%] object-contain pb-4 gap-4;
 }
 
+/* Thêm wrapper cho combo items */
+.combo-detail > div,
+.combo-detail > a {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.combo-detail > div:hover,
+.combo-detail > a:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+/* Cập nhật khung chứa ảnh cho combo giống file CSS đầu */
 .combo-detail img {
-    @apply w-full h-[50%] mb-5;
+    @apply w-full h-[250px] object-contain p-2.5 bg-gray-100;
 }
 
 /* ======================= End ========================= */
 
 .progress-bar {
-    @apply w-full bg-[var(--primary-color)] rounded-2xl p-2;
+    @apply w-full h-fit! bg-[var(--primary-color)]! rounded-2xl p-2;
 }
 
 .progress-bar span {
@@ -184,6 +216,15 @@ h3 {
 }
 
 .description {
-    @apply grid grid-rows-[2fr_0.5fr];
+    @apply grid grid-rows-[2fr_0.8fr];
 }
 
+/* Thêm style cho catalog images để thống nhất */
+.catalog-detail img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-white;
+}
+
+/* Thêm style cho gift card images */
+.card img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-white;
+}

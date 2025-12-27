@@ -130,7 +130,6 @@ const BlogList = () => {
                         <h3>Danh mục</h3>
                         <ul className="category-list">
                             <li><Link to="/blog">Tất cả bài viết</Link></li>
-                            <li><Link to="/blog/about">Giới thiệu</Link></li>
                         </ul>
                     </div>
 

@@ -113,9 +113,9 @@ public class Users implements UserDetails{
     public boolean isEnabled() {
         return true;
     }
-    
+
     @Override
     public String getPassword() {
-    return account != null ? account.getPassword() : null;
-}
+        return account != null ? account.getPassword() : null;
+    }
 }

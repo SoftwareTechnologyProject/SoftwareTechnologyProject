@@ -11,17 +11,17 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import java.text.DecimalFormat;
-import java.time.format.DateTimeFormatter; 
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    
+
     private final JavaMailSender mailSender;
 
     @Value("${spring.mail.properties.mail.smtp.from}")
     private String fromEmail;
-    
+
     // Áp dụng khối try-catch để NÉM LẠI lỗi MAIL THUẦN TÚY
     public void sendWelcomEmail(String toEmail, String name) throws MailException { // THÊM throws MailException
         SimpleMailMessage message = new SimpleMailMessage();
@@ -64,87 +64,87 @@ public class EmailService {
         message.setFrom(fromEmail);
         message.setTo(toEmail);
         message.setSubject("Xác nhận đơn hàng #" + order.getId());
-        
+
         DecimalFormat formatter = new DecimalFormat("#,###");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        
+
         // Tạo danh sách chi tiết sản phẩm
         StringBuilder itemsList = new StringBuilder();
         for (OrderDetailDTO detail : order.getOrderDetails()) {
             String itemTotal = formatter.format(detail.getTotalPrice());
             itemsList.append(String.format(
-                "  + %s\n" +
-                "    Số lượng: %d\n" +
-                "    Đơn giá: %s VNĐ\n" +
-                "    Thành tiền: %s VNĐ\n\n",
-                detail.getBookTitle(),
-                detail.getQuantity(),
-                formatter.format(detail.getPricePurchased()),
-                itemTotal
+                    "  + %s\n" +
+                            "    Số lượng: %d\n" +
+                            "    Đơn giá: %s VNĐ\n" +
+                            "    Thành tiền: %s VNĐ\n\n",
+                    detail.getBookTitle(),
+                    detail.getQuantity(),
+                    formatter.format(detail.getPricePurchased()),
+                    itemTotal
             ));
         }
-        
-        String paymentMethodText = order.getPaymentType() != null 
-            ? (order.getPaymentType().name().equals("COD") ? "Thanh toán khi nhận hàng (COD)" : "Thanh toán qua VNPay")
-            : "Chưa xác định";
-        
+
+        String paymentMethodText = order.getPaymentType() != null
+                ? (order.getPaymentType().name().equals("COD") ? "Thanh toán khi nhận hàng (COD)" : "Thanh toán qua VNPay")
+                : "Chưa xác định";
+
         String paymentStatusText = order.getPaymentStatus() != null
-            ? (order.getPaymentStatus().name().equals("PAID") ? "Đã thanh toán" : 
-               order.getPaymentStatus().name().equals("PENDING") ? "Chưa thanh toán" : "Thất bại")
-            : "Chưa xác định";
-            
+                ? (order.getPaymentStatus().name().equals("PAID") ? "Đã thanh toán" :
+                order.getPaymentStatus().name().equals("PENDING") ? "Chưa thanh toán" : "Thất bại")
+                : "Chưa xác định";
+
         String orderStatusText = order.getStatus() != null
-            ? getStatusText(order.getStatus().name())
-            : "Chưa xác định";
-        
+                ? getStatusText(order.getStatus().name())
+                : "Chưa xác định";
+
         String emailContent = String.format(
-            "Xin chào %s,\n\n" +
-            "Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi!\n\n" +
-            "═══════════════════════════════════════════════\n" +
-            "THÔNG TIN ĐơN HÀNG\n" +
-            "═══════════════════════════════════════════════\n\n" +
-            "Mã đơn hàng: #%d\n" +
-            "Ngày đặt hàng: %s\n" +
-            "Trạng thái đơn hàng: %s\n" +
-            "Trạng thái thanh toán: %s\n\n" +
-            "─────────────────────────────────────────────\n" +
-            "THÔNG TIN GIAO HÀNG\n" +
-            "─────────────────────────────────────────────\n\n" +
-            "Địa chỉ: %s\n" +
-            "Số điện thoại: %s\n\n" +
-            "─────────────────────────────────────────────\n" +
-            "CHI TIẾT SẢN PHẨM\n" +
-            "─────────────────────────────────────────────\n\n" +
-            "%s" +
-            "─────────────────────────────────────────────\n" +
-            "THANH TOÁN\n" +
-            "─────────────────────────────────────────────\n\n" +
-            "Phương thức thanh toán: %s\n" +
-            "%s" +
-            "\n" +
-            "TỔNG CỘNG: %s VNĐ\n\n" +
-            "═══════════════════════════════════════════════\n\n" +
-            "Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.\n" +
-            "Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.\n\n" +
-            "Trân trọng,\n" +
-            "Đội ngũ hỗ trợ khách hàng",
-            customerName,
-            order.getId(),
-            order.getOrderDate() != null ? order.getOrderDate().format(dateFormatter) : "N/A",
-            orderStatusText,
-            paymentStatusText,
-            order.getShippingAddress() != null ? order.getShippingAddress() : "Chưa cập nhật",
-            order.getPhoneNumber() != null ? order.getPhoneNumber() : "Chưa cập nhật",
-            itemsList.toString(),
-            paymentMethodText,
-            order.getVoucherCode() != null ? "Mã giảm giá: " + order.getVoucherCode() + "\n" : "",
-            formatter.format(order.getTotalAmount())
+                "Xin chào %s,\n\n" +
+                        "Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi!\n\n" +
+                        "═══════════════════════════════════════════════\n" +
+                        "THÔNG TIN ĐơN HÀNG\n" +
+                        "═══════════════════════════════════════════════\n\n" +
+                        "Mã đơn hàng: #%d\n" +
+                        "Ngày đặt hàng: %s\n" +
+                        "Trạng thái đơn hàng: %s\n" +
+                        "Trạng thái thanh toán: %s\n\n" +
+                        "─────────────────────────────────────────────\n" +
+                        "THÔNG TIN GIAO HÀNG\n" +
+                        "─────────────────────────────────────────────\n\n" +
+                        "Địa chỉ: %s\n" +
+                        "Số điện thoại: %s\n\n" +
+                        "─────────────────────────────────────────────\n" +
+                        "CHI TIẾT SẢN PHẨM\n" +
+                        "─────────────────────────────────────────────\n\n" +
+                        "%s" +
+                        "─────────────────────────────────────────────\n" +
+                        "THANH TOÁN\n" +
+                        "─────────────────────────────────────────────\n\n" +
+                        "Phương thức thanh toán: %s\n" +
+                        "%s" +
+                        "\n" +
+                        "TỔNG CỘNG: %s VNĐ\n\n" +
+                        "═══════════════════════════════════════════════\n\n" +
+                        "Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.\n" +
+                        "Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.\n\n" +
+                        "Trân trọng,\n" +
+                        "Đội ngũ hỗ trợ khách hàng",
+                customerName,
+                order.getId(),
+                order.getOrderDate() != null ? order.getOrderDate().format(dateFormatter) : "N/A",
+                orderStatusText,
+                paymentStatusText,
+                order.getShippingAddress() != null ? order.getShippingAddress() : "Chưa cập nhật",
+                order.getPhoneNumber() != null ? order.getPhoneNumber() : "Chưa cập nhật",
+                itemsList.toString(),
+                paymentMethodText,
+                order.getVoucherCode() != null ? "Mã giảm giá: " + order.getVoucherCode() + "\n" : "",
+                formatter.format(order.getTotalAmount())
         );
-        
+
         message.setText(emailContent);
         mailSender.send(message);
     }
-    
+
     private String getStatusText(String status) {
         switch (status) {
             case "PENDING": return "Chờ xử lý";

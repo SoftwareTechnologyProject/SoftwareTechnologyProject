@@ -1,286 +1,219 @@
-/* ============================================
-   LOGIN PAGE - ISOLATED STYLES
-   Đảm bảo trang login hoạt động độc lập
-   ============================================ */
+@import "tailwindcss";
 
-/* 1. Reset và thiết lập container chính */
-.login-page-wrapper {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: linear-gradient(135deg, #ffebeb, #fffafa);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Login Container - Split Layout with Grid */
+.login-container {
+  @apply min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden;
 }
 
-/* 2. Logo ở góc trên bên trái */
-.login-logo-section {
-  position: absolute;
-  top: 20px;
-  left: 30px;
-  z-index: 10;
+/* Left Side - Form Section */
+.login-left {
+  @apply flex items-center justify-center p-6 lg:p-8 bg-[var(--components-color)];
+  min-height: 100vh;
 }
 
-.login-logo-link {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  text-decoration: none;
-  color: #d62828;
-  font-weight: bold;
-  font-size: 24px;
-  transition: opacity 0.3s ease;
+.login-form-wrapper {
+  @apply w-full max-w-md;
 }
 
-.login-logo-link:hover {
-  opacity: 0.8;
-  color: #d62828;
+/* Logo */
+.logo-link {
+  @apply mb-6 flex gap-5;
 }
 
-.login-logo-img {
-  height: 70%;
-  width: 20%;
-  object-fit: cover;
+.logo {
+  @apply h-20 w-auto rounded-2xl;
 }
 
-.login-logo-text {
-  font-weight: bold;
-  font-size: 24px;
-  color: #d62828;
+/* Form Card */
+.form-card {
+  @apply w-full;
 }
 
-/* 3. Form card chính */
-.login-form-card {
-  max-width: 400px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  background-color: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 10px 40px rgba(214, 40, 40, 0.15);
-  border: none;
+.form-title {
+  @apply text-2xl lg:text-3xl font-bold text-gray-900 mb-1;
 }
 
-/* Custom scrollbar cho form */
-.login-form-card::-webkit-scrollbar {
-  width: 8px;
+.form-subtitle {
+  @apply text-sm text-gray-600 mb-6;
 }
 
-.login-form-card::-webkit-scrollbar-track {
-  background: #f8d7da;
-  border-radius: 10px;
+/* Form Elements */
+.login-form {
+  @apply space-y-4;
 }
 
-.login-form-card::-webkit-scrollbar-thumb {
-  background: #d62828;
-  border-radius: 10px;
+.form-group {
+  @apply w-full;
 }
 
-.login-form-card::-webkit-scrollbar-thumb:hover {
-  background: #b10f2e;
+.form-label {
+  @apply block text-xs font-medium text-gray-700 mb-1.5;
 }
 
-/* 4. Title */
-.login-title {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  font-weight: bold;
-  color: #d62828;
-  font-size: 1.75rem;
+.form-input {
+  @apply w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all duration-200 text-gray-900;
 }
 
-/* 5. Form elements */
-.login-form-group {
-  margin-bottom: 1rem;
-  text-align: left;
+.form-input::placeholder {
+  @apply text-gray-400 text-sm;
 }
 
-.login-label {
-  font-weight: 600;
-  color: #b10f2e;
-  margin-bottom: 0.5rem;
-  display: block;
-  font-size: 0.95rem;
+/* Form Row for Two Columns */
+.form-row-login {
+  @apply grid grid-cols-[1.5fr_1fr] gap-3;
 }
 
-.login-input {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid #f8d7da;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
+.form-col {
+  @apply w-full;
 }
 
-.login-input:focus {
-  outline: none;
-  border-color: #d62828;
-  box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.1);
+/* Forgot Password */
+.forgot-password {
+  @apply text-right -mt-1 mb-2;
 }
 
-.login-input::placeholder {
-  color: #adb5bd;
+.forgot-link {
+  @apply text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors;
 }
 
-/* 6. Row layout cho phone và DOB */
-.login-form-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+/* Submit Button */
+.submit-btn {
+  @apply w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg text-sm font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-.login-form-col-half {
-  flex: 1;
-  text-align: left;
+/* Divider */
+.divider {
+  @apply flex items-center my-4;
 }
 
-.login-label-small {
-  font-weight: 600;
-  color: #b10f2e;
-  margin-bottom: 0.5rem;
-  display: block;
-  font-size: 0.9rem;
+.divider::before,
+.divider::after {
+  @apply flex-1 border-t border-gray-300;
+  content: '';
 }
 
-/* 7. Forgot password link */
-.login-forgot-password {
-  text-align: right;
-  margin-bottom: 1rem;
+.divider span {
+  @apply px-3 text-xs text-gray-500;
 }
 
-.login-forgot-link {
-  color: #d62828;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: opacity 0.3s ease;
+/* Toggle Text */
+.toggle-text {
+  @apply text-center text-sm text-gray-600 mt-4;
 }
 
-.login-forgot-link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
+.toggle-link {
+  @apply text-blue-600 font-semibold cursor-pointer hover:text-blue-700 transition-colors;
 }
 
-/* 8. Submit button */
-.login-submit-btn {
-  width: 100%;
-  margin-top: 1rem;
-  background-color: #d62828;
-  color: white;
-  border-radius: 50px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 0.75rem;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* Verification Section */
+.verification-section {
+  @apply space-y-4;
 }
 
-.login-submit-btn:hover:not(:disabled) {
-  background-color: #b10f2e;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(214, 40, 40, 0.3);
+.verification-text {
+  @apply text-sm text-gray-600 mb-4;
 }
 
-.login-submit-btn:active:not(:disabled) {
-  transform: translateY(0);
+.resend-btn {
+  @apply w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-3;
 }
 
-.login-submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Right Side - Background Section với Grid */
+.login-right {
+  @apply hidden lg:flex relative items-center justify-center p-8;
 }
 
-/* 9. Toggle text (Sign up / Login) */
-.login-toggle-text {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: #6c757d;
-  font-size: 0.9rem;
+.background-image {
+  @apply absolute inset-0 w-full h-full object-contain opacity-40;
 }
 
-.login-toggle-link {
-  color: #d62828;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
+.background-overlay {
+  @apply relative z-10 flex items-center justify-center p-8;
 }
 
-.login-toggle-link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
+.background-content {
+  @apply text-center text-white max-w-md;
 }
 
-/* 10. Responsive design */
-@media (max-width: 576px) {
-  .login-logo-section {
-    top: 15px;
-    left: 15px;
+.background-title {
+  @apply text-3xl lg:text-4xl font-bold mb-3 leading-tight;
+}
+
+.background-description {
+  @apply text-sm lg:text-base text-blue-50;
+}
+
+/* Compact spacing for sign-up form */
+.login-form .form-group + .form-group {
+  @apply mt-3;
+}
+
+.login-form .form-row + .form-group {
+  @apply mt-3;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1023px) {
+  .login-container {
+    @apply grid-cols-1;
   }
-
-  .login-logo-link {
-    font-size: 20px;
+  
+  .login-left {
+    @apply min-h-screen py-8;
   }
-
-  .login-logo-img {
-    height: 28px;
-    width: 28px;
+  
+  .form-title {
+    @apply text-xl;
   }
-
-  .login-logo-text {
-    font-size: 20px;
-  }
-
-  .login-form-card {
-    width: 95%;
-    padding: 1.5rem;
-    max-height: 95vh;
-  }
-
-  .login-title {
-    font-size: 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .login-form-row {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .login-form-col-half {
-    margin-bottom: 1rem;
+  
+  .login-form-wrapper {
+    @apply max-w-sm;
   }
 }
 
-@media (max-height: 700px) {
-  .login-form-card {
-    padding: 1.5rem;
+/* Tablet adjustments */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .login-left {
+    @apply p-6;
   }
-
-  .login-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+  
+  .form-title {
+    @apply text-2xl;
   }
-
-  .login-form-group {
-    margin-bottom: 0.875rem;
+  
+  .background-title {
+    @apply text-2xl;
+  }
+  
+  .background-description {
+    @apply text-sm;
   }
 }
 
-/* 11. Animation khi load trang */
-@keyframes fadeInUp {
+/* Large screens - more comfortable spacing */
+@media (min-width: 1280px) {
+  .login-form {
+    @apply space-y-5;
+  }
+  
+  .form-input {
+    @apply py-3;
+  }
+  
+  .submit-btn {
+    @apply py-3;
+  }
+  
+  .form-label {
+    @apply text-sm mb-2;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -288,10 +221,19 @@
   }
 }
 
-.login-form-card {
-  animation: fadeInUp 0.5s ease-out;
+.form-card {
+  animation: fadeIn 0.5s ease-out;
 }
 
-.login-logo-section {
-  animation: fadeInUp 0.5s ease-out 0.1s backwards;
+/* Focus States Enhancement */
+.form-input:focus {
+  @apply shadow-md;
+}
+
+.submit-btn:hover {
+  @apply shadow-lg transform scale-[1.02];
+}
+
+.social-btn:hover {
+  @apply shadow-md transform scale-[1.01];
 }
