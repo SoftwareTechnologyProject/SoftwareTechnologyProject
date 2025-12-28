@@ -270,7 +270,7 @@ function Checkout() {
                                     name="fullName"
                                     value={formData.fullName}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-lg"
+                                    className="w-full p-3! border rounded-md text-lg "
                                 />
                             </div>
 
@@ -283,7 +283,7 @@ function Checkout() {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-lg"
+                                    className="w-full p-3! border rounded-md text-lg"
                                 />
                             </div>
                         </div>
@@ -296,7 +296,7 @@ function Checkout() {
                                 name="country"
                                 value={formData.country}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-lg"
+                                className="w-full p-3! border rounded-md text-lg"
                             >
                                 <option>Việt Nam</option>
                             </select>
@@ -316,7 +316,7 @@ function Checkout() {
                                         name={field}
                                         value={formData[field]}
                                         onChange={handleLocationChange}
-                                        className="w-full px-3 py-2 border rounded-md text-lg"
+                                        className="w-full p-3! border rounded-md text-lg"
                                     >
                                         <option value="">Chọn</option>
                                         {locationOptions[field]?.map((item) => (
@@ -341,7 +341,7 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-lg"
+                                className="w-full p-3! border rounded-md text-lg"
                             />
                         </div>
                     </div>

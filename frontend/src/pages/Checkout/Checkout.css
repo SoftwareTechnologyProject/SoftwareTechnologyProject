@@ -55,12 +55,6 @@ label {
     padding: 0.5rem 0;
 }
 
-input[type="text"],
-select {
-    padding: 10px 12px;
-    font-size: 14px;
-}
-
 input[type="text"]:focus,
 select:focus {
     border-color: var(--primary-red);
