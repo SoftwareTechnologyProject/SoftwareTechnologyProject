@@ -62,8 +62,21 @@ export default function OrderAdmin() {
       ? orders
       : orders.filter((o) => o.status?.toUpperCase() === activeTab);
 
-  const calcTotal = (details) =>
-    details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+  // pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // reset page when change tab
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+//   const calcTotal = (details) =>
+//     details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
 
   // update status general function
   const updateStatus = async (orderId, newStatus) => {
@@ -131,7 +144,7 @@ export default function OrderAdmin() {
         filteredOrders.map((order) => {
           const firstItem = order.orderDetails?.[0];
           const qty = order.orderDetails?.length || 0;
-          const total = calcTotal(order.orderDetails);
+          const total = Number(order?.totalAmount || 0)+ 32000;
 
           return (
             <div key={order.id} className="order-card">
