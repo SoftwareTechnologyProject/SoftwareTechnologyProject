@@ -15,6 +15,10 @@
   @apply w-full max-w-md;
 }
 
+.login-toggle-link {
+  @apply cursor-pointer;
+}
+
 /* Logo */
 .logo-link {
   @apply mb-6 flex gap-5;
@@ -73,12 +77,12 @@
 }
 
 .forgot-link {
-  @apply text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors;
+  @apply text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors cursor-pointer;
 }
 
 /* Submit Button */
 .submit-btn {
-  @apply w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg text-sm font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply w-full bg-[var(--primary-color)] text-white py-2.5 px-4 rounded-lg text-sm font-semibold focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 /* Divider */
@@ -116,6 +120,15 @@
 
 .resend-btn {
   @apply w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-3;
+}
+
+/* Reset Password Section */
+.reset-password-section {
+  @apply space-y-4;
+}
+
+.reset-password-section .form-group {
+  @apply mb-4;
 }
 
 /* Right Side - Background Section với Grid */

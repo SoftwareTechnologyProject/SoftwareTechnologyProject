@@ -42,8 +42,8 @@
   @apply grid !grid-cols-[20%_70%] items-center gap-4;
 }
 
-.form-label {
-  @apply w-1/4 min-w-[120px];
+.form-label-account {
+  @apply w-full min-w-[120px];
 }
 
 .form-input-wrapper {
@@ -55,7 +55,7 @@
 }
 
 /* Text input */
-.form-input {
+.form-input-account {
   @apply w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:border-blue-500 transition-colors;
 }
 
@@ -136,7 +136,7 @@
     @apply grid-cols-1 mx-4;
   }
 
-  .form-label {
+  .form-label-account {
     @apply col-span-12 mb-1;
   }
 

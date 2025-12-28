@@ -14,7 +14,6 @@ const Recommend = () => {
     const { pathname } = useLocation();
 
     if (pathname.startsWith("/admin")) return null;
-    if (pathname.startsWith("/blog")) return null;
 
     const [allBooks, setAllBooks] = useState([]);
     const [page, setPage] = useState(0);

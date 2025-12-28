@@ -55,24 +55,32 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/authors/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/publishers/**").permitAll()
+                        .requestMatchers("/api/payment/**").permitAll()
+                        .requestMatchers("/error").permitAll()
 
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/api/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/blog/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/blog/posts/*/comments").permitAll()
-                        .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/blog/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/vouchers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vouchers/active").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
 
                         // Chat và Notifications yêu cầu đăng nhập
                         .requestMatchers("/api/chat/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/checkout/**").authenticated()
+                        .requestMatchers("/api/cart/**").authenticated()
 
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
+                        .requestMatchers("/api/statistics/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for statistics
 
                         // Các request khác phải login
                         .anyRequest().authenticated())

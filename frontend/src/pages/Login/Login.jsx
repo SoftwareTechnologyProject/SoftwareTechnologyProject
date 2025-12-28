@@ -1,11 +1,9 @@
-// File: Login.js
-
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import logoImage from "../../assets/logo/logo2.png";
 import backgroundImage from "../../assets/banner/login-banner.png"
 import { FaEyeSlash } from "react-icons/fa";
 import { IoEyeSharp } from "react-icons/io5";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import './Login.css';
 import { AppContext } from "../../context/AppContext";
 import axios from "axios";
@@ -19,6 +17,9 @@ const Login = () => {
     const location = useLocation();
     const [isCreateAccount, setIsCreateAccount] = useState(location.pathname === '/register' || searchParams.get('register') === 'true');
     const [verificationMode, setVerificationMode] = useState(false);
+    const [resetPasswordMode, setResetPasswordMode] = useState(false);
+    const [resetStep, setResetStep] = useState(1); // 1: enter email, 2: enter OTP and new password
+    
     const [otp, setOtp] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -28,6 +29,12 @@ const Login = () => {
     const [dateOfBirth, setDateOfBirth] = useState("");
     const [loading, setLoading] = useState(false);
     const [showCurrentPass, setShowCurrentPass] = useState(false);
+    
+    // Reset password states
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Context
     const { backendURL, setIsLoggedIn, setUserData } = useContext(AppContext);
@@ -42,28 +49,22 @@ const Login = () => {
         axios.defaults.withCredentials = true;
         setLoading(true);
 
-        // CẬP NHẬT VALIDATION: Kiểm tra tất cả các trường bắt buộc
         if (!email || !password || (isCreateAccount && (!name || !phoneNumber || !address))) {
-            toast.error("Please fill in all required fields (Full Name, Phone, Address).");
+            toast.error("Vui lòng điền đầy đủ các trường bắt buộc!");
             setLoading(false);
             return;
         }
 
         try {
             if (isCreateAccount) {
-                // Register logic
-                // CẬP NHẬT PAYLOAD: Sử dụng camelCase để khớp với ProfileRequest DTO
                 const payload = {
-                    // Tên key là camelCase (fullName, phoneNumber,...)
                     fullName: name,
                     phoneNumber: phoneNumber,
                     address: address,
-                    // Các trường Account/Authentication
                     email: email,
                     password: password
                 };
 
-                // Thêm dateOfBirth nếu có
                 if (dateOfBirth) {
                     payload.dateOfBirth = dateOfBirth;
                 }
@@ -72,20 +73,17 @@ const Login = () => {
 
                 if (response.status === 200 || response.status === 201) {
                     showSuccess("Đăng ký thành công!");
-                    toast.success("Account created successfully. Please check your email for OTP to verify your account.");
+                    toast.success("Vui lòng kiểm tra email để lấy mã OTP xác nhận tài khoản.");
                     setVerificationMode(true);
-                    // Keep email, password, name for verification/resend, clear others
                     setPhoneNumber("");
                     setAddress("");
                     setDateOfBirth("");
                 } else {
                     showError("Đăng ký thất bại!");
-                    toast.error("Registration failed. Try again.");
+                    toast.error("Đăng ký thất bại. Vui lòng thử lại.");
                 }
             } else {
-                // Login logic
                 const response = await axiosClient.post("/auth/login", { email, password });
-                console.log(response);
                 const role = response.data.roles[0].authority;
                 if (response.status === 200) {
                     localStorage.setItem("accessToken", response.data.token);
@@ -93,8 +91,8 @@ const Login = () => {
                     setIsLoggedIn(true);
                     setUserData(response.data.user);
                     showSuccess("Đăng nhập thành công!");
-                    toast.success("Login successful!");
-                    navigate(role === 'ROLE_USER' ? "/" : "/admin",);
+                    toast.success("Đăng nhập thành công!");
+                    navigate(role === 'ROLE_USER' ? "/" : "/admin");
                 }
             }
         } catch (error) {
@@ -104,13 +102,13 @@ const Login = () => {
                     data?.message ||
                     data?.error ||
                     data?.details ||
-                    (error.response.status === 401 ? "Invalid credentials." : "Request failed.");
+                    (error.response.status === 401 ? "Thông tin đăng nhập không hợp lệ." : "Yêu cầu thất bại.");
                 toast.error(errMsg);
-                showError("Thao tác không thành công ! " + errMsg);
+                showError("Thao tác không thành công! " + errMsg);
             } else if (error.request) {
-                toast.error("Cannot reach the server. Please check your connection.");
+                toast.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối.");
             } else {
-                toast.error("Unexpected error occurred.");
+                toast.error("Đã xảy ra lỗi không mong muốn.");
             }
         } finally {
             setLoading(false);
@@ -120,7 +118,7 @@ const Login = () => {
 
     const handleVerifyOtp = async () => {
         if (!otp) {
-            toast.error("Please enter the OTP.");
+            toast.error("Vui lòng nhập mã OTP.");
             return;
         }
         setLoading(true);
@@ -128,18 +126,17 @@ const Login = () => {
             const response = await axios.post(`${backendURL}/auth/verify-registration-otp`, { email, otp });
             if (response.status === 200) {
                 showSuccess("Xác nhận thành công!");
-                toast.success("Account verified successfully! You can now log in.");
+                toast.success("Xác nhận tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.");
                 setVerificationMode(false);
                 setOtp("");
                 setIsCreateAccount(false);
-                navigate('/login');
             } else {
-                toast.error("Invalid OTP. Please try again.");
-                showshowError("OTP không hợp lệ ! Vui lòng nhập lại !");
+                toast.error("OTP không hợp lệ. Vui lòng thử lại.");
+                showError("OTP không hợp lệ! Vui lòng nhập lại!");
             }
         } catch (error) {
-            toast.error("Verification failed. Please check your OTP.");
-            showError("Xác nhận thất bại ! Vui lòng kiểm tra lại OTP của bạn !");
+            toast.error("Xác nhận thất bại. Vui lòng kiểm tra mã OTP.");
+            showError("Xác nhận thất bại! Vui lòng kiểm tra lại OTP của bạn!");
         } finally {
             setLoading(false);
         }
@@ -157,11 +154,70 @@ const Login = () => {
             };
             const response = await axios.post(`${backendURL}/register`, payload);
             if (response.status === 200) {
-                toast.success("OTP resent to your email.");
-                showSuccess("OTP đã được gửi đến cho bạn. Hãy kiểm tra email !")
+                toast.success("OTP đã được gửi lại đến email của bạn.");
+                showSuccess("OTP đã được gửi lại. Hãy kiểm tra email!");
             }
         } catch (error) {
-            toast.error("OTP gửi không thành công. Vui lòng gửi lại !");
+            toast.error("Gửi lại OTP không thành công. Vui lòng thử lại!");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Reset Password Handlers
+    const handleSendResetOTP = async (e) => {
+        e.preventDefault();
+        if (!email) {
+            toast.error("Vui lòng nhập email của bạn.");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await axios.post(`${backendURL}/auth/send-reset-otp?email=${email}`);
+            if (response.status === 200) {
+                toast.success("OTP đã được gửi đến email của bạn.");
+                showSuccess("OTP đã được gửi đến email!");
+                setResetStep(2);
+            }
+        } catch (error) {
+            toast.error("Gửi OTP thất bại. Vui lòng thử lại.");
+            showError("Gửi OTP thất bại!");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        if (!otp || !newPassword || !confirmPassword) {
+            toast.error("Vui lòng điền đầy đủ các trường.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            toast.error("Mật khẩu không khớp.");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await axios.post(`${backendURL}/auth/reset-password`, {
+                email,
+                otp,
+                newPassword
+            });
+            if (response.status === 200) {
+                toast.success("Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
+                showSuccess("Đặt lại mật khẩu thành công!");
+                setResetPasswordMode(false);
+                setResetStep(1);
+                setOtp("");
+                setNewPassword("");
+                setConfirmPassword("");
+                setShowNewPassword(false);
+                setShowConfirmPassword(false);
+            }
+        } catch (error) {
+            toast.error("Đặt lại mật khẩu thất bại. Vui lòng kiểm tra OTP và thử lại.");
+            showError("Đặt lại mật khẩu thất bại!");
         } finally {
             setLoading(false);
         }
@@ -170,13 +226,23 @@ const Login = () => {
     const handleToggle = () => {
         const newIsCreateAccount = !isCreateAccount;
         setIsCreateAccount(newIsCreateAccount);
-        navigate(newIsCreateAccount ? '/register' : '/login');
         setName("");
         setEmail("");
         setPassword("");
         setPhoneNumber("");
         setAddress("");
         setDateOfBirth("");
+    };
+
+    const handleForgotPasswordClick = () => {
+        setResetPasswordMode(true);
+        setResetStep(1);
+        setEmail("");
+        setOtp("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
     };
 
     // Toggle text
@@ -206,22 +272,139 @@ const Login = () => {
                     {/* Logo */}
                     <Link to="/" className="logo-link">
                         <img src={logoImage} alt="logo" className="logo" />
-                        <h1>{!isCreateAccount ? "CHÀO MỪNG BẠN ĐẾN VỚI ELITEBOOKS" : "TẠO TÀI KHOẢN CỦA BẠN"}</h1>
+                        <h1>
+                            {resetPasswordMode 
+                                ? "ĐẶT LẠI MẬT KHẨU" 
+                                : (!isCreateAccount ? "CHÀO MỪNG BẠN ĐẾN VỚI ELITEBOOKS" : "TẠO TÀI KHOẢN CỦA BẠN")
+                            }
+                        </h1>
                     </Link>
 
                     {/* Form Card */}
                     <div className="form-card">
                         <p className="form-subtitle">
-                            {verificationMode
-                                ? 'Kiểm tra email của bạn để lấy mã xác nhận'
-                                : (isCreateAccount
-                                    ? 'Hãy đăng ký để khám phá cùng chúng tôi'
-                                    : 'Đăng nhập để tiếp tục'
+                            {resetPasswordMode
+                                ? (resetStep === 1 ? 'Nhập email để nhận mã OTP' : 'Nhập mã OTP và mật khẩu mới')
+                                : (verificationMode
+                                    ? 'Kiểm tra email của bạn để lấy mã xác nhận'
+                                    : (isCreateAccount
+                                        ? 'Hãy đăng ký để khám phá cùng chúng tôi'
+                                        : 'Đăng nhập để tiếp tục'
+                                    )
                                 )
                             }
                         </p>
 
-                        {verificationMode ? (
+                        {/* Reset Password Mode */}
+                        {resetPasswordMode ? (
+                            <div className="reset-password-section">
+                                {resetStep === 1 ? (
+                                    <form onSubmit={handleSendResetOTP} className="login-form">
+                                        <div className="form-group">
+                                            <label htmlFor="reset-email" className="form-label">
+                                                Email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                id="reset-email"
+                                                className="form-input"
+                                                placeholder="Nhập email của bạn"
+                                                required
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                value={email}
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="submit-btn"
+                                            disabled={loading}
+                                        >
+                                            {loading ? "Đang gửi..." : "Gửi mã OTP"}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleResetPassword} className="login-form">
+                                        <div className="form-group">
+                                            <label htmlFor="reset-otp" className="form-label">
+                                                Mã OTP
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="reset-otp"
+                                                className="form-input"
+                                                placeholder="Nhập mã OTP từ email"
+                                                required
+                                                onChange={(e) => setOtp(e.target.value)}
+                                                value={otp}
+                                                maxLength="6"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="new-password" className="form-label">
+                                                Mật khẩu mới
+                                            </label>
+                                            <div className="form-input-wrapper password-wrapper">
+                                                <input
+                                                    type={showNewPassword ? "text" : "password"}
+                                                    id="new-password"
+                                                    className="form-input pr-10"
+                                                    placeholder="Nhập mật khẩu mới"
+                                                    required
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    value={newPassword}
+                                                />
+                                                <span
+                                                    className="toggle-password"
+                                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                                >
+                                                    {showNewPassword ? <FaEyeSlash /> : <IoEyeSharp />}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="confirm-password" className="form-label">
+                                                Xác nhận mật khẩu
+                                            </label>
+                                            <div className="form-input-wrapper password-wrapper">
+                                                <input
+                                                    type={showConfirmPassword ? "text" : "password"}
+                                                    id="confirm-password"
+                                                    className="form-input pr-10"
+                                                    placeholder="Nhập lại mật khẩu mới"
+                                                    required
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    value={confirmPassword}
+                                                />
+                                                <span
+                                                    className="toggle-password"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                >
+                                                    {showConfirmPassword ? <FaEyeSlash /> : <IoEyeSharp />}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="submit-btn"
+                                            disabled={loading}
+                                        >
+                                            {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+                                        </button>
+                                    </form>
+                                )}
+                                <p className="toggle-text">
+                                    <span className="toggle-link" onClick={() => {
+                                        setResetPasswordMode(false);
+                                        setResetStep(1);
+                                        setShowNewPassword(false);
+                                        setShowConfirmPassword(false);
+                                    }}>
+                                        Quay về đăng nhập
+                                    </span>
+                                </p>
+                            </div>
+                        ) : verificationMode ? (
+                            /* Verification Mode */
                             <div className="verification-section">
                                 <p className="verification-text">
                                     Nhập mã OTP được gửi đến email của bạn <strong>({email})</strong>
@@ -234,7 +417,7 @@ const Login = () => {
                                         type="text"
                                         id="otp"
                                         className="form-input"
-                                        placeholder="Enter 6-digit OTP"
+                                        placeholder="Nhập mã OTP 6 số"
                                         onChange={(e) => setOtp(e.target.value)}
                                         value={otp}
                                         maxLength="6"
@@ -246,7 +429,7 @@ const Login = () => {
                                     onClick={handleVerifyOtp}
                                     disabled={loading}
                                 >
-                                    {loading ? "Verifying..." : "Verify Account"}
+                                    {loading ? "Đang xác nhận..." : "Xác nhận tài khoản"}
                                 </button>
                                 <button
                                     type="button"
@@ -258,13 +441,13 @@ const Login = () => {
                                 </button>
                                 <p className="toggle-text">
                                     <span className="toggle-link" onClick={() => setVerificationMode(false)}>
-                                        ← Quay về Login
+                                        Quay về đăng nhập
                                     </span>
                                 </p>
                             </div>
                         ) : (
+                            /* Login/Register Form */
                             <form onSubmit={onSubmitHandler} className="login-form">
-                                {/* Sign Up Fields */}
                                 {isCreateAccount && (
                                     <>
                                         <div className="form-group">
@@ -327,10 +510,9 @@ const Login = () => {
                                     </>
                                 )}
 
-                                {/* Email Field */}
                                 <div className="form-group">
                                     <label htmlFor="email" className="form-label">
-                                        Email 
+                                        Email
                                     </label>
                                     <input
                                         type="email"
@@ -357,7 +539,6 @@ const Login = () => {
                                             onChange={(e) => setPassword(e.target.value)}
                                             value={password}
                                         />
-
                                         <span
                                             className="toggle-password"
                                             onClick={() => setShowCurrentPass(!showCurrentPass)}
@@ -367,34 +548,29 @@ const Login = () => {
                                     </div>
                                 </div>
 
-
-                                {/* Forgot Password Link */}
                                 {!isCreateAccount && (
                                     <div className="forgot-password">
-                                        <Link to="/reset-password" className="forgot-link">
+                                        <span className="forgot-link" onClick={handleForgotPasswordClick}>
                                             Quên mật khẩu?
-                                        </Link>
+                                        </span>
                                     </div>
                                 )}
 
-                                {/* Submit Button */}
                                 <button
                                     type="submit"
                                     className="submit-btn"
                                     disabled={loading}
                                 >
-                                    {loading ? "Loading..." : buttonText}
+                                    {loading ? "Đang xử lý..." : buttonText}
                                 </button>
 
-                                {/* Divider */}
                                 <div className="divider">
-                                    <span>or continue with</span>
+                                    <span>hoặc tiếp tục với</span>
                                 </div>
                             </form>
                         )}
 
-                        {/* Toggle Text */}
-                        {!verificationMode && (
+                        {!verificationMode && !resetPasswordMode && (
                             <p className="toggle-text">{toggleJSX}</p>
                         )}
                     </div>

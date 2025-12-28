@@ -208,7 +208,7 @@ h3 {
 /* ======================= End ========================= */
 
 .progress-bar {
-    @apply w-full h-fit! bg-[var(--primary-color)]! rounded-2xl p-2;
+    @apply w-full h-fit! bg-[var(--primary-color)]! rounded-2xl p-2 mt-2;
 }
 
 .progress-bar span {

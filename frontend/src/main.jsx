@@ -20,7 +20,11 @@ import ProductDetail from './pages/Book/ProductDetail';
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
 import Cart from "./pages/Cart/Cart.jsx";
-import Checkout from './pages/Checkout/Checkout.jsx';
+import Checkout from "./pages/Checkout/Checkout.jsx";
+import PaymentResult from "./pages/PaymentResult/PaymentResult.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess.jsx";
+import PaymentPending from "./pages/PaymentPending/PaymentPending.jsx";
+import PaymentFailed from "./pages/PaymentFailed/PaymentFailed.jsx";
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
@@ -32,8 +36,6 @@ import Login from "./pages/Login/Login.jsx";
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
-import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
-import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 import TrendPage from "./pages/TrendPage/TrendPage.jsx";
 
 createRoot(document.getElementById("root")).render(
@@ -51,13 +53,18 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        <Route path="/blog/posts/:id" element={
+          <>
+            <Header />
+            <BlogDetail />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* Public routes with Header/Footer */}
         <Route path="/" element={
@@ -159,10 +166,49 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>}
         ></Route>
+
         <Route path="/checkout" element={
           <>
             <Header />
             <Checkout />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route path="/payment/result" element={
+          <>
+            <Header />
+            <PaymentResult />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route
+          path="/payment/success"
+          element={<>
+            <Header />
+            <PaymentSuccess />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route path="/payment/failed" element={<>
+          <Header />
+          <PaymentFailed />
+          <Recommend />
+          <Footer />
+          <ChatFloating />
+        </>}
+        ></Route>
+        <Route
+          path="/payment/pending"
+          element={<>
+            <Header />
+            <PaymentPending />
+            <Recommend />
             <Footer />
             <ChatFloating />
           </>}

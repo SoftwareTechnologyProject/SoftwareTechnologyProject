@@ -1,8 +1,9 @@
 package com.bookstore.backend.DTO;
 
+import org.springframework.security.core.GrantedAuthority;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 

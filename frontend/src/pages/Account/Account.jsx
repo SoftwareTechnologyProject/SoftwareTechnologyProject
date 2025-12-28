@@ -4,7 +4,7 @@ import { IoEyeSharp } from "react-icons/io5";
 import { FaEyeSlash } from "react-icons/fa";
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
-import axios from "../../config/axiosConfig";
+import axios from "../../api/axiosClient";
 import { showError, showSuccess } from "../../util/alert";
 
 const Account = () => {
@@ -26,7 +26,7 @@ const Account = () => {
     });
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // ⭐ chặn reload
+        e.preventDefault(); 
 
         try {
             const pad = (n) => String(n).padStart(2, "0");
@@ -163,7 +163,7 @@ const Account = () => {
                     <form onSubmit={handleSubmit} className="account-form">
                         {/* Field: Họ */}
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Họ<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
@@ -172,14 +172,14 @@ const Account = () => {
                                     name="ho"
                                     value={formData.ho}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input-account"
                                 />
                             </div>
                         </div>
 
                         {/* Field: Tên */}
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Tên<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
@@ -188,14 +188,14 @@ const Account = () => {
                                     name="ten"
                                     value={formData.ten}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input-account"
                                 />
                             </div>
                         </div>
 
                         {/* Field: Số điện thoại */}
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Số điện thoại
                             </label>
                             <div className="form-input-wrapper">
@@ -204,26 +204,26 @@ const Account = () => {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input-account"
                                 />
                             </div>
                         </div>
 
                         {/* Field: Email */}
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Email
                             </label>
                             <div className="form-input-wrapper">
                                 <div
-                                    className="form-input bg-gray-200"
+                                    className="form-input-account bg-gray-200"
                                 >{formData.email}</div>
                             </div>
                         </div>
 
                         {/* Field: Birthday */}
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Birthday<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper">
@@ -271,7 +271,7 @@ const Account = () => {
 
                     <form onSubmit={handleChangePass} className="account-form">
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Mật Khẩu Hiện Tại<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper password-wrapper">
@@ -280,7 +280,7 @@ const Account = () => {
                                     name="currentPass"
                                     value={formData.currentPass}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input-account"
                                 />
                                 <span
                                     className="toggle-password"
@@ -292,7 +292,7 @@ const Account = () => {
                         </div>
 
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Mật Khẩu Mới<span className="required">*</span>
                             </label>
                             <div className="form-input-wrapper password-wrapper">
@@ -301,7 +301,7 @@ const Account = () => {
                                     name="newPass"
                                     value={formData.newPass}
                                     onChange={handleChange}
-                                    className="form-input"
+                                    className="form-input-account"
                                 />
                                 <span
                                     className="toggle-password"
@@ -313,7 +313,7 @@ const Account = () => {
                         </div>
 
                         <div className="form-row">
-                            <label className="form-label">
+                            <label className="form-label-account">
                                 Nhập Lại Mật Khẩu Mới<span className="required">*</span>
                             </label>
 
@@ -323,7 +323,7 @@ const Account = () => {
                                     name="confirmPass"
                                     value={formData.confirmPass}
                                     onChange={handleChange}
-                                    className="form-input">
+                                    className="form-input-account">
 
                                 </input>
 

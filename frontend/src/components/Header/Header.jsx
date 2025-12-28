@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useLocation, Link, NavLink, useNavigate } from "react-router-dom";
+import { useLocation, Link, NavLink, useNavigate, data } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
 import logo from '../../assets/logo/logo.png';
 import "./Header.css";
@@ -31,7 +31,7 @@ import NotificationBell from "../notification/NotificationBell";
 import { HiOutlineNewspaper } from "react-icons/hi";
 
 import useUserNotifications from "../../hook/useUserNotifications";
-import axios from "../../config/axiosConfig";
+import axios from "../../api/axiosClient";
 
 const Header = () => {
   const [openNotification, setOpenNotification] = useState(false);
@@ -179,6 +179,7 @@ const Header = () => {
   const fetchUserInfo = async () => {
     try {
       const { data: user } = await axios.get("/users/me");
+      console.log(user);
       setFormData({ userName: user.fullName || "" });
     } catch (err) {
       console.error("Lỗi lấy thông tin user:", err);
@@ -188,6 +189,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
     setFormData({ userName: '' });
     navigate("/login");
   };
