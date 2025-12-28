@@ -632,6 +632,7 @@ function Checkout() {
                                     display: "flex",
                                     justifyContent: "space-between",
                                     fontSize: "15px",
+                                    marginTop: "1rem",
                                 }}
                             >
                                 <span>Thành tiền:</span>
