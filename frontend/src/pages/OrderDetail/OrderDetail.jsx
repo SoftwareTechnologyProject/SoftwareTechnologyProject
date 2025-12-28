@@ -119,10 +119,48 @@ export default function OrderDetail() {
       </div>
 
       <div className="total-section">
-        <span>Tổng tiền:</span>
-        <strong>
-          {order.orderDetails.reduce((sum, item) => sum + item.totalPrice, 0).toLocaleString()} đ
-        </strong>
+        <div className="row">
+          <span>Tổng số tiền:</span>
+          <strong>
+            {(
+              order?.orderDetails?.reduce(
+                (sum, item) => sum + Number(item?.totalPrice || 0),
+                0
+              ) || 0
+            ).toLocaleString()} đ
+          </strong>
+        </div>
+
+        <div className="row">
+          <span>Phí vận chuyển:</span>
+          <strong>{(32000).toLocaleString()} đ</strong>
+        </div>
+
+        {order?.voucherCode != null && (
+          <div className="row">
+            <span>Voucher:</span>
+            <strong>
+              -{(
+                Math.max(
+                  (
+                    order?.orderDetails?.reduce(
+                      (sum, item) => sum + Number(item?.totalPrice || 0),
+                      0
+                    ) || 0
+                  ) - Number(order?.totalAmount || 0),
+                  0
+                )
+              ).toLocaleString()} đ
+            </strong>
+          </div>
+        )}
+
+        <div className="row total">
+          <span>Thành tiền:</span>
+          <strong>
+            {(Number(order?.totalAmount || 0) + 32000).toLocaleString()} đ
+          </strong>
+        </div>
       </div>
 
       <button className="back-btn" onClick={() => navigate(-1)}>Quay lại</button>

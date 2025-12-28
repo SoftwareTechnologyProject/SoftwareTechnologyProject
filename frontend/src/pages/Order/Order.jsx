@@ -117,7 +117,7 @@ export default function Order() {
         filteredOrders.map((order) => {
           const firstItem = order.orderDetails?.[0];
           const qty = order.orderDetails?.length || 0;
-          const total = calcTotal(order.orderDetails);
+          const total = order.totalAmount;
 
           return (
             <div key={order.id} className="order-card">
