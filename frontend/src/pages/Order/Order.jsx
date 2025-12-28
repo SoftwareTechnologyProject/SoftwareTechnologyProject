@@ -59,8 +59,8 @@ export default function Order() {
       ? orders
       : orders.filter((o) => o.status?.toUpperCase() === activeTab);
 
-  const calcTotal = (details) =>
-    details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+//   const calcTotal = (details) =>
+//     details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
 
   // --- Cancel Order ---
   const handleCancel = async (orderId) => {
@@ -117,7 +117,7 @@ export default function Order() {
         filteredOrders.map((order) => {
           const firstItem = order.orderDetails?.[0];
           const qty = order.orderDetails?.length || 0;
-          const total = order.totalAmount;
+          const total = Number(order?.totalAmount || 0) + 32000;
 
           return (
             <div key={order.id} className="order-card">
