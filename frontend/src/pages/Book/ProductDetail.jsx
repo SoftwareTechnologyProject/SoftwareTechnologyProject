@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosClient from "../../config/axiosConfig";
+import axiosClient from "../../api/axiosClient";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
 import Toast from "../../components/Toast/Toast";
@@ -68,7 +68,7 @@ export default function BookDetail() {
         // - neu thanh cong: hien toast va goi service gui thong bao (notification)
         setAddCartStatus('Đang thêm vào giỏ...');
         setAddCartLoading(true);
-        const addRes = await axiosClient.post(`/api/cart/add`, cartItem);
+        const addRes = await axiosClient.post(`/cart/add`, cartItem);
         console.log('Them vao gio hang thanh cong:', addRes?.data);
         setAddCartStatus('Thêm vào giỏ thành công');
         // Send user notification via backend
@@ -80,10 +80,10 @@ export default function BookDetail() {
             userId: userData?.id || null
           };
           // Use POST to send notification payload (server now accepts POST)
-          await axiosClient.post('/api/notifications/send', notiPayload);
+          await axiosClient.post('/notifications/send', notiPayload);
           // Lấy noti mới nhất từ server và dispatch event để header/notification component nhận
           try {
-            const latestRes = await axiosClient.get('/api/notifications?page=0&size=1');
+            const latestRes = await axiosClient.get('/notifications?page=0&size=1');
             const latest = latestRes.data?.content?.[0] ?? null;
             if (latest) {
               window.dispatchEvent(new CustomEvent('new-notification', { detail: latest }));
@@ -120,10 +120,10 @@ export default function BookDetail() {
           quantity: quantity
         };
 
-        await axiosClient.post(`/api/cart/add`, cartItem);
+        await axiosClient.post(`/cart/add`, cartItem);
 
         // Fetch cart to get items with proper data
-        const cartResponse = await axiosClient.get('/api/cart');
+        const cartResponse = await axiosClient.get('/cart');
         const cartData = cartResponse.data;
 
         if (cartData && cartData.items) {
@@ -166,7 +166,7 @@ export default function BookDetail() {
       try {
         setLoading(true);
         console.log('Fetching book ID:', id);
-        const response = await axiosClient.get(`/api/books/${id}`);
+        const response = await axiosClient.get(`/books/${id}`);
         console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
@@ -217,7 +217,7 @@ export default function BookDetail() {
             <img
               src={images[selectedImageIndex]}
               alt={book.title}
-              onError={(e) => (e.target.src = "/api/placeholder/400/400")}
+              onError={(e) => (e.target.src = "/placeholder/400/400")}
             />
           ) : (
             <div className="no-img">Chưa có ảnh</div>
