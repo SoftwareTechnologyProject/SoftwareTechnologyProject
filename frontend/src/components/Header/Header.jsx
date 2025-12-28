@@ -238,7 +238,7 @@ const Header = () => {
           <input type="text" value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onFocus={() => setShow(true)}
-            placeholder="Tìm kiếm..." className="input-search" />
+            placeholder="Tìm kiếm..." className="input-search-main" />
           <button onClick={handleSearch}><CiSearch className="w-5 h-5 cursor-pointer" /></button>
 
           {show && suggestions.length > 0 && (

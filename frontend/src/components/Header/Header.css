@@ -37,7 +37,7 @@ nav {
   @apply border-0! shadow-none!;
 }
 
-.input-search {
+.input-search-main {
   @apply px-4 py-2 outline-none;
 }
 
