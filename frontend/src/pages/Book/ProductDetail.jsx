@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import axiosClient from "../../config/axiosConfig";
+import axiosClient from "../../api/axiosClient";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
 import Toast from "../../components/Toast/Toast";
 import Andress from "../Andress/Andress";
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
+import { useParams, useNavigate } from "react-router-dom";
 
 // MO TA: ProductDetail
 // - Chuc nang: hien thi chi tiet san pham, them vao gio hang, mua ngay, chon dia chi
@@ -17,6 +17,7 @@ import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   console.log(id);
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState(null);
@@ -68,7 +69,7 @@ export default function BookDetail() {
         // - neu thanh cong: hien toast va goi service gui thong bao (notification)
         setAddCartStatus('Đang thêm vào giỏ...');
         setAddCartLoading(true);
-        const addRes = await axiosClient.post(`/api/cart/add`, cartItem);
+        const addRes = await axiosClient.post(`/cart/add`, cartItem);
         console.log('Them vao gio hang thanh cong:', addRes?.data);
         setAddCartStatus('Thêm vào giỏ thành công');
         // Send user notification via backend
@@ -80,10 +81,10 @@ export default function BookDetail() {
             userId: userData?.id || null
           };
           // Use POST to send notification payload (server now accepts POST)
-          await axiosClient.post('/api/notifications/send', notiPayload);
+          await axiosClient.post('/notifications/send', notiPayload);
           // Lấy noti mới nhất từ server và dispatch event để header/notification component nhận
           try {
-            const latestRes = await axiosClient.get('/api/notifications?page=0&size=1');
+            const latestRes = await axiosClient.get('/notifications?page=0&size=1');
             const latest = latestRes.data?.content?.[0] ?? null;
             if (latest) {
               window.dispatchEvent(new CustomEvent('new-notification', { detail: latest }));
@@ -120,27 +121,25 @@ export default function BookDetail() {
           quantity: quantity
         };
         
-        await axiosClient.post(`/api/cart/add`, cartItem);
+        await axiosClient.post(`/cart/add`, cartItem);
         
         // Fetch cart to get items with proper data
-        const cartResponse = await axiosClient.get('/api/cart');
+        const cartResponse = await axiosClient.get('/cart');
         const cartData = cartResponse.data;
-        
-        if (cartData && cartData.items) {
-          const formattedItems = cartData.items.map(item => ({
-            id: item.id,
-            name: item.bookTitle,
-            price: item.price,
-            originalPrice: item.price * 1.2,
-            quantity: item.quantity,
-            image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
-            checked: true,
-          }));
-          
-          // Navigate to checkout with cart items
-          window.location.href = '/checkout';
-          // Or better: navigate('/checkout', { state: { items: formattedItems } });
-        }
+
+        const instantItem = {
+           id: Date.now(), // ID tạm (Checkout dùng để làm key, không ảnh hưởng logic đặt hàng)
+           bookVariantId: variant.id,
+           name: book.title,
+           price: variant.price,
+           originalPrice: originalPrice,
+           quantity: quantity,
+           image: (images && images.length > 0) ? images[0] : "https://via.placeholder.com/150",
+           checked: true
+        };
+
+        navigate('/checkout', { state: { items: [instantItem] } });
+
       } catch (error) {
         console.error('Error during buy now:', error);
         console.error('Error details:', error.response?.data);
@@ -166,7 +165,7 @@ export default function BookDetail() {
       try {
         setLoading(true);
     console.log('Fetching book ID:', id);
-    const response = await axiosClient.get(`/api/books/${id}`);
+    const response = await axiosClient.get(`/books/${id}`);
     console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
@@ -217,7 +216,7 @@ export default function BookDetail() {
             <img
               src={images[selectedImageIndex]}
               alt={book.title}
-              onError={(e) => (e.target.src = "/api/placeholder/400/400")}
+              onError={(e) => (e.target.src = "/placeholder/400/400")}
             />
           ) : (
             <div className="no-img">Chưa có ảnh</div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../config/axiosConfig';
+import axios from '../../api/axiosClient';
 import { AppConstants } from '../../util/constant';
 import './UserManagement.css';
 
@@ -30,7 +30,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/users');
+            const response = await axios.get('/users');
             console.log('Users data:', response.data);
             
             // Xử lý circular reference: chỉ lấy thông tin cần thiết

@@ -131,28 +131,3 @@
   align-items: flex-end;
   gap: 6px;
 }
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-  gap: 6px;
-}
-
-.pagination button {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  background: white;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.pagination button.active {
-  background: #d32f2f;
-  color: white;
-  border-color: #d32f2f;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}

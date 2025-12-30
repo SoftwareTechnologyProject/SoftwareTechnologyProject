@@ -91,7 +91,6 @@ export default function OrderDetail() {
 
       <div className="shipping-info">
         <h3>Thông tin vận chuyển</h3>
-        <p><strong>Tên khách hàng:</strong> {order.userFullName}</p>
         <p><strong>Địa chỉ:</strong> {order.shippingAddress}</p>
         <p><strong>Điện thoại:</strong> {order.phoneNumber}</p>
       </div>

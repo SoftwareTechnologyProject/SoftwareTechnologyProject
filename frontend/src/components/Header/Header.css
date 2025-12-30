@@ -33,7 +33,11 @@ nav {
   @apply relative grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
 }
 
-.input-search {
+.nav-search input:focus {
+  @apply border-0! shadow-none!;
+}
+
+.input-search-main {
   @apply px-4 py-2 outline-none;
 }
 
@@ -168,48 +172,183 @@ nav {
 }
 
 /* ==================== THÔNG BÁO DROPDOWN (CLICK) ==================== */
+/* Notification Container */
 .notification-container {
   @apply relative;
 }
 
+/* Notification Dropdown */
 .notification-dropdown {
   @apply absolute top-full left-1/2 -translate-x-1/2 mt-2
-         bg-white shadow-xl/30 rounded-lg 
+         bg-white shadow-2xl rounded-xl border border-gray-100
          z-[9999]
-         min-w-[320px] max-h-[400px]
-         overflow-y-auto
+         w-[380px] max-h-[500px]
+         overflow-hidden
          transition-all duration-200 ease-in-out;
 }
 
-.notification-item {
-  @apply p-3 border-b last:border-b-0
-         transition-all duration-150
-         hover:bg-blue-50 hover:translate-x-1;
-  border-radius: 0.375rem;
+/* Dropdown Header */
+.notification-header {
+  @apply px-4 py-3 border-b border-gray-100
+         bg-gradient-to-r from-blue-50 to-white
+         sticky top-0 z-10;
 }
 
+.notification-header h3 {
+  @apply text-base font-semibold text-gray-800;
+}
+
+.notification-dot {
+  @apply absolute top-0 right-5
+         w-4 h-4
+         bg-red-500
+         rounded-full
+         border-2 border-white
+         animate-pulse
+         shadow-md;
+}
+
+/* Notification List Container */
+.notification-list {
+  @apply overflow-y-auto max-h-[400px];
+}
+
+/* Notification Item */
+.notification-item {
+  @apply pl-8 py-3 border-b border-gray-50
+         transition-all duration-200
+         hover:bg-blue-50 cursor-pointer
+         relative;
+}
+
+.notification-item:last-child {
+  @apply border-b-0;
+}
+
+/* Unread Notification */
 .notification-unread {
-  @apply bg-blue-50;
+  @apply bg-blue-50/50;
+}
+
+.notification-unread::before {
+  content: '';
+  @apply absolute left-2 top-1/2 -translate-y-1/2
+         w-2 h-2 bg-blue-500 rounded-full;
+}
+
+.notification-unread .notification-content {
+  @apply pl-3;
+}
+
+/* Notification Content */
+.notification-content {
+  @apply flex flex-col gap-1;
+}
+
+.notification-title {
+  @apply text-sm font-medium text-gray-800 line-clamp-2;
+}
+
+.notification-message {
+  @apply text-xs text-gray-600 line-clamp-2;
 }
 
 .notification-link {
-  @apply font-medium text-gray-800
-         hover:text-[var(--primary-color)] hover:underline
+  @apply text-sm font-medium text-gray-800
+         hover:text-blue-600
+         transition-colors duration-150
          block;
 }
 
+/* Notification Time */
 .notification-time {
-  @apply text-xs text-gray-400 mt-1;
+  @apply text-xs text-gray-400 mt-1 flex items-center gap-1;
 }
 
+.notification-time svg {
+  @apply w-3 h-3;
+}
+
+/* Empty State */
 .notification-empty {
-  @apply p-4 text-center text-gray-400;
+  @apply py-12 text-center;
+}
+
+.notification-empty svg {
+  @apply w-16 h-16 mx-auto mb-3 text-gray-300;
+}
+
+.notification-empty p {
+  @apply text-sm text-gray-400;
+}
+
+/* Footer Actions */
+.notification-footer {
+  @apply border-t border-gray-100
+         sticky bottom-0 bg-white;
 }
 
 .notification-more-btn {
-  @apply w-full py-2 text-blue-500 font-medium
-         hover:underline hover:bg-blue-50
-         transition-colors duration-150;
+  @apply w-full py-3 text-sm text-blue-600 font-medium
+         hover:bg-blue-50
+         transition-all duration-150
+         flex items-center justify-center gap-2;
+}
+
+.notification-more-btn:hover {
+  @apply text-blue-700;
+}
+
+/* Badge for Unread Count */
+.notification-badge {
+  @apply absolute -top-1 -right-1
+         bg-red-500 text-white
+         text-xs font-bold
+         rounded-full
+         min-w-[18px] h-[18px]
+         flex items-center justify-center
+         shadow-md;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .notification-dropdown {
+    @apply w-[calc(100vw-32px)] right-1/2 translate-x-1/2
+           max-w-[380px];
+  }
+}
+
+/* Custom Scrollbar */
+.notification-list::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Animation for dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-dropdown {
+  animation: slideDown 0.2s ease-out;
 }
 
 /* ==================== TÀI KHOẢN ==================== */

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useLocation, Link, NavLink, useNavigate } from "react-router-dom";
+import { useLocation, Link, NavLink, useNavigate, data } from "react-router-dom";
 import bannerHeader from '../../assets/banner/banner-header.png';
 import logo from '../../assets/logo/logo.png';
 import "./Header.css";
@@ -31,7 +31,7 @@ import NotificationBell from "../notification/NotificationBell";
 import { HiOutlineNewspaper } from "react-icons/hi";
 
 import useUserNotifications from "../../hook/useUserNotifications";
-import axios from "../../config/axiosConfig";
+import axios from "../../api/axiosClient";
 
 const Header = () => {
   const [openNotification, setOpenNotification] = useState(false);
@@ -170,7 +170,6 @@ const Header = () => {
     }
   ];
 
-  // 🟢 LẤY USER TỪ BACKEND /me (CHỈ KHI ĐÃ LOGIN)
   useEffect(() => {
     if (isLoggedIn) {
       fetchUserInfo();
@@ -180,6 +179,7 @@ const Header = () => {
   const fetchUserInfo = async () => {
     try {
       const { data: user } = await axios.get("/users/me");
+      console.log(user);
       setFormData({ userName: user.fullName || "" });
     } catch (err) {
       console.error("Lỗi lấy thông tin user:", err);
@@ -189,6 +189,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
     setFormData({ userName: '' });
     navigate("/login");
   };
@@ -237,7 +238,7 @@ const Header = () => {
           <input type="text" value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onFocus={() => setShow(true)}
-            placeholder="Tìm kiếm..." className="input-search" />
+            placeholder="Tìm kiếm..." className="input-search-main" />
           <button onClick={handleSearch}><CiSearch className="w-5 h-5 cursor-pointer" /></button>
 
           {show && suggestions.length > 0 && (
@@ -392,7 +393,7 @@ const Header = () => {
                     <span className="flex-1 truncate">Đơn hàng của tôi</span>
                   </NavLink>
 
-                  <NavLink to="/vouchers" className="account-logged-menu-item">
+                  <NavLink to="/account/voucher-wallet" className="account-logged-menu-item">
                     <IoTicketSharp className="w-5 h-5 flex-shrink-0" />
                     <span className="flex-1 truncate">Ví Voucher</span>
                   </NavLink>

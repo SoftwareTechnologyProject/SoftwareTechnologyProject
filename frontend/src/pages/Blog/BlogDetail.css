@@ -1,506 +1,332 @@
-/* Full Page Layout */
+@import "tailwindcss";
+
+/* Page Layout */
 .blog-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #fef9f9 0%, #fde8e8 20%, #fdd9d9 40%, #f5e8e8 60%, #f5f0ed 80%, #fafafa 100%);
-    background-size: 400% 400%;
-    animation: gradientFlow 20s ease infinite, fadeIn 0.6s ease-in;
-    display: flex;
-    flex-direction: column;
+  @apply mx-30 h-fit;
 }
 
-@keyframes gradientFlow {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Blog Container */
 .blog-container {
-    width: 100%;
-    padding: 40px;
-    font-family: Arial, sans-serif;
-    color: #333;
-    line-height: 1.8;
-    flex: 1;
-    animation: slideUp 0.8s ease-out;
+  @apply w-full px-4 py-4! lg:px-6 lg:py-6;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Main Layout - Two Columns */
+.blog-layout {
+  @apply grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 lg:gap-8;
 }
 
-/* Header */
-.blog-header {
-    margin-bottom: 40px;
+/* Left Side - Post Section */
+.post-section {
+  @apply w-full;
 }
 
-.back-link {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-    padding-left: 20px;
+/* Post Article */
+.post-article {
+  @apply relative;
+  background: #fffdfd;
+  @apply rounded-lg p-6 lg:p-8 shadow-sm;
 }
 
-.back-link::before {
-    content: '←';
-    position: absolute;
-    left: 0;
-    transition: transform 0.3s ease;
+/* Back Button - Inside Article Top Left */
+.back-button {
+  @apply inline-flex items-center gap-2 mb-6
+         px-4 py-2 rounded-lg
+         text-sm font-medium
+         transition-all duration-200;
+  background: #d80000;
+  color: #fffdfd;
 }
 
-.back-link:hover {
-    color: #8B3A3A;
-    transform: translateX(-5px);
+.back-button:hover {
+  @apply shadow-lg transform scale-105;
+  background: #b00000;
 }
 
-.back-link:hover::before {
-    transform: translateX(-3px);
+.back-button svg {
+  @apply flex-shrink-0;
 }
 
-/* Post Detail */
-.post-detail {
-    margin-bottom: 60px;
-    animation: fadeInScale 0.8s ease-out;
+/* Back Button for Error State */
+.back-button-error {
+  @apply inline-flex items-center gap-2
+         px-4 py-2 rounded-lg
+         text-sm font-medium
+         transition-all duration-200;
+  background: #d80000;
+  color: #fffdfd;
 }
 
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.back-button-error:hover {
+  @apply shadow-lg;
+  background: #b00000;
+}
+
+/* Loading State */
+.loading-state {
+  @apply flex flex-col items-center justify-center py-20 gap-4;
+}
+
+.spinner {
+  @apply w-12 h-12 border-4 border-gray-200 rounded-full animate-spin;
+  border-top-color: #d80000;
+}
+
+.loading-state p {
+  @apply text-gray-500 text-sm;
+}
+
+/* Error State */
+.error-state {
+  @apply flex flex-col items-center gap-6 py-20;
+}
+
+.error-message {
+  @apply text-red-600 text-center;
+}
+
+/* Post Header */
+.post-header {
+  @apply mb-6 pb-6 border-b border-gray-200;
 }
 
 .post-title {
-    font-size: 42px;
-    font-weight: normal;
-    margin: 0 0 20px 0;
-    line-height: 1.2;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, #2c1810, #8B3A3A, #C85A54, #E89B96, #8B3A3A, #2c1810);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: titleGradient 6s ease infinite;
-    background-size: 300% auto;
-}
-
-@keyframes titleGradient {
-    0%, 100% {
-        background-position: 0% center;
-    }
-    50% {
-        background-position: 100% center;
-    }
+  @apply text-3xl lg:text-4xl font-bold text-gray-900 mb-4;
 }
 
 .post-meta {
-    display: flex;
-    gap: 20px;
-    font-size: 13px;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+  @apply flex flex-wrap gap-4 text-sm text-gray-600;
 }
 
+.meta-item {
+  @apply flex items-center gap-2;
+}
+
+.meta-item svg {
+  color: #d80000;
+}
+
+/* Post Cover Image */
 .post-cover {
-    margin: 40px 0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(139, 58, 58, 0.15), 0 4px 12px rgba(232, 155, 150, 0.1);
-    transition: all 0.5s ease;
-    border: 3px solid transparent;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, #E89B96, #C85A54, #8B3A3A) border-box;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.post-cover:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 16px 40px rgba(200, 90, 84, 0.3), 0 8px 24px rgba(232, 155, 150, 0.2), 0 0 30px rgba(232, 155, 150, 0.15);
+  @apply my-6 rounded-lg overflow-hidden place-items-center;
 }
 
 .post-cover img {
-    width: 100%;
-    height: auto;
-    max-height: 400px;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s ease;
+  @apply w-80 h-80 max-h-[20rem] object-cover;
 }
 
-.post-cover:hover img {
-    transform: scale(1.05);
-}
-
+/* Post Content */
 .post-content {
-    font-size: 18px;
-    line-height: 1.8;
+  @apply text-gray-700 text-base lg:text-lg leading-relaxed;
 }
 
 .post-content p {
-    margin: 0 0 25px 0;
+  @apply mb-4;
 }
 
-/* Comments Section */
+.post-content p:last-child {
+  @apply mb-0;
+}
+
+/* Right Side - Comments Sidebar */
+.comments-sidebar {
+  @apply w-full lg:sticky lg:top-8 lg:self-start;
+}
+
 .comments-section {
-    margin-top: 80px;
-    padding: 0;
-    border-top: none;
+  background: #fffdfd;
+  @apply rounded-lg p-6 shadow-sm;
+  @apply max-h-[calc(100vh-4rem)] overflow-y-auto;
 }
 
-.comments-container {
-    background: linear-gradient(135deg, #fef9f9 0%, #fff 100%);
-    padding: 50px;
-    border-radius: 16px;
-    border: 3px solid transparent;
-    background-clip: padding-box;
-    box-shadow: 0 8px 32px rgba(139, 58, 58, 0.12), 0 4px 16px rgba(232, 155, 150, 0.08);
-    position: relative;
-    animation: slideUp 0.8s ease-out;
+/* Comments Header */
+.comments-header {
+  @apply flex items-center gap-3 mb-6 pb-4 border-b border-gray-200;
 }
 
-.comments-container::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 16px;
-    padding: 3px;
-    background: linear-gradient(135deg, #E89B96, #C85A54, #8B3A3A, #C85A54, #E89B96);
-    background-size: 300% 300%;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.3;
-    animation: borderRotate 4s linear infinite;
-    pointer-events: none;
+.comments-header svg {
+  color: #d80000;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes borderRotate {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-.comments-title {
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 40px 0;
-    background: linear-gradient(135deg, #8B3A3A, #C85A54, #E89B96);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.comments-header h2 {
+  @apply text-xl font-bold text-gray-900;
 }
 
 /* Comment Form */
+.comment-form-wrapper {
+  @apply mb-6 p-4 bg-gray-50 rounded-lg;
+}
+
+.form-title-blog {
+  @apply text-xl font-semibold text-gray-900 mb-6;
+}
+
 .comment-form {
-    margin-bottom: 40px;
-    padding: 30px;
-    background: linear-gradient(135deg, #fff 0%, #fef9f9 100%);
-    border-radius: 12px;
-    border: 2px solid #f0e6e3;
-    box-shadow: 0 4px 12px rgba(139, 58, 58, 0.08);
-    transition: all 0.3s ease;
-    animation: slideIn 0.6s ease-out;
-}
-
-.comment-form:hover {
-    box-shadow: 0 8px 24px rgba(232, 155, 150, 0.2);
-    transform: translateY(-2px);
-    border-color: #E89B96;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+  @apply space-y-3;
 }
 
 .form-group {
-    margin-bottom: 20px;
+  @apply space-y-1.5;
+}
+
+.form-group label {
+  @apply block text-sm font-medium text-gray-700;
 }
 
 .form-group input,
 .form-group textarea {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 16px;
-    font-family: Georgia, 'Times New Roman', serif;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+  @apply w-full px-3 py-2 text-sm
+         border border-gray-300 rounded-lg
+         focus:outline-none focus:ring-2 focus:border-transparent
+         transition-all duration-200;
+  background: #fffdfd;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-    outline: none;
-    border-color: #8B3A3A;
-    box-shadow: 0 0 0 4px rgba(139, 58, 58, 0.1);
-    transform: translateY(-2px);
+  border-color: #d80000;
+  box-shadow: 0 0 0 3px rgba(216, 0, 0, 0.1);
 }
 
 .form-group textarea {
-    resize: vertical;
-    min-height: 100px;
+  @apply min-h-[80px];
 }
 
-.submit-btn {
-    background: linear-gradient(135deg, #8B3A3A, #C85A54, #E89B96, #C85A54, #8B3A3A);
-    background-size: 200% 200%;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    animation: buttonGradient 3s ease infinite;
-    box-shadow: 0 4px 12px rgba(139, 58, 58, 0.3), 0 2px 6px rgba(232, 155, 150, 0.2);
+.submit-button {
+  @apply w-full inline-flex items-center justify-center gap-2
+         px-4 py-2 text-sm font-medium
+         rounded-lg
+         transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+  background: #d80000;
+  color: #fffdfd;
 }
 
-@keyframes buttonGradient {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-.submit-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
-}
-
-.submit-btn:hover:not(:disabled) {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 28px rgba(139, 58, 58, 0.4), 0 4px 16px rgba(200, 90, 84, 0.3), 0 2px 8px rgba(232, 155, 150, 0.2);
-}
-
-.submit-btn:hover:not(:disabled)::before {
-    left: 100%;
-}
-
-.submit-btn:disabled {
-    background: #999;
-    cursor: not-allowed;
+.submit-button:hover:not(:disabled) {
+  @apply shadow-lg transform scale-105;
+  background: #b00000;
 }
 
 /* Comments List */
 .comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  @apply space-y-3;
 }
 
-.no-comments {
-    text-align: center;
-    color: #999;
-    font-style: italic;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, rgba(139, 58, 58, 0.03), rgba(232, 155, 150, 0.02));
-    border-radius: 8px;
+/* Empty Comments */
+.empty-comments {
+  @apply flex flex-col items-center justify-center py-8 text-center;
 }
 
+.empty-comments svg {
+  @apply text-gray-300 mb-3;
+}
+
+.empty-comments p {
+  @apply text-gray-600 font-medium mb-1 text-sm;
+}
+
+.empty-comments span {
+  @apply text-xs text-gray-400;
+}
+
+/* Comment Item */
 .comment-item {
-    display: flex;
-    gap: 15px;
-    padding: 20px;
-    background: #fff;
-    border-left: 4px solid transparent;
-    border-image: linear-gradient(180deg, #E89B96, #C85A54);
-    border-image-slice: 1;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    animation: fadeInUp 0.5s ease-out backwards;
-}
-
-.comment-item:nth-child(1) { animation-delay: 0s; }
-.comment-item:nth-child(2) { animation-delay: 0.1s; }
-.comment-item:nth-child(3) { animation-delay: 0.2s; }
-.comment-item:nth-child(n+4) { animation-delay: 0.3s; }
-
-.comment-item:hover {
-    box-shadow: 0 4px 16px rgba(232, 155, 150, 0.15);
-    transform: translateX(5px);
-    background: linear-gradient(135deg, #fff 0%, #fef9f9 100%);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  @apply flex gap-3 p-3 rounded-lg border border-gray-100
+         hover:bg-gray-50 transition-colors duration-200;
 }
 
 .comment-avatar {
-    flex-shrink: 0;
-}
-
-.avatar-circle {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #8B3A3A, #C85A54);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(139, 58, 58, 0.2);
+  @apply flex-shrink-0 w-9 h-9 rounded-full
+         flex items-center justify-center
+         font-semibold text-xs;
+  background: #d80000;
+  color: #fffdfd;
 }
 
 .comment-body {
-    flex: 1;
-    min-width: 0;
+  @apply flex-1 min-w-0;
 }
 
 .comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-    gap: 10px;
+  @apply flex items-start justify-between gap-2 mb-1.5;
 }
 
 .commenter-name {
-    font-size: 16px;
-    color: #8B3A3A;
-    font-weight: 600;
+  @apply font-semibold text-gray-900 text-sm;
 }
 
 .comment-date {
-    font-size: 12px;
-    color: #C85A54;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
+  @apply flex items-center gap-1 text-xs text-gray-500 flex-shrink-0;
 }
 
 .comment-content {
-    font-size: 15px;
-    line-height: 1.6;
-    margin: 0;
-    color: #555;
-    word-wrap: break-word;
+  @apply text-sm text-gray-700 leading-relaxed;
 }
 
-/* Loading & Error States */
-.loading,
-.error {
-    text-align: center;
-    padding: 60px 20px;
-    color: #999;
-    font-style: italic;
+/* Custom Scrollbar for Comments Section */
+.comments-section::-webkit-scrollbar {
+  @apply w-2;
 }
 
-.error {
-    color: #dc2626;
+.comments-section::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
 }
 
-/* Blog Footer */
-.blog-footer {
-    margin-top: 80px;
-    padding-top: 40px;
-    border-top: 1px solid #ddd;
-    text-align: center;
-    color: #999;
-    font-size: 14px;
+.comments-section::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded;
+}
+
+.comments-section::-webkit-scrollbar-thumb:hover {
+  background: #d80000;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .blog-container {
-        padding: 20px 15px;
-    }
+@media (max-width: 1023px) {
+  .blog-layout {
+    @apply grid-cols-1;
+  }
 
-    .post-title {
-        font-size: 32px;
-    }
+  .comments-sidebar {
+    @apply static;
+  }
 
-    .post-content {
-        font-size: 16px;
-    }
+  .comments-section {
+    @apply max-h-none;
+  }
 
-    .post-meta {
-        flex-direction: column;
-        gap: 5px;
-    }
+  .post-article {
+    @apply p-4;
+  }
 
-    .comment-form {
-        padding: 20px;
-    }
+  .post-title {
+    @apply text-2xl;
+  }
 
-    .comment-header {
-        flex-direction: column;
-        gap: 5px;
-    }
+  .post-meta {
+    @apply flex-col gap-2;
+  }
+
+  .comments-section {
+    @apply p-4;
+  }
+
+  .comment-form-wrapper {
+    @apply p-3;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-container {
+    @apply px-3 py-6;
+  }
+
+  .back-button {
+    @apply text-xs px-3 py-1.5;
+  }
+
+  .comment-item {
+    @apply flex-col gap-2;
+  }
+
+  .comment-header {
+    @apply flex-col items-start gap-1;
+  }
 }

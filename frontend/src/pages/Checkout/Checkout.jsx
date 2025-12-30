@@ -262,7 +262,7 @@ function Checkout() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm mb-1">
+                                <label className="block text-lg mb-1">
                                     Họ và tên người nhận
                                 </label>
                                 <input
@@ -270,12 +270,12 @@ function Checkout() {
                                     name="fullName"
                                     value={formData.fullName}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full p-3! border rounded-md text-lg "
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm mb-1">
+                                <label className="block text-lg mb-1">
                                     Số điện thoại
                                 </label>
                                 <input
@@ -283,20 +283,20 @@ function Checkout() {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full p-3! border rounded-md text-lg"
                                 />
                             </div>
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-sm mb-1">
+                            <label className="block text-lg mb-1">
                                 Quốc gia
                             </label>
                             <select
                                 name="country"
                                 value={formData.country}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                className="w-full p-3! border rounded-md text-lg"
                             >
                                 <option>Việt Nam</option>
                             </select>
@@ -305,7 +305,7 @@ function Checkout() {
                         <div className="grid grid-cols-3 gap-4 mt-4">
                             {["province", "district", "ward"].map((field) => (
                                 <div key={field}>
-                                    <label className="block text-sm mb-1">
+                                    <label className="block text-lg mb-1">
                                         {field === "province"
                                             ? "Tỉnh/Thành phố"
                                             : field === "district"
@@ -316,7 +316,7 @@ function Checkout() {
                                         name={field}
                                         value={formData[field]}
                                         onChange={handleLocationChange}
-                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        className="w-full p-3! border rounded-md text-lg"
                                     >
                                         <option value="">Chọn</option>
                                         {locationOptions[field]?.map((item) => (
@@ -333,7 +333,7 @@ function Checkout() {
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-sm mb-1">
+                            <label className="block text-lg mb-1">
                                 Địa chỉ nhận hàng
                             </label>
                             <input
@@ -341,7 +341,7 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                className="w-full p-3! border rounded-md text-lg"
                             />
                         </div>
                     </div>
@@ -520,7 +520,7 @@ function Checkout() {
                                         setPromoCode(e.target.value)
                                     }
                                     placeholder="Nhập mã khuyến mãi"
-                                    className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                    className="flex-1 p-3! border rounded-md text-lg"
                                     style={{ height: "42px" }} // Cố định chiều cao
                                 />
                             </div>
@@ -632,6 +632,7 @@ function Checkout() {
                                     display: "flex",
                                     justifyContent: "space-between",
                                     fontSize: "15px",
+                                    marginTop: "1rem",
                                 }}
                             >
                                 <span>Thành tiền:</span>

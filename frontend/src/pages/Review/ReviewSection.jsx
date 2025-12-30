@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { FaStar, FaUpload } from "react-icons/fa";
-import axiosClient from "../../config/axiosConfig";
+import axiosClient from "../../api/axiosClient";
 import "./ReviewSection.css";
 import { AppContext } from "../../context/AppContext";
 
@@ -20,7 +20,7 @@ export default function ReviewSection({ bookId }) {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axiosClient.get(`/api/books/${bookId}/reviews`);
+        const res = await axiosClient.get(`/books/${bookId}/reviews`);
         const list = (res.data || []).map((r) => ({
           id: r.id,
           userName: r.userName || r.userName,
@@ -62,7 +62,7 @@ export default function ReviewSection({ bookId }) {
       const payload = { rating: newReview.rating, comment: newReview.text };
       console.log('Goi API gui review, payload:', payload);
       // Use full API path (backend controller is under /api/books/...)
-      const res = await axiosClient.post(`/api/books/${bookId}/reviews`, payload);
+      const res = await axiosClient.post(`/books/${bookId}/reviews`, payload);
       console.log('Gui review thanh cong:', res?.data);
       // Normalize backend response to front-end review shape
       const data = res.data || {};

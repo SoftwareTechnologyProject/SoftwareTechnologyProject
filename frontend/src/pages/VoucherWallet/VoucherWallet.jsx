@@ -131,7 +131,6 @@ const VoucherWallet = () => {
                         {filteredVouchers.length === 0 ? (
                             <div className="empty-state">
                                 <IoTicketSharp className="empty-icon" />
-                                <h3>Không có voucher nào</h3>
                                 <p>Hiện tại chưa có voucher khả dụng</p>
                                 <Link to="/" className="browse-btn">
                                     Khám phá sản phẩm

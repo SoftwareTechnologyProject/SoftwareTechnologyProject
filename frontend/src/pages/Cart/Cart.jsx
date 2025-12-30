@@ -6,142 +6,131 @@ import { useNavigate } from "react-router-dom";
 import "./Cart.css";
 
 function Cart() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const API_CART_URL = "/cart";
-    const API_VOUCHER_URL = "/vouchers/active";
+  const API_CART_URL = "/cart";
+  const API_VOUCHER_URL = "/vouchers/active";
 
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    // --- STATE CHO MODAL XÓA ---
-    const [showModal, setShowModal] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState(null);
+  // --- STATE CHO MODAL XÓA ---
+  const [showModal, setShowModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-    const [showPromoModal, setShowPromoModal] = useState(false);
-    const [coupons, setCoupons] = useState([]); // Danh sách voucher từ API
-    const [selectedCoupon, setSelectedCoupon] = useState(null); // Voucher object đang chọn
-    const [discountAmount, setDiscountAmount] = useState(0);
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [coupons, setCoupons] = useState([]); // Danh sách voucher từ API
+  const [selectedCoupon, setSelectedCoupon] = useState(null); // Voucher object đang chọn
+  const [discountAmount, setDiscountAmount] = useState(0);
 
-    // HÀM LOAD GIỎ HÀNG
-    const fetchCart = async () => {
-        setLoading(true);
-        try {
-            const response = await axiosClient.get(API_CART_URL);
-            const backendData = response.data;
+  // HÀM LOAD GIỎ HÀNG
+  const fetchCart = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosClient.get(API_CART_URL);
+      const backendData = response.data;
 
-            if (backendData && backendData.items) {
-                const formattedItems = backendData.items.map((item) => ({
-                    id: item.id,
-                    bookVariantId: item.bookVariantId,
-                    bookId: item.bookId || null,
-                    name: item.bookTitle,
-                    price: item.price,
-                    originalPrice: item.price * 1.2,
-                    quantity: item.quantity,
-                    image:
-                        item.image ||
-                        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
-                    checked: true,
-                }));
-                setCartItems(formattedItems);
-            }
-        } catch (error) {
-            console.error("Lỗi kết nối Backend:", error);
-            // Nếu lỗi 401 Unauthorized -> Chưa có cookie hoặc cookie hết hạn
-            if (error.response && error.response.status === 401) {
-                alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
-                navigate("/login");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchCoupons = async () => {
-        try {
-            const res = await axiosClient.get(API_VOUCHER_URL);
-            setCoupons(res.data);
-        } catch (error) {
-            console.error("Lỗi lấy voucher:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchCart();
-        fetchCoupons();
-    }, []);
-
-    // 2. XỬ LÝ CHECKBOX
-    const handleCheckboxChange = (id) => {
-        const updatedItems = cartItems.map((item) =>
-            item.id === id ? { ...item, checked: !item.checked } : item
-        );
-        setCartItems(updatedItems);
-    };
-
-    const handleSelectAll = (e) => {
-        const isChecked = e.target.checked;
-        const updatedItems = cartItems.map((item) => ({
-            ...item,
-            checked: isChecked,
+        if (backendData && backendData.items) {
+        const formattedItems = backendData.items.map(item => ({
+          id: item.id,
+          bookVariantId: item.bookVariantId,
+          bookId: item.bookId || null,
+          name: item.bookTitle,
+          price: item.price,
+          originalPrice: item.price * 1.2,
+          quantity: item.quantity,
+          image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
+          checked: false,
         }));
-        setCartItems(updatedItems);
-    };
+        setCartItems(formattedItems);
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối Backend:", error);
+      // Nếu lỗi 401 Unauthorized -> Chưa có cookie hoặc cookie hết hạn
+      if (error.response && error.response.status === 401) {
+          alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+          navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // CẬP NHẬT SỐ LƯỢNG
-    const updateQuantity = async (id, change) => {
-        const currentItem = cartItems.find((item) => item.id === id);
-        if (!currentItem) return;
+  const fetchCoupons = async () => {
+      try {
+        const res = await axiosClient.get(API_VOUCHER_URL);
+        setCoupons(res.data);
+      } catch (error) {
+        console.error("Lỗi lấy voucher:", error);
+      }
+  };
 
-        const newQuantity = currentItem.quantity + change;
-        if (newQuantity < 1) return;
+  useEffect(() => {
+    fetchCart();
+    fetchCoupons();
+  }, []);
 
-        try {
-            await axiosClient.put(
-                `${API_CART_URL}/update/${id}?quantity=${newQuantity}`
-            );
-            setCartItems((items) =>
-                items.map((item) =>
-                    item.id === id ? { ...item, quantity: newQuantity } : item
-                )
-            );
-        } catch (error) {
-            console.error("Lỗi update:", error);
-            if (error.response?.status === 401) navigate("/login");
-            else alert("Không thể cập nhật số lượng.");
-        }
-    };
+  // 2. XỬ LÝ CHECKBOX
+  const handleCheckboxChange = (id) => {
+    const updatedItems = cartItems.map(item =>
+      item.id === id ? { ...item, checked: !item.checked } : item
+    );
+    setCartItems(updatedItems);
+  };
 
-    // --- LOGIC XÓA SẢN PHẨM MỚI ---
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+    const updatedItems = cartItems.map(item => ({ ...item, checked: isChecked }));
+    setCartItems(updatedItems);
+  };
 
-    const handleDeleteClick = (id) => {
-        setItemToDelete(id); // Lưu ID cần xóa
-        setShowModal(true);
-    };
+  // CẬP NHẬT SỐ LƯỢNG
+  const updateQuantity = async (id, change) => {
+    const currentItem = cartItems.find(item => item.id === id);
+    if (!currentItem) return;
 
-    // Khi bấm nút "Xóa" trong bảng thông báo -> Gọi API
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
+    const newQuantity = currentItem.quantity + change;
+    if (newQuantity < 1) return;
 
-        try {
-            await axiosClient.delete(`${API_CART_URL}/remove/${itemToDelete}`);
-            setCartItems((items) =>
-                items.filter((item) => item.id !== itemToDelete)
-            );
-            closeModal();
-        } catch (error) {
-            console.error("Lỗi xóa:", error);
-            if (error.response?.status === 401) navigate("/login");
-            else alert("Lỗi khi xóa sản phẩm.");
-            closeModal();
-        }
-    };
+    try {
+      await axiosClient.put(`${API_CART_URL}/update/${id}?quantity=${newQuantity}`);
+      setCartItems(items =>
+        items.map(item => item.id === id ? { ...item, quantity: newQuantity } : item)
+      );
+    } catch (error) {
+      console.error("Lỗi update:", error);
+      if (error.response?.status === 401) navigate('/login');
+      else alert("Không thể cập nhật số lượng.");
+    }
+  };
 
-    const closeModal = () => {
-        setShowModal(false);
-        setItemToDelete(null);
-    };
+  // --- LOGIC XÓA SẢN PHẨM MỚI ---
+
+  const handleDeleteClick = (id) => {
+    setItemToDelete(id); // Lưu ID cần xóa
+    setShowModal(true);
+  };
+
+  // Khi bấm nút "Xóa" trong bảng thông báo -> Gọi API
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await axiosClient.delete(`${API_CART_URL}/remove/${itemToDelete}`);
+      setCartItems(items => items.filter(item => item.id !== itemToDelete));
+      closeModal();
+    } catch (error) {
+      console.error("Lỗi xóa:", error);
+      if(error.response?.status === 401) navigate('/login');
+      else alert("Lỗi khi xóa sản phẩm.");
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setItemToDelete(null);
+  };
 
     // Tính tổng tiền tamj tính
     const subtotal = cartItems.reduce(
@@ -168,19 +157,19 @@ function Cart() {
         navigate("/");
     };
 
-    // --- HÀM MỞ MODAL & LẤY VOUCHER TỪ API (UPDATE) ---
+  // --- HÀM MỞ MODAL & LẤY VOUCHER TỪ API (UPDATE) ---
     const handleOpenPromoModal = async () => {
-        setShowPromoModal(true);
-        try {
-            const res = await axiosClient.get(API_VOUCHER_URL);
-            setCoupons(res.data);
-        } catch (error) {
-            console.error("Lỗi lấy voucher:", error);
-        }
+      setShowPromoModal(true);
+      try {
+        const res = await axiosClient.get(API_VOUCHER_URL);
+        setCoupons(res.data);
+      } catch (error) {
+        console.error("Lỗi lấy voucher:", error);
+      }
     };
 
     // --- 3. HÀM ÁP DỤNG VOUCHER (UPDATE LOGIC PHỨC TẠP) ---
-    const handleApplyCoupon = (voucher) => {
+      const handleApplyCoupon = (voucher) => {
         // Kiểm tra giá trị đơn hàng tối thiểu (minOrderValue)
         if (voucher.minOrderValue && subtotal < voucher.minOrderValue) {
             alert(
@@ -216,15 +205,15 @@ function Cart() {
         setSelectedCoupon(voucher);
         setDiscountAmount(calculatedDiscount);
         setShowPromoModal(false);
-    };
+      };
 
-    const total = subtotal - discountAmount > 0 ? subtotal - discountAmount : 0;
-    // --- CHUYỂN SANG THANH TOÁN ---
-    const handleCheckout = () => {
-        const selectedItems = cartItems.filter((item) => item.checked);
+  const total = subtotal - discountAmount > 0 ? subtotal - discountAmount : 0;
+  // --- CHUYỂN SANG THANH TOÁN ---
+      const handleCheckout = () => {
+        const selectedItems = cartItems.filter(item => item.checked);
         if (selectedItems.length === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm!");
-            return;
+          alert("Vui lòng chọn ít nhất một sản phẩm!");
+          return;
         }
         navigate("/checkout", {
             state: {
@@ -237,12 +226,7 @@ function Cart() {
     const formatPrice = (price) => price?.toLocaleString("vi-VN") + " ₫";
     const hasSelectedItems = cartItems.some((item) => item.checked);
 
-    if (loading)
-        return (
-            <div style={{ textAlign: "center", marginTop: 50 }}>
-                ⏳ Đang tải...
-            </div>
-        );
+    if (loading) return <div style={{textAlign: 'center', marginTop: 50}}>⏳ Đang tải...</div>;
 
     return (
         <div className="cart-container">
