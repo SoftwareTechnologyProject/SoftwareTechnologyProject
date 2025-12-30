@@ -63,7 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/blog/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/blog/posts/*/comments").permitAll()
-                        .requestMatchers("/blog/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/blog/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/vouchers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vouchers/active").permitAll()
                         .requestMatchers("/api/vouchers/**").hasAuthority("ROLE_ADMIN")
@@ -79,7 +79,7 @@ public class SecurityConfig {
                         // Các endpoint yêu cầu quyền cụ thể
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                        .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for user management
+                        .requestMatchers("/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_STAFF", "ROLE_ADMIN")
                         .requestMatchers("/api/statistics/**").hasAuthority("ROLE_ADMIN") // Require ROLE_ADMIN for statistics
 
                         // Các request khác phải login

@@ -5,6 +5,8 @@ import com.bookstore.backend.model.enums.StatusOrder;
 import com.bookstore.backend.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -52,6 +54,8 @@ public class Orders {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<OrderDetails> orderDetails;
+
+    private BigDecimal totalAmount;
 
     @PrePersist
     protected void onCreate() {

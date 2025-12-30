@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Order.css";
+import "../../util/alert"
+import { showWarning, showSuccess, showError } from "../../util/alert";
 
 const API_URL = "http://localhost:8080/api/orders";
 
@@ -59,33 +61,38 @@ export default function Order() {
       ? orders
       : orders.filter((o) => o.status?.toUpperCase() === activeTab);
 
-  const calcTotal = (details) =>
-    details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+//   const calcTotal = (details) =>
+//     details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
 
   // --- Cancel Order ---
-  const handleCancel = async (orderId) => {
-    if (!window.confirm("Bạn muốn hủy đơn?")) return;
+const handleCancel = async (orderId) => {
+  const result = await showWarning("Bạn có chắc muốn hủy đơn hàng này không?");
 
-    try {
-      const res = await fetch(`${API_URL}/${orderId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          status: "CANCELLED"
-        }),
-      });
+  if (!result.isConfirmed) return;
 
-      if (!res.ok) throw new Error("Không thể hủy đơn.");
+  try {
+    const res = await fetch(`${API_URL}/${orderId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status: "CANCELLED",
+      }),
+    });
 
-      fetchOrders();
+    if (!res.ok) throw new Error("Không thể hủy đơn.");
 
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    showSuccess("Đã hủy đơn hàng thành công!");
+    fetchOrders();
+
+  } catch (err) {
+    console.error(err);
+    showError("Hủy đơn thất bại, vui lòng thử lại!");
+  }
+};
+
 
   return (
     <div className="order-page">
@@ -117,7 +124,7 @@ export default function Order() {
         filteredOrders.map((order) => {
           const firstItem = order.orderDetails?.[0];
           const qty = order.orderDetails?.length || 0;
-          const total = calcTotal(order.orderDetails);
+          const total = Number(order?.totalAmount || 0) + 32000;
 
           return (
             <div key={order.id} className="order-card">

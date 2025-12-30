@@ -222,12 +222,14 @@ const TrendPage = () => {
                         />
                       </div>
                       <div className="product-info">
-                        <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
-                        <p className="author">{book.authorNames?.join(", ")}</p>
-                        <div className="price-section">
-                          <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                        <div className="label-price">
+                          <h3>{book.title}</h3>
+                          <p className="author">{book.authorNames?.join(", ")}</p>
+                          <p className="special-price">
+                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                            <span className="percent-discount">-10%</span>
+                          </p>
                           <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
-                          <span className="discount">-10%</span>
                         </div>
                         <div className="progress-bar-trend">
                           <span> Đã Bán {book.variants[0].sold}</span>

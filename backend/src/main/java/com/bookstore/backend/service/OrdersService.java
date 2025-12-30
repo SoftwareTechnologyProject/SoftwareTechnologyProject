@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrdersService {
-
     private final OrdersRepository ordersRepository;
     private final BookVariantsRepository bookVariantsRepository;
     private final VoucherRepository voucherRepository;
@@ -31,7 +31,6 @@ public class OrdersService {
     private final OrderDetailRepository orderDetailRepository;
     private final SecurityUtils securityUtils;
     private final CartService cartService;
-
 
     public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils, CartService cartService) {
         this.ordersRepository = ordersRepository;
@@ -63,8 +62,9 @@ public class OrdersService {
         order.setOrderDate(LocalDateTime.now());
 
         // Voucher
+        Voucher voucher = null;
         if (voucherCode != null) {
-            Voucher voucher = voucherRepository.findByCode(voucherCode).orElse(null);
+            voucher = voucherRepository.findByCode(voucherCode).orElse(null);
             order.setVoucher(voucher);
         }
 
@@ -79,6 +79,9 @@ public class OrdersService {
         }).collect(Collectors.toSet());
 
         order.setOrderDetails(orderDetails);
+        // ===== TOTAL AMOUNT (SAU GIẢM GIÁ) =====
+        BigDecimal totalAmount = calculateTotalAmount(orderDetails, voucher);
+        order.setTotalAmount(totalAmount);
 
         Orders savedOrder = ordersRepository.save(order);
 
@@ -138,7 +141,7 @@ public class OrdersService {
         var currentUser = securityUtils.getCurrentUser();
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order không tồn tại"));
-        
+
         // Nếu có currentUser, kiểm tra quyền
         if (currentUser != null) {
             System.out.println(currentUser.getRole());
@@ -167,7 +170,7 @@ public class OrdersService {
     public java.math.BigDecimal calculateOrderTotalAmount(Long orderId) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-        
+
         // Tính tổng tiền từ order details
         java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
                 .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
@@ -184,7 +187,7 @@ public class OrdersService {
                     java.math.BigDecimal discount = totalAmount
                             .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
                             .divide(java.math.BigDecimal.valueOf(100));
-                    
+
                     // Áp dụng giới hạn giảm giá tối đa nếu có
                     if (voucher.getMaxDiscount() != null) {
                         java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
@@ -207,12 +210,12 @@ public class OrdersService {
     public void updatePaymentStatus(Long orderId, PaymentStatus paymentStatus, PaymentType paymentType) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-        
+
         order.setPaymentStatus(paymentStatus);
         if (paymentType != null) {
             order.setPaymentType(paymentType);
         }
-        
+
         ordersRepository.save(order);
     }
 
@@ -272,7 +275,7 @@ public class OrdersService {
                 .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
                         .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-        
+
         // Áp dụng voucher discount nếu có
         if (order.getVoucher() != null) {
             Voucher voucher = order.getVoucher();
@@ -281,7 +284,7 @@ public class OrdersService {
                     java.math.BigDecimal discount = totalAmount
                             .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
                             .divide(java.math.BigDecimal.valueOf(100));
-                    
+
                     if (voucher.getMaxDiscount() != null) {
                         java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
                         discount = discount.min(maxDiscount);
@@ -293,7 +296,7 @@ public class OrdersService {
                 }
             }
         }
-        
+
         dto.setTotalAmount(totalAmount);
 
         return dto;
@@ -334,6 +337,40 @@ public class OrdersService {
             bookVariantsRepository.save(variant);
         }
     }
+    // ================= HELPER: TOTAL AMOUNT =================
+    private BigDecimal calculateTotalAmount(Set<OrderDetails> details, Voucher voucher) {
 
+        // 1. Tính tổng từ Double → BigDecimal
+        BigDecimal total = details.stream()
+                .map(d -> BigDecimal.valueOf(
+                        d.getPricePurchased() * d.getQuantity()
+                ))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // 2. Áp dụng voucher
+        if (voucher != null && voucher.isValid()) {
+
+            if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
+
+                BigDecimal discount = total
+                        .multiply(BigDecimal.valueOf(voucher.getDiscountValue()))
+                        .divide(BigDecimal.valueOf(100));
+
+                if (voucher.getMaxDiscount() != null) {
+                    discount = discount.min(
+                            BigDecimal.valueOf(voucher.getMaxDiscount())
+                    );
+                }
+
+                total = total.subtract(discount);
+
+            } else {
+                total = total.subtract(
+                        BigDecimal.valueOf(voucher.getDiscountValue())
+                );
+            }
+        }
+
+        return total.max(BigDecimal.ZERO);
+    }
 }
