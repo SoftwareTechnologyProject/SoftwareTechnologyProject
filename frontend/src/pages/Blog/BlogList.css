@@ -6,7 +6,7 @@
 }
 
 .blog-list-container {
-  @apply w-full px-4 py-8 lg:px-6 lg:py-12;
+  @apply w-full px-4 py-4! lg:px-6 lg:py-6;
 }
 
 /* Main Layout - Two Columns */
@@ -20,7 +20,7 @@
 }
 
 .spinner {
-  @apply w-12 h-12 border-4 border-gray-200 rounded-full animate-spin;
+  @apply w-12 h-12 border-4 border-gray-200 rounded-lg animate-spin;
   border-top-color: #d80000;
 }
 

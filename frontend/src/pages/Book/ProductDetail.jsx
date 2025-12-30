@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import { FaShoppingCart } from "react-icons/fa";
 import ReviewSection from "../Review/ReviewSection";
@@ -7,6 +6,7 @@ import Toast from "../../components/Toast/Toast";
 import Andress from "../Andress/Andress";
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
+import { useParams, useNavigate } from "react-router-dom";
 
 // MO TA: ProductDetail
 // - Chuc nang: hien thi chi tiet san pham, them vao gio hang, mua ngay, chon dia chi
@@ -17,6 +17,7 @@ import "../Book/ProductDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   console.log(id);
   const [quantity, setQuantity] = useState(1);
   const [book, setBook] = useState(null);
@@ -27,7 +28,7 @@ export default function BookDetail() {
   const [buyNowLoading, setBuyNowLoading] = useState(false);
   const [addCartStatus, setAddCartStatus] = useState(null);
   const [addCartLoading, setAddCartLoading] = useState(false);
-
+  
   // NOTE: use authentication state from AppContext instead of local mock
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState('Long Xuyên, An Giang');
@@ -37,7 +38,7 @@ export default function BookDetail() {
     ward: ''
   });
   const [addressType, setAddressType] = useState('default'); // 'default' or 'other'
-
+  
   const handleAuthRequired = (action) => {
     const token = localStorage.getItem('accessToken');
     console.log('Auth check - isLoggedIn:', isLoggedIn, 'token?', !!token);
@@ -109,7 +110,7 @@ export default function BookDetail() {
       }
     }
   };
-
+  
   const handleBuyNow = async () => {
     if (handleAuthRequired('mua hàng')) {
       try {
@@ -119,28 +120,26 @@ export default function BookDetail() {
           bookVariantId: variant?.id,
           quantity: quantity
         };
-
+        
         await axiosClient.post(`/cart/add`, cartItem);
-
+        
         // Fetch cart to get items with proper data
         const cartResponse = await axiosClient.get('/cart');
         const cartData = cartResponse.data;
 
-        if (cartData && cartData.items) {
-          const formattedItems = cartData.items.map(item => ({
-            id: item.id,
-            name: item.bookTitle,
-            price: item.price,
-            originalPrice: item.price * 1.2,
-            quantity: item.quantity,
-            image: item.image || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=150&h=200&fit=crop",
-            checked: true,
-          }));
+        const instantItem = {
+           id: Date.now(), // ID tạm (Checkout dùng để làm key, không ảnh hưởng logic đặt hàng)
+           bookVariantId: variant.id,
+           name: book.title,
+           price: variant.price,
+           originalPrice: originalPrice,
+           quantity: quantity,
+           image: (images && images.length > 0) ? images[0] : "https://via.placeholder.com/150",
+           checked: true
+        };
 
-          // Navigate to checkout with cart items
-          window.location.href = '/checkout';
-          // Or better: navigate('/checkout', { state: { items: formattedItems } });
-        }
+        navigate('/checkout', { state: { items: [instantItem] } });
+
       } catch (error) {
         console.error('Error during buy now:', error);
         console.error('Error details:', error.response?.data);
@@ -165,9 +164,9 @@ export default function BookDetail() {
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
-        console.log('Fetching book ID:', id);
-        const response = await axiosClient.get(`/books/${id}`);
-        console.log('Book data:', response.data);
+    console.log('Fetching book ID:', id);
+    const response = await axiosClient.get(`/books/${id}`);
+    console.log('Book data:', response.data);
         setBook(response.data);
       } catch (err) {
         console.error('Error fetching book:', err);
@@ -237,7 +236,7 @@ export default function BookDetail() {
         </div>
 
         <div className="action-buttons">
-
+          
           <button className="add-cart-btn" onClick={handleAddToCart} disabled={addCartLoading}>
             {addCartLoading ? <span className="btn-spinner" /> : <FaShoppingCart />} {addCartLoading ? 'Đang thêm...' : 'Thêm vào giỏ'}
           </button>
@@ -283,6 +282,14 @@ export default function BookDetail() {
 
         {/* Offers + Category + Quantity */}
         <div className="offers-category-qty">
+          <div className="offers-box">
+            <h4>Ưu đãi liên quan</h4>
+            <div className="offer-list">
+              <div>Giảm 10k - toàn sàn</div>
+              <div>Chờ Mai Thái</div>
+              <div>Shopeepay: -20k</div>
+            </div>
+          </div>
 
           <div className="category-qty-box">
             <div>
@@ -293,13 +300,13 @@ export default function BookDetail() {
             <div className="qty-row">
               <span>Số lượng:</span>
               <div className="qty-controls">
-                <button
+                <button 
                   onClick={decreaseQuantity}
                   title="Giảm số lượng"
                   aria-label="Giảm số lượng"
                 >-</button>
                 <span>{quantity}</span>
-                <button
+                <button 
                   onClick={increaseQuantity}
                   title="Tăng số lượng"
                   aria-label="Tăng số lượng"
@@ -315,8 +322,8 @@ export default function BookDetail() {
           <h4>Thông tin vận chuyển</h4>
           <div className="delivery-location">
             <span>Giao đến {selectedAddress}</span>
-            <button
-              className="change-location"
+            <button 
+              className="change-location" 
               onClick={handleChangeLocation}
               title="Thay đổi địa chỉ giao hàng"
               aria-label="Thay đổi địa chỉ giao hàng"
@@ -325,32 +332,33 @@ export default function BookDetail() {
             </button>
           </div>
         </div>
-
-        <div className="book-details-section">
-          <h3 className="section-title">Thông tin chi tiết</h3>
-          <div className="details-grid">
-            <div className="detail-row">
-              <span className="detail-label">Mã hàng</span>
-              <span>{variant?.isbn}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Nhà cung cấp</span>
-              <span>{book.publisherName}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Tác giả</span>
-              <span>{book.authorNames?.join(", ")}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Năm XB</span>
-              <span >{book.publisherYear}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* BOTTOM: Details, Description, Reviews */}
       <div className="bottom-section">
+
+        {/* Details */}
+        <div className="section-box">
+          <h3>Thông tin chi tiết</h3>
+          <div className="details-grid">
+            <div>
+              <span>Mã hàng</span>
+              <span>{variant?.isbn}</span>
+            </div>
+            <div>
+              <span>Nhà cung cấp</span>
+              <span>{book.publisherName}</span>
+            </div>
+            <div>
+              <span>Tác giả</span>
+              <span>{book.authorNames?.join(", ")}</span>
+            </div>
+            <div>
+              <span>Năm XB</span>
+              <span>{book.publisherYear}</span>
+            </div>
+          </div>
+        </div>
 
         {/* Description */}
         <div className="section-box">
@@ -372,17 +380,17 @@ export default function BookDetail() {
           userAddresses={userData?.addresses || (userData?.address ? [userData.address] : [])}
         />
       )}
-
+      
       {/* Toast notification */}
       {showToast && (
-        <Toast
-          message="Đã thêm vào giỏ hàng!"
-          linkText="Xem ngay"
+        <Toast 
+          message="Đã thêm vào giỏ hàng!" 
+          linkText="Xem ngay" 
           linkHref="/cart"
           onClose={() => setShowToast(false)}
         />
       )}
-
+      
       {/* Loading overlay for Buy Now */}
       {buyNowLoading && (
         <div style={{

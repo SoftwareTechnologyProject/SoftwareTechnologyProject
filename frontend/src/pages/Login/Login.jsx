@@ -502,7 +502,7 @@ const Login = () => {
                                                 type="text"
                                                 id="address"
                                                 className="form-input"
-                                                placeholder="123 Main Street, City"
+                                                placeholder="01 Võ Văn Ngân ..."
                                                 onChange={(e) => setAddress(e.target.value)}
                                                 value={address}
                                             />

@@ -166,15 +166,15 @@ const HeaderAdmin = () => {
                             <span>Quản Lý Blog</span>
                         </NavLink>
 
-                        {/* <NavLink
-                            to="/admin/statistics"
+                        <NavLink
+                            to="/admin/chat"
                             className={({ isActive }) =>
                                 `nav-item ${isActive ? "active" : ""}`
                             }
                         >
                             <IoStatsChartOutline className="nav-icon" />
-                            <span>Thống Kê</span>
-                        </NavLink> */}
+                            <span>Chat Hỗ Trợ</span>
+                        </NavLink>
 
                         <button onClick={handleLogout} className="nav-item logout-btn">
                             <BiLogOut className="nav-icon" />

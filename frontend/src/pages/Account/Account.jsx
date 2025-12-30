@@ -5,7 +5,7 @@ import { FaEyeSlash } from "react-icons/fa";
 import "../../pages/HomePage/HomePage.css";
 import "../../pages/Account/Account.css"
 import axios from "../../api/axiosClient";
-import { showError, showSuccess } from "../../util/alert";
+import {showWarning, showError, showSuccess } from "../../util/alert";
 
 const Account = () => {
     const [showCurrentPass, setShowCurrentPass] = useState(false);
@@ -27,6 +27,9 @@ const Account = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault(); 
+        const result = await showWarning("Cập nhật lại thông tin ?");
+        
+        if (!result.isConfirmed) return;
 
         try {
             const pad = (n) => String(n).padStart(2, "0");
@@ -37,7 +40,7 @@ const Account = () => {
                 dateOfBirth: `${formData.year}-${pad(formData.month)}-${pad(formData.day)}`
             };
 
-            const res = await axios.put("users/me/update", payload);
+            const res = await axios.put("/users/me/update", payload);
 
             showSuccess("Cập nhật thành công!");
             console.log("User mới:", res.data);
@@ -55,6 +58,9 @@ const Account = () => {
 
     const handleChangePass = async (e) => {
         e.preventDefault();
+        const result = await showWarning("Xác nhận thay đổi?");
+        
+        if (!result.isConfirmed) return;
 
         // ===== FRONTEND VALIDATION =====
         if (!formData.currentPass || !formData.newPass || !formData.confirmPass) {
@@ -81,7 +87,7 @@ const Account = () => {
             };
 
             const res = await axios.patch(
-                "users/me/update/password",
+                "/users/me/update/password",
                 payload
             );
 
@@ -115,7 +121,7 @@ const Account = () => {
 
     const fetchUserInfo = async () => {
         try {
-            const { data: user } = await axios.get("users/me");
+            const { data: user } = await axios.get("/users/me");
             const date = user.dateOfBirth
                 ? user.dateOfBirth.split("T")[0]
                 : "";

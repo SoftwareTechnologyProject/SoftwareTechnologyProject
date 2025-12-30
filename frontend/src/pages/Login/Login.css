@@ -16,7 +16,7 @@
 }
 
 .login-toggle-link {
-  @apply cursor-pointer;
+  @apply cursor-pointer text-blue-600;
 }
 
 /* Logo */
@@ -55,7 +55,7 @@
 }
 
 .form-input {
-  @apply w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all duration-200 text-gray-900;
+  @apply w-full px-3! py-2.5! text-sm! border! border-gray-300! rounded-lg! focus:ring-2 focus:border-transparent outline-none transition-all duration-200 text-gray-900;
 }
 
 .form-input::placeholder {

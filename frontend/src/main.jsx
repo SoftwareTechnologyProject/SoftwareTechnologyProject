@@ -33,6 +33,8 @@ import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import BookAdmin from './pages/BookAdmin/BookAdmin';
 import Login from "./pages/Login/Login.jsx";
+import UserManagement from './pages/User/UserManagement';
+import RevenueStatistics from './pages/Statistics/RevenueStatistics';
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
@@ -231,27 +233,36 @@ createRoot(document.getElementById("root")).render(
             </PrivateRoute>
           } />
           <Route path="blog" element={
-            <PrivateRoute requiredRole="STAFF">
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
               <BlogAdmin />
             </PrivateRoute>
           } />
           <Route path="orderAdmin" element={
-            <PrivateRoute requiredRole="STAFF">
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
               <OrderAdmin />
             </PrivateRoute>
           } />
           <Route path="order/:id" element={
-            <PrivateRoute requiredRole="OrderDetail">
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
               <BookAdmin />
             </PrivateRoute>
           } />
+          <Route path="customers" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <UserManagement />
+            </PrivateRoute>
+          } />
+          <Route path="statistics" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <RevenueStatistics />
+            </PrivateRoute>
+          } />
+          <Route path="chat" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <AdminChatBox />
+            </PrivateRoute>
+          } />
         </Route>
-
-        <Route path="/admin/chat" element={
-          <PrivateRoute requiredRole="ADMIN">
-            <AdminChatBox />
-          </PrivateRoute>
-        } />
       </Routes>
     </BrowserRouter>
   </StrictMode>

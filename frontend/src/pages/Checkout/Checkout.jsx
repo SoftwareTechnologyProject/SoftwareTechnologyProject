@@ -520,7 +520,7 @@ function Checkout() {
                                         setPromoCode(e.target.value)
                                     }
                                     placeholder="Nhập mã khuyến mãi"
-                                    className="flex-1 px-3 py-2 border rounded-md text-lg"
+                                    className="flex-1 p-3! border rounded-md text-lg"
                                     style={{ height: "42px" }} // Cố định chiều cao
                                 />
                             </div>
