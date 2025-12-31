@@ -127,7 +127,7 @@ public class PaymentService {
             throw new Exception("Payment information not found");
         }
         
-        return ordersService.calculateOrderTotalAmount(orderId);
+        return ordersService.getOrderEntityById(orderId).getTotalAmount();
     }
 
     public Long getOrderIdByPaymentKey(String paymentKey) {
