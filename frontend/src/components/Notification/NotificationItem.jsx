@@ -9,8 +9,15 @@ const NotificationItem = ({ noti }) => {
         noti.isRead = true; // optimistic update
       }
 
+      // ✅ Nếu có URL, navigate đến đó (hỗ trợ relative path)
       if (noti.url) {
-        window.location.href = noti.url;
+        // Nếu URL bắt đầu bằng http/https thì mở trực tiếp
+        if (noti.url.startsWith('http://') || noti.url.startsWith('https://')) {
+          window.location.href = noti.url;
+        } else {
+          // Nếu là relative path như /orders/123, chuyển đến trang đó
+          window.location.href = noti.url;
+        }
       }
     } catch (e) {
       console.error("Mark notification as read failed", e);

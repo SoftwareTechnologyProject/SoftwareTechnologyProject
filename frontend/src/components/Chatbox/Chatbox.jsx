@@ -19,6 +19,7 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
 
   // --- WEBSOCKET ---
   const { sendChatMessage } = useUserNotifications(null, (msg) => {
+    console.log("📩 Customer received message:", msg);
     setMessages((prev) => [...prev, msg]);
     // Nếu tin nhắn đến từ Shop (không phải mine) -> đánh dấu đã xem
     if (!msg.mine && msg.id) {
@@ -46,7 +47,7 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
 
   const markRead = async (ids) => {
     if (!ids.length) return;
-    try { await axiosClient.put("/chat/mark-read", ids); } catch (e) {}
+    try { await axiosClient.put("/chat/mark-read", ids); } catch (e) { }
   };
 
   const handleSend = () => {
@@ -78,18 +79,18 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
           <span>Thường trả lời trong vài phút</span>
         </div>
         <button className="btn-close" onClick={onClose} title="Đóng chat">
-           ✕
+          ✕
         </button>
       </div>
 
       {/* 2. BODY MESSAGES */}
       <div className="cc-body">
         {messages.length === 0 && (
-          <div style={{textAlign:'center', color:'#9ca3af', marginTop: 20, fontSize:'0.9rem'}}>
+          <div style={{ textAlign: 'center', color: '#9ca3af', marginTop: 20, fontSize: '0.9rem' }}>
             Xin chào! Bạn cần shop hỗ trợ gì không ạ? 👋
           </div>
         )}
-        
+
         {messages.map((m, idx) => (
           <div key={m.id || idx} className={`cc-msg ${m.mine ? "mine" : "other"}`}>
             <div className="bubble">
@@ -107,11 +108,15 @@ const ChatBox = ({ onClose, setUnreadCount }) => {
           className="cc-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Nhập nội dung cần hỗ trợ..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSend();
+            }
+          }}
         />
         <button className="btn-send" onClick={handleSend}>
-           Gửi
+          Gửi
         </button>
       </div>
     </div>

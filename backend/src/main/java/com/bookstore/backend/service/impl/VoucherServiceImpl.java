@@ -3,6 +3,8 @@ package com.bookstore.backend.service.impl;
 import com.bookstore.backend.DTO.VoucherDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.Voucher;
+import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.repository.OrdersRepository;
 import com.bookstore.backend.repository.VoucherRepository;
 import com.bookstore.backend.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Autowired
     private VoucherRepository voucherRepository;
+    
+    @Autowired
+    private OrdersRepository ordersRepository;
 
     @Override
     public List<Voucher> getAllVouchers() {
@@ -51,10 +56,36 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         // Validate discount value
+        if (voucher.getDiscountValue() == null || voucher.getDiscountValue() < 0) {
+            throw new IllegalArgumentException("Giá trị giảm giá phải lớn hơn hoặc bằng 0");
+        }
+        
         if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
             if (voucher.getDiscountValue() > 100) {
                 throw new IllegalArgumentException("Giảm giá theo phần trăm không được vượt quá 100%");
             }
+            if (voucher.getDiscountValue() <= 0) {
+                throw new IllegalArgumentException("Giảm giá theo phần trăm phải lớn hơn 0");
+            }
+        } else {
+            if (voucher.getDiscountValue() <= 0) {
+                throw new IllegalArgumentException("Giá trị giảm giá phải lớn hơn 0");
+            }
+        }
+        
+        // Validate min order value
+        if (voucher.getMinOrderValue() != null && voucher.getMinOrderValue() < 0) {
+            throw new IllegalArgumentException("Đơn hàng tối thiểu không được âm");
+        }
+        
+        // Validate max discount
+        if (voucher.getMaxDiscount() != null && voucher.getMaxDiscount() < 0) {
+            throw new IllegalArgumentException("Giảm giá tối đa không được âm");
+        }
+        
+        // Validate quantity
+        if (voucher.getQuantity() != null && voucher.getQuantity() < 0) {
+            throw new IllegalArgumentException("Số lượng không được âm");
         }
 
         return voucherRepository.save(voucher);
@@ -79,10 +110,36 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         // Validate discount value
+        if (voucherDetails.getDiscountValue() == null || voucherDetails.getDiscountValue() < 0) {
+            throw new IllegalArgumentException("Giá trị giảm giá phải lớn hơn hoặc bằng 0");
+        }
+        
         if (voucherDetails.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
             if (voucherDetails.getDiscountValue() > 100) {
                 throw new IllegalArgumentException("Giảm giá theo phần trăm không được vượt quá 100%");
             }
+            if (voucherDetails.getDiscountValue() <= 0) {
+                throw new IllegalArgumentException("Giảm giá theo phần trăm phải lớn hơn 0");
+            }
+        } else {
+            if (voucherDetails.getDiscountValue() <= 0) {
+                throw new IllegalArgumentException("Giá trị giảm giá phải lớn hơn 0");
+            }
+        }
+        
+        // Validate min order value
+        if (voucherDetails.getMinOrderValue() != null && voucherDetails.getMinOrderValue() < 0) {
+            throw new IllegalArgumentException("Đơn hàng tối thiểu không được âm");
+        }
+        
+        // Validate max discount
+        if (voucherDetails.getMaxDiscount() != null && voucherDetails.getMaxDiscount() < 0) {
+            throw new IllegalArgumentException("Giảm giá tối đa không được âm");
+        }
+        
+        // Validate quantity
+        if (voucherDetails.getQuantity() != null && voucherDetails.getQuantity() < 0) {
+            throw new IllegalArgumentException("Số lượng không được âm");
         }
 
         // Update fields
@@ -104,6 +161,31 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public void deleteVoucher(Long id) {
         Voucher voucher = getVoucherById(id);
+        
+        // Kiểm tra voucher có đang được sử dụng trong đơn hàng không
+        long activeOrders = ordersRepository.findAll().stream()
+                .filter(order -> order.getVoucher() != null && 
+                               order.getVoucher().getId().equals(id) &&
+                               (order.getStatus() == StatusOrder.PENDING || 
+                                order.getStatus() == StatusOrder.DELIVERY))
+                .count();
+        
+        if (activeOrders > 0) {
+            throw new IllegalStateException(
+                "Không thể xóa voucher: Có " + activeOrders + 
+                " đơn hàng đang sử dụng voucher này (chưa hoàn thành). " +
+                "Vui lòng hoàn thành hoặc hủy các đơn hàng trước."
+            );
+        }
+        
+        // Kiểm tra trạng thái voucher - không cho xóa voucher ACTIVE
+        if (voucher.getStatus() == Voucher.VoucherStatus.ACTIVE) {
+            throw new IllegalStateException(
+                "Không thể xóa voucher đang ở trạng thái ACTIVE. " +
+                "Vui lòng chuyển sang trạng thái INACTIVE hoặc EXPIRED trước khi xóa."
+            );
+        }
+        
         voucherRepository.delete(voucher);
     }
 

@@ -1,6 +1,8 @@
 .order-page {
-  padding-left: 10px;
-  background: var(--components-color);
+  padding: 0!important;
+  margin-left: 10px!important;
+  background: var(--components-color)!important;
+  border-radius: 10px!important;
 }
 
 /* Alert */

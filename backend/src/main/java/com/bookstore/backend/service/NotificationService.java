@@ -1,8 +1,6 @@
 package com.bookstore.backend.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bookstore.backend.DTO.NotificationRequestDTO;
 import com.bookstore.backend.exception.ResourceNotFoundException;
@@ -22,7 +20,6 @@ import com.bookstore.backend.repository.NotificationRepository;
 import com.bookstore.backend.utils.SecurityUtils;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.transaction.annotation.Transactional;
 
 @AllArgsConstructor

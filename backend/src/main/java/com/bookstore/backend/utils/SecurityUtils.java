@@ -2,7 +2,6 @@ package com.bookstore.backend.utils;
 
 import com.bookstore.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.bookstore.backend.model.Users;

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import Footer from '../../components/Footer/Footer';
 import './BlogAdmin.css';
 
@@ -8,7 +10,7 @@ const API_URL = 'http://localhost:8080/blog';
 const BlogAdmin = () => {
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
-    const [postComments, setPostComments] = useState([]); // Comments for editing post
+    const [postComments, setPostComments] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [imageFile, setImageFile] = useState(null);
@@ -26,7 +28,7 @@ const BlogAdmin = () => {
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            alert('Vui lòng đăng nhập để truy cập trang này');
+            toast.error('Vui lòng đăng nhập để truy cập trang này');
             navigate('/login');
             return;
         }
@@ -57,7 +59,18 @@ const BlogAdmin = () => {
     };
 
     const handleDeleteComment = async (commentId) => {
-        if (!confirm('Bạn có chắc muốn xóa bình luận này?')) {
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa?',
+            text: 'Bạn có chắc muốn xóa bình luận này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
@@ -71,7 +84,7 @@ const BlogAdmin = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
@@ -79,18 +92,38 @@ const BlogAdmin = () => {
                 throw new Error('Không thể xóa bình luận');
             }
 
-            alert('Đã xóa bình luận!');
+            toast.success('Đã xóa bình luận!');
             if (editingPost) {
                 fetchPostComments(editingPost.id);
             }
         } catch (err) {
-            alert('Lỗi: ' + err.message);
+            toast.error('Lỗi: ' + err.message);
             console.error('Error deleting comment:', err);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Frontend validation
+        if (!formData.title || formData.title.length > 200) {
+            toast.error('Tiêu đề không được để trống và không quá 200 ký tự');
+            return;
+        }
+        if (!formData.description || formData.description.length > 500) {
+            toast.error('Mô tả không được để trống và không quá 500 ký tự');
+            return;
+        }
+        if (!formData.content || formData.content.length < 50) {
+            toast.error('Nội dung phải ít nhất 50 ký tự');
+            return;
+        }
+        if (!imageFile && !formData.coverImage) {
+            toast.error('Vui lòng chọn ảnh bìa cho bài viết');
+            return;
+        }
+        
+        const loadingToast = toast.loading(editingPost ? 'Đang cập nhật...' : 'Đang tạo bài viết...');
         
         try {
             const token = localStorage.getItem('accessToken');
@@ -111,7 +144,8 @@ const BlogAdmin = () => {
                 });
 
                 if (uploadResponse.status === 403) {
-                    alert('Bạn không có quyền upload ảnh');
+                    toast.dismiss(loadingToast);
+                    toast.error('Bạn không có quyền upload ảnh');
                     setUploading(false);
                     return;
                 }
@@ -146,19 +180,23 @@ const BlogAdmin = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.dismiss(loadingToast);
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
             if (!response.ok) {
-                throw new Error('Không thể lưu bài viết');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Không thể lưu bài viết');
             }
 
-            alert(editingPost ? 'Đã cập nhật bài viết!' : 'Đã tạo bài viết mới!');
+            toast.dismiss(loadingToast);
+            toast.success(editingPost ? 'Đã cập nhật bài viết!' : 'Đã tạo bài viết mới!');
             resetForm();
             fetchPosts();
         } catch (err) {
-            alert('Lỗi: ' + err.message);
+            toast.dismiss(loadingToast);
+            toast.error('Lỗi: ' + err.message);
             console.error('Error saving post:', err);
         } finally {
             setUploading(false);
@@ -193,9 +231,22 @@ const BlogAdmin = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Bạn có chắc muốn xóa bài viết này?')) {
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa?',
+            text: 'Bạn có chắc muốn xóa bài viết này? Tất cả bình luận sẽ bị xóa theo.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
+
+        const loadingToast = toast.loading('Đang xóa bài viết...');
 
         try {
             const token = localStorage.getItem('accessToken');
@@ -207,7 +258,8 @@ const BlogAdmin = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.dismiss(loadingToast);
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
@@ -215,10 +267,12 @@ const BlogAdmin = () => {
                 throw new Error('Không thể xóa bài viết');
             }
 
-            alert('Đã xóa bài viết!');
+            toast.dismiss(loadingToast);
+            toast.success('Đã xóa bài viết!');
             fetchPosts();
         } catch (err) {
-            alert('Lỗi: ' + err.message);
+            toast.dismiss(loadingToast);
+            toast.error('Lỗi: ' + err.message);
             console.error('Error deleting post:', err);
         }
     };
@@ -274,6 +328,7 @@ const BlogAdmin = () => {
                                     maxLength={200}
                                     required
                                 />
+                                <small className="char-count">{formData.title.length}/200 ký tự</small>
                             </div>
 
                             <div className="form-group">
@@ -285,6 +340,7 @@ const BlogAdmin = () => {
                                     rows={3}
                                     required
                                 ></textarea>
+                                <small className="char-count">{formData.description.length}/500 ký tự</small>
                             </div>
 
                             <div className="form-group">
@@ -294,8 +350,9 @@ const BlogAdmin = () => {
                                     onChange={(e) => setFormData({...formData, content: e.target.value})}
                                     rows={15}
                                     required
-                                    placeholder="Mỗi đoạn văn cách nhau 1 dòng..."
+                                    placeholder="Mỗi đoạn văn cách nhau 1 dòng... (Tối thiểu 50 ký tự)"
                                 ></textarea>
+                                <small className="char-count">{formData.content.length} ký tự {formData.content.length < 50 ? `(còn thiếu ${50 - formData.content.length})` : '✓'}</small>
                             </div>
 
                             <div className="form-group">
@@ -304,6 +361,7 @@ const BlogAdmin = () => {
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
+                                    required={!formData.coverImage}
                                 />
                                 {imagePreview && (
                                     <div className="image-preview">

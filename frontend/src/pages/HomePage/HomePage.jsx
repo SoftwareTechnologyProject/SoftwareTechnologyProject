@@ -24,6 +24,7 @@ import { FaArrowTrendUp } from "react-icons/fa6";
 import { RiBook3Line } from "react-icons/ri";
 
 import "./HomePage.css";
+import Effect from "../../components/Effect/Effect";
 
 const banners = [banner3, banner2, banner1];
 
@@ -133,12 +134,11 @@ const HomePage = () => {
 
     return (
         <>
+            <Effect />
             <main>
                 <div className="banner-container">
                     <div className="elite-banner">
-                        <Link to="#">
-                            <img src={banners[index]} alt="Auto banner" />
-                        </Link>
+                        <img src={banners[index]} alt="Auto banner" />
 
                         <button onClick={() => setIndex((index - 1 + banners.length) % banners.length)} className="arrow-left">
                             ❮
@@ -162,8 +162,8 @@ const HomePage = () => {
                     </div>
 
                     <div className="pay-banner">
-                        <Link to="#"><img src={bannerMomo} alt="banner Momo" /></Link>
-                        <Link to="#"><img src={bannerVnpay} alt="banner Vnpay" /></Link>
+                        <img src={bannerMomo} alt="banner Momo" />
+                        <img src={bannerVnpay} alt="banner Vnpay" />
                     </div>
                 </div>
 
@@ -185,7 +185,7 @@ const HomePage = () => {
                 </div>
 
                 {/* ======================= Gift Card ========================= */}
-                <div className="product-catalog">
+                {/* <div className="product-catalog">
                     <div className="title-content border-none">
                         <IoGiftOutline className="icon-title" />
                         <h1>Phiếu Quà Tặng - Gift Card</h1>
@@ -236,7 +236,7 @@ const HomePage = () => {
                     <div className="button-more">
                         <Link to="#">Xem Thêm</Link>
                     </div>
-                </div>
+                </div> */}
 
                 {/* ====================== Trending =================== */}
                 <div className="trending">
@@ -259,7 +259,6 @@ const HomePage = () => {
                                 const variant = book.variants?.[0];
                                 const imageUrl = variant?.imageUrls?.[0] || ex1;
                                 const price = variant?.price || 0;
-                                const oldPrice = price * 1.1; // Mock old price
 
                                 return (
                                     <Link className="book-view" key={book.id || index} to={`/books/${book.id}`}>
@@ -273,14 +272,13 @@ const HomePage = () => {
                                         <div className="description">
                                             <div className="label-price">
                                                 <h3>{book.title}</h3>
+                                                <p className="text-xs text-gray-400 mb-2.5">{book.authorNames?.join(", ")}</p>
                                                 <p className="special-price">
                                                     <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                                                    <span className="percent-discount">-10%</span>
                                                 </p>
-                                                <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                             </div>
                                             <div className="progress-bar">
-                                                <span> Đã Bán {book.variants[0].sold}</span>
+                                                <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                             </div>
                                         </div>
                                     </Link>
@@ -317,10 +315,9 @@ const HomePage = () => {
                                             const variant = book.variants?.[0];
                                             const imageUrl = variant?.imageUrls?.[0] || ex1;
                                             const price = variant?.price || 0;
-                                            const oldPrice = price * 1.15;
 
                                             return (
-                                                <Link className="w-[20%] book-view" key={book.id || idx} to={`/books/${book.id}`}>
+                                                <Link className="w-120 book-view" key={book.id || idx} to={`/books/${book.id}`}>
                                                     <img
                                                         src={imageUrl}
                                                         alt={book.title}
@@ -334,12 +331,10 @@ const HomePage = () => {
                                                             <h3>{book.title}</h3>
                                                             <p className="special-price">
                                                                 <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                                                                <span className="percent-discount">-10%</span>
                                                             </p>
-                                                            <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
                                                         </div>
                                                         <div className="progress-bar">
-                                                            <span> Đã Bán {book.variants[0].sold}</span>
+                                                            <span> Đã Bán {book.variants?.[0]?.sold ?? 0}</span>
                                                         </div>
                                                     </div>
                                                 </Link>

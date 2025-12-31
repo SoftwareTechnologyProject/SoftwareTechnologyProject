@@ -2,15 +2,11 @@ package com.bookstore.backend.controller;
 
 import com.bookstore.backend.DTO.BoxChatDTO;
 import com.bookstore.backend.DTO.MessageRequestDTO;
-import com.bookstore.backend.DTO.MessageResponseDTO;
-import com.bookstore.backend.model.Messages;
 import com.bookstore.backend.service.ChatService;
 import com.bookstore.backend.service.MessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;

@@ -8,9 +8,12 @@ import com.bookstore.backend.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,7 @@ public class BlogController {
 
     // Upload image to S3
     @PostMapping("/upload-image")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             System.out.println("📤 Uploading image: " + file.getOriginalFilename());
@@ -65,20 +69,28 @@ public class BlogController {
 
     // Create new blog post (admin only)
     @PostMapping("/posts")
-    public ResponseEntity<BlogPostDTO> createPost(@RequestBody BlogPostDTO blogPostDTO) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<BlogPostDTO> createPost(@Valid @RequestBody BlogPostDTO blogPostDTO) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("📝 Creating blog post by user: " + auth.getName());
+        System.out.println("   Authorities: " + auth.getAuthorities());
+        System.out.println("   Principal: " + auth.getPrincipal());
+        System.out.println("   Is Authenticated: " + auth.isAuthenticated());
         BlogPostDTO createdPost = blogService.createPost(blogPostDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     // Update blog post (admin only)
     @PutMapping("/posts/{id}")
-    public ResponseEntity<BlogPostDTO> updatePost(@PathVariable Long id, @RequestBody BlogPostDTO blogPostDTO) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<BlogPostDTO> updatePost(@PathVariable Long id, @Valid @RequestBody BlogPostDTO blogPostDTO) {
         BlogPostDTO updatedPost = blogService.updatePost(id, blogPostDTO);
         return ResponseEntity.ok(updatedPost);
     }
 
     // Delete blog post (admin only)
     @DeleteMapping("/posts/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         blogService.deletePost(id);
         return ResponseEntity.noContent().build();
@@ -118,6 +130,7 @@ public class BlogController {
 
     // Delete comment (admin only)
     @DeleteMapping("/comments/{commentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         blogService.deleteComment(commentId);
         return ResponseEntity.noContent().build();

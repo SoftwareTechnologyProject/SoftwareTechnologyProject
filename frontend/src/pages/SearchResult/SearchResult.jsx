@@ -10,7 +10,7 @@ const SearchResult = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [itemsPerPage, setItemsPerPage] = useState(32);
   const [sortBy, setSortBy] = useState("newest"); // newest, price-asc, price-desc, trending
   const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [searchParams] = useSearchParams();
@@ -21,13 +21,13 @@ const SearchResult = () => {
     const fetchBooksByKey = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/books/searchKey',           {
-            params: {
-              keyWord: keyword,
-              page: page,
-              size: 500
-            }
-          });
+        const response = await axios.get('http://localhost:8080/api/books/searchKey', {
+          params: {
+            keyWord: keyword,
+            page: page,
+            size: 500
+          }
+        });
         const allBooks = response.data.content || [];
         setBooks(allBooks);
       } catch (err) {
@@ -52,7 +52,7 @@ const SearchResult = () => {
     });
 
     // Sort
-    switch(sortBy) {
+    switch (sortBy) {
       case 'price-asc':
         result.sort((a, b) => (a.variants?.[0]?.price || 0) - (b.variants?.[0]?.price || 0));
         break;
@@ -95,52 +95,52 @@ const SearchResult = () => {
           <div className="filter-section">
             <h3>Giá</h3>
             <div className="price-inputs">
-              <input 
-                type="number" 
-                value={priceRange[0]} 
+              <input
+                type="number"
+                value={priceRange[0]}
                 onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
                 placeholder="Từ"
               />
               <span>-</span>
-              <input 
-                type="number" 
-                value={priceRange[1]} 
+              <input
+                type="number"
+                value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000000])}
                 placeholder="Đến"
               />
             </div>
             <div className="price-ranges">
               <label className="checkbox-item">
-                <input 
-                  type="radio" 
-                  name="price" 
+                <input
+                  type="radio"
+                  name="price"
                   checked={priceRange[0] === 0 && priceRange[1] === 1000000}
                   onChange={() => setPriceRange([0, 1000000])}
                 />
                 Tất cả giá
               </label>
               <label className="checkbox-item">
-                <input 
-                  type="radio" 
-                  name="price" 
+                <input
+                  type="radio"
+                  name="price"
                   checked={priceRange[0] === 0 && priceRange[1] === 100000}
                   onChange={() => setPriceRange([0, 100000])}
                 />
                 Dưới 100K
               </label>
               <label className="checkbox-item">
-                <input 
-                  type="radio" 
-                  name="price" 
+                <input
+                  type="radio"
+                  name="price"
                   checked={priceRange[0] === 100000 && priceRange[1] === 300000}
                   onChange={() => setPriceRange([100000, 300000])}
                 />
                 100K - 300K
               </label>
               <label className="checkbox-item">
-                <input 
-                  type="radio" 
-                  name="price" 
+                <input
+                  type="radio"
+                  name="price"
                   checked={priceRange[0] === 300000 && priceRange[1] === 1000000}
                   onChange={() => setPriceRange([300000, 1000000])}
                 />
@@ -169,16 +169,6 @@ const SearchResult = () => {
                 <option value="price-desc">Giá: Cao đến thấp</option>
               </select>
             </div>
-
-            <div className="items-per-page">
-              <label htmlFor="items">Hiển thị:</label>
-              <select id="items" value={itemsPerPage} onChange={(e) => setItemsPerPage(parseInt(e.target.value))}>
-                <option value={5}>5 sản phẩm</option>
-                <option value={10}>10 sản phẩm</option>
-                <option value={15}>15 sản phẩm</option>
-                <option value={20}>20 sản phẩm</option>
-              </select>
-            </div>
           </div>
 
           {paginatedBooks.length === 0 ? (
@@ -192,7 +182,6 @@ const SearchResult = () => {
                   const variant = book.variants?.[0];
                   const imageUrl = variant?.imageUrls?.[0] || ex1;
                   const price = variant?.price || 0;
-                  const oldPrice = Math.round(price * 1.1);
 
                   return (
                     <Link key={book.id || index} to={`/books/${book.id}`} className="product-card">
@@ -206,12 +195,12 @@ const SearchResult = () => {
                         />
                       </div>
                       <div className="product-info">
-                        <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
-                        <p className="author">{book.authorNames?.join(", ")}</p>
-                        <div className="price-section">
-                          <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
-                          <span className="discount">-10%</span>
+                        <div className="label-price">
+                          <h3>{book.title}</h3>
+                          <p className="author">{book.authorNames?.join(", ")}</p>
+                          <p className="special-price">
+                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                          </p>
                         </div>
                       </div>
                     </Link>

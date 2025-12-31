@@ -1,0 +1,358 @@
+.statistics-container {
+    padding: 2rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card.total-books {
+    border-left: 4px solid #3498db;
+}
+
+.summary-card.total-orders {
+    border-left: 4px solid #9b59b6;
+}
+
+.summary-card.total-revenue {
+    border-left: 4px solid #2ecc71;
+}
+
+.summary-card.average {
+    border-left: 4px solid #f39c12;
+}
+
+.card-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h3 {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    color: #95a5a6;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-hint {
+    color: #95a5a6;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* No Data Text */
+.no-data-text {
+    color: #95a5a6;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Statistics Table */
+.statistics-table-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.statistics-table-container h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.refresh-btn {
+    float: right;
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.refresh-btn:hover {
+    background-color: #2980b9;
+}
+
+.statistics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.statistics-table thead {
+    background-color: #34495e;
+    color: white;
+}
+
+.statistics-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statistics-table tbody tr {
+    border-bottom: 1px solid #ecf0f1;
+    transition: background-color 0.2s;
+}
+
+.statistics-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.statistics-table td {
+    padding: 1rem;
+    color: #2c3e50;
+}
+
+.month-cell {
+    font-weight: 600;
+}
+
+.month-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    background-color: #ecf0f1;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #34495e;
+}
+
+.books-cell {
+    text-align: center;
+}
+
+.books-value {
+    font-weight: 600;
+    color: #3498db;
+    font-size: 1.1rem;
+}
+
+.unit {
+    color: #95a5a6;
+    font-size: 0.85rem;
+    margin-left: 0.3rem;
+}
+
+.revenue-cell {
+    text-align: right;
+}
+
+.revenue-value {
+    font-weight: 600;
+    color: #27ae60;
+    font-size: 1.1rem;
+}
+
+.percentage-cell {
+    width: 200px;
+}
+
+.percentage-bar {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    background-color: #ecf0f1;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.percentage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+}
+
+.percentage-text {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #2c3e50;
+}
+
+/* Footer Total Row */
+.total-row {
+    background-color: #f1f3f4;
+    font-size: 1.05rem;
+}
+
+.total-row td {
+    padding: 1.2rem 1rem;
+    border-top: 2px solid #34495e;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error-message p {
+    color: #e74c3c;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.retry-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+    background-color: #2980b9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .statistics-container {
+        padding: 1rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .statistics-table-container {
+        overflow-x: auto;
+    }
+
+    .statistics-table {
+        font-size: 0.85rem;
+    }
+
+    .card-value {
+        font-size: 1.5rem;
+    }
+
+    .percentage-cell {
+        width: 150px;
+    }
+}

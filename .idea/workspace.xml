@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ebda9010-9182-424c-96eb-6b763d2f726c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/DTO/OrderDetailDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/DTO/OrderDetailDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/model/enums/StatusOrder.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/model/enums/StatusOrder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/service/OrdersService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bookstore/backend/service/OrdersService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Order/Order.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Order/Order.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Order/Order.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Order/Order.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/OrderDetail/OrderDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/OrderDetail/OrderDetail.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/OrderDetail/OrderDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/OrderDetail/OrderDetail.jsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="QODANA_PROBLEMS_VIEW_TAB" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="35eqSTApZIKulrhDkrqdEtUG05B" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/order&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;F:/2025-2026_HK1/cnpm/SoftwareTechnologyProject&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="SoftwareTechnologyProject" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="SoftwareTechnologyProject" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ebda9010-9182-424c-96eb-6b763d2f726c" name="Changes" comment="" />
+      <created>1763480885847</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763480885847</updated>
+    </task>
+    <servers />
+  </component>
+</project>

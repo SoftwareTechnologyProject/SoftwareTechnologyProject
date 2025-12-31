@@ -1,6 +1,5 @@
 package com.bookstore.backend.service.impl;
 
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -15,6 +14,7 @@ import com.bookstore.backend.DTO.ProfileRequest;
 import com.bookstore.backend.DTO.ProfileResponse;
 import com.bookstore.backend.model.Account;
 import com.bookstore.backend.model.Users;
+import com.bookstore.backend.model.enums.AccountStatus;
 import com.bookstore.backend.model.enums.UserRole;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.service.EmailService;
@@ -46,10 +46,13 @@ public class ProfileServiceImpl implements ProfileService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .isAccountVerified(false)
+                .status(AccountStatus.ACTIVE) // Khởi tạo trạng thái ACTIVE
                 .verifyOtp(null)
                 .verifyOtpExpiredAt(0L)
+                .verifyOtpAttempts(0)
                 .resetPasswordOtp(null)
                 .resetOtpExpiredAt(0L)
+                .resetOtpAttempts(0)
                 .build();
 
         // 2. Tạo Users: Bổ sung các trường chi tiết
@@ -99,6 +102,12 @@ public class ProfileServiceImpl implements ProfileService {
             throw new RuntimeException("Account not found for user");
         }
 
+        // Hủy OTP cũ trước khi tạo OTP mới
+        account.setResetPasswordOtp(null);
+        account.setResetOtpExpiredAt(0L);
+        account.setResetOtpAttempts(0);
+        userRepository.save(user);
+
         String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
         long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
 
@@ -125,17 +134,35 @@ public class ProfileServiceImpl implements ProfileService {
             throw new RuntimeException("Account not found for user");
         }
 
-        if (account.getResetPasswordOtp() == null || !account.getResetPasswordOtp().equals(otp)) {
-            throw new RuntimeException("Invalid OTP");
+        // Kiểm tra OTP hết hạn trước
+        if (account.getResetOtpExpiredAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP hết hạn. Vui lòng gửi lại OTP mới.");
         }
 
-        if (account.getResetOtpExpiredAt() < System.currentTimeMillis()) {
-            throw new RuntimeException("OTP Expired");
+        // Kiểm tra số lần nhập sai (tối đa 5 lần)
+        Integer attempts = account.getResetOtpAttempts();
+        if (attempts == null) attempts = 0;
+        
+        if (attempts >= 5) {
+            // Xóa OTP và khóa
+            account.setResetPasswordOtp(null);
+            account.setResetOtpExpiredAt(0L);
+            account.setResetOtpAttempts(0);
+            userRepository.save(user);
+            throw new RuntimeException("Đã nhập sai OTP quá 5 lần. Vui lòng gửi lại OTP mới.");
+        }
+
+        if (account.getResetPasswordOtp() == null || !account.getResetPasswordOtp().equals(otp)) {
+            // Tăng số lần nhập sai
+            account.setResetOtpAttempts(attempts + 1);
+            userRepository.save(user);
+            throw new RuntimeException("OTP không hợp lệ. Còn " + (5 - attempts - 1) + " lần thử.");
         }
 
         account.setPassword(passwordEncoder.encode(newPassword));
         account.setResetPasswordOtp(null);
         account.setResetOtpExpiredAt(0L);
+        account.setResetOtpAttempts(0);
 
         userRepository.save(user);
     }
@@ -154,8 +181,14 @@ public class ProfileServiceImpl implements ProfileService {
             return;
         }
 
+        // Hủy OTP cũ (nếu có) và reset attempts
+        account.setVerifyOtp(null);
+        account.setVerifyOtpExpiredAt(0L);
+        account.setVerifyOtpAttempts(0);
+        userRepository.save(user);
+
         String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
-        long expiryTime = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
+        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000); // 15 phút (giảm từ 24h)
 
         account.setVerifyOtp(otp);
         account.setVerifyOtpExpiredAt(expiryTime);
@@ -185,8 +218,14 @@ public class ProfileServiceImpl implements ProfileService {
             return;
         }
 
+        // Hủy OTP cũ (nếu có) và reset attempts
+        account.setVerifyOtp(null);
+        account.setVerifyOtpExpiredAt(0L);
+        account.setVerifyOtpAttempts(0);
+        userRepository.save(user);
+
         String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
-        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000); // 15 minutes
+        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000); // 15 phút
 
         account.setVerifyOtp(otp);
         account.setVerifyOtpExpiredAt(expiryTime);
@@ -210,17 +249,35 @@ public class ProfileServiceImpl implements ProfileService {
             throw new RuntimeException("Account not found for user");
         }
 
-        if (account.getVerifyOtp() == null || !account.getVerifyOtp().equals(otp)) {
-            throw new RuntimeException("Invalid OTP");
+        // Kiểm tra OTP hết hạn trước
+        if (account.getVerifyOtpExpiredAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP hết hạn. Vui lòng gửi lại OTP mới.");
         }
 
-        if (account.getVerifyOtpExpiredAt() < System.currentTimeMillis()) {
-            throw new RuntimeException("OTP Expired");
+        // Kiểm tra số lần nhập sai (tối đa 5 lần)
+        Integer attempts = account.getVerifyOtpAttempts();
+        if (attempts == null) attempts = 0;
+        
+        if (attempts >= 5) {
+            // Xóa OTP và khóa
+            account.setVerifyOtp(null);
+            account.setVerifyOtpExpiredAt(0L);
+            account.setVerifyOtpAttempts(0);
+            userRepository.save(user);
+            throw new RuntimeException("Đã nhập sai OTP quá 5 lần. Vui lòng gửi lại OTP mới.");
+        }
+
+        if (account.getVerifyOtp() == null || !account.getVerifyOtp().equals(otp)) {
+            // Tăng số lần nhập sai
+            account.setVerifyOtpAttempts(attempts + 1);
+            userRepository.save(user);
+            throw new RuntimeException("OTP không hợp lệ. Còn " + (5 - attempts - 1) + " lần thử.");
         }
 
         account.setIsAccountVerified(true);
         account.setVerifyOtp(null);
         account.setVerifyOtpExpiredAt(0L);
+        account.setVerifyOtpAttempts(0);
 
         userRepository.save(user);
     }

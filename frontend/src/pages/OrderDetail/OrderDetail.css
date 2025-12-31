@@ -94,13 +94,21 @@
 
 /* Total */
 .total-section {
-  display: flex;
-  justify-content: space-between;
   font-size: 20px;
   padding: 20px 0;
-  font-weight: bold;
   border-top: 2px solid #ddd;
   margin-top: 15px;
+}
+
+.total-section .row {
+  display: flex;
+  justify-content: space-between; /* 👈 trái – phải */
+  margin: 8px 0;
+}
+
+.total-section .total {
+  font-size: 22px;
+  font-weight: bold;
 }
 
 .back-btn {

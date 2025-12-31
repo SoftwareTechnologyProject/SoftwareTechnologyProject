@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.bookstore.backend.model.Book;
-import com.bookstore.backend.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,15 +54,17 @@ public class BookController {
         return ResponseEntity.ok(bookDTO);
     }
 
-    // POST /books -> tạo sách mới
+    // POST /books -> tạo sách mới (CHỈ ADMIN)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookDTO bookDTO) {
         BookDTO saved = bookService.createBook(bookDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // PUT /books/{id} -> cập nhật sách theo ID
+    // PUT /books/{id} -> cập nhật sách theo ID (CHỈ ADMIN)
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookDTO> updateBook(
             @PathVariable Long id,
             @Valid @RequestBody BookDTO bookDTO) {
@@ -71,8 +72,9 @@ public class BookController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /books/{id} -> xóa sách theo ID
+    // DELETE /books/{id} -> xóa sách theo ID (CHỈ ADMIN)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
@@ -144,8 +146,9 @@ public class BookController {
     }
 
 
-    // PATCH /books/variants/{variantId}/status -> cập nhật trạng thái (status) của một phiên bản sách (variant)
+    // PATCH /books/variants/{variantId}/status -> cập nhật trạng thái (status) của một phiên bản sách (variant) (CHỈ ADMIN)
     @PatchMapping("/variants/{variantId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateVariantStatus(
             @PathVariable Long variantId,
             @RequestParam String status) {
@@ -153,8 +156,9 @@ public class BookController {
         return ResponseEntity.ok().build();
     }
 
-    // POST /books/upload-image -> Upload hình ảnh sách lên S3 với validation
+    // POST /books/upload-image -> Upload hình ảnh sách lên S3 với validation (CHỈ ADMIN)
     @PostMapping("/upload-image")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> uploadBookImage(@RequestParam("file") MultipartFile file) {
         try {
             // Validate file không null và không rỗng

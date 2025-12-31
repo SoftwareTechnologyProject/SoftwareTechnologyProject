@@ -40,6 +40,7 @@ public class Book {
 
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDeleted = false;
 

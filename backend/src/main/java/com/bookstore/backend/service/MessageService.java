@@ -11,7 +11,7 @@ import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.userdetails.User;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +67,9 @@ public class MessageService {
     public BoxChatDTO getBoxChat(int page, int size){
         Users user = securityUtils.getCurrentUser();
 
-        Users admin = userRepository.findByEmail("ndtoan.work@gmail.com").orElseThrow(() -> new RuntimeException("No admin available"));
+        // Tìm admin/staff khả dụng thay vì hardcode email
+        Users admin = userRepository.findFirstAdminOrStaff()
+                .orElseThrow(() -> new RuntimeException("Không có admin/staff khả dụng để hỗ trợ"));
 
         Conversations conversation = conversationService.getOrCreateConversation(user, admin);
         Page<MessageResponseDTO> chatContents = Page.empty();
@@ -76,6 +78,7 @@ public class MessageService {
             admin = conversation.getAdmin();
         }
         return BoxChatDTO.builder()
+                .conversationId(conversation != null ? conversation.getId() : null)
                 .senderId(user.getId())
                 .senderName(user.getFullName())
                 .receiverId(admin.getId())

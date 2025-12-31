@@ -1,24 +1,19 @@
 package com.bookstore.backend.service;
 
-import com.bookstore.backend.DTO.MessageResponseDTO;
-import com.bookstore.backend.exception.ResourceNotFoundException;
 import com.bookstore.backend.model.Conversations;
 import com.bookstore.backend.model.Users;
 import com.bookstore.backend.model.enums.UserRole;
 import com.bookstore.backend.repository.ConversationRepository;
-import com.bookstore.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ConversationService {
     private final ConversationRepository conversationRepository;
-    private final UserRepository userRepository;
 
     public Conversations createConversation(Users u1, Users u2) {
         Users admin, customer;

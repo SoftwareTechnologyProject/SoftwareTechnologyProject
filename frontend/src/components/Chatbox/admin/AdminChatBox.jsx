@@ -44,10 +44,27 @@ const AdminChatBox = () => {
 
   // --- SOCKET CONNECTION ---
   const { sendChatMessage } = useUserNotifications(null, (msg) => {
-    setMessages((prev) => [...prev, msg]);
-    if (activeBox && msg.conversationId === activeBox.conversationId && !msg.mine) {
-        markRead([msg.id]);
+    console.log("📩 Admin received WebSocket message:", msg);
+    console.log("   Current activeBox conversationId:", activeBox?.conversationId);
+    console.log("   Message conversationId:", msg.conversationId);
+    
+    // Luôn reload boxChats để update last message trong sidebar
+    console.log("🔄 Reloading boxChats...");
+    loadBoxChats();
+    
+    // Thêm tin nhắn vào danh sách nếu đang active conversation này
+    if (activeBox && msg.conversationId === activeBox.conversationId) {
+        console.log("✅ Message belongs to active conversation, adding to messages list");
+        setMessages((prev) => [...prev, msg]);
+        
+        // Nếu tin nhắn không phải của mình thì mark read
+        if (!msg.mine && msg.id) {
+            console.log("📖 Marking message as read");
+            markRead([msg.id]);
+        }
     } else {
+        console.log("ℹ️ Message from other conversation, fetching unread count");
+        // Nếu tin nhắn từ conversation khác, fetch unread count
         fetchUnread();
     }
   });
@@ -85,9 +102,15 @@ const AdminChatBox = () => {
   };
 
   const handleSend = () => {
-    if (!input.trim() || !activeBox) return;
+    console.log("🔵 handleSend called, input:", input, "activeBox:", activeBox?.receiverEmail);
+    if (!input.trim() || !activeBox) {
+      console.warn("⚠️ Cannot send: empty input or no activeBox");
+      return;
+    }
+    console.log("📤 Sending message to:", activeBox.receiverEmail);
     sendChatMessage({ receiveEmail: activeBox.receiverEmail, content: input });
     setInput("");
+    console.log("✅ Message sent, input cleared");
   };
 
   // --- LOGIC ADD NOTE (TIMELINE) ---

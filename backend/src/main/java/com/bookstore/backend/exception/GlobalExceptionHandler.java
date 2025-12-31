@@ -60,6 +60,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    // EF1 - BadRequest exception (400 Bad Request)
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequestException(
+            BadRequestException ex,
+            WebRequest request) {
+
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("timestamp", LocalDateTime.now());
+        errorDetails.put("status", 400);
+        errorDetails.put("error", "Bad Request");
+        errorDetails.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
     // EF1 - Illegal argument (400 Bad Request)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class MessageResponseDTO {
     private Long id;
+    private Long conversationId; // Thêm conversationId để frontend biết message thuộc conversation nào
     private LocalDateTime createdAt;
     private String content;
     private String sender;
@@ -19,15 +20,29 @@ public class MessageResponseDTO {
     private boolean isMine;
 
     public static MessageResponseDTO fromSender(Messages messages){
-        return MessageResponseDTO.builder().id(messages.getId()).createdAt(messages.getCreatedAt())
-                .content(messages.getContent()).sender(messages.getSender().getFullName()).receiver(messages.getReceiver().getFullName())
-                .isRead(messages.getIsRead()).isMine(true).build();
+        return MessageResponseDTO.builder()
+                .id(messages.getId())
+                .conversationId(messages.getConversation().getId())
+                .createdAt(messages.getCreatedAt())
+                .content(messages.getContent())
+                .sender(messages.getSender().getFullName())
+                .receiver(messages.getReceiver().getFullName())
+                .isRead(messages.getIsRead())
+                .isMine(true)
+                .build();
     }
 
     public static MessageResponseDTO fromReceiver(Messages messages){
-        return MessageResponseDTO.builder().id(messages.getId()).createdAt(messages.getCreatedAt())
-                .content(messages.getContent()).sender(messages.getSender().getFullName()).receiver(messages.getReceiver().getFullName())
-                .isRead(messages.getIsRead()).isMine(false).build();
+        return MessageResponseDTO.builder()
+                .id(messages.getId())
+                .conversationId(messages.getConversation().getId())
+                .createdAt(messages.getCreatedAt())
+                .content(messages.getContent())
+                .sender(messages.getSender().getFullName())
+                .receiver(messages.getReceiver().getFullName())
+                .isRead(messages.getIsRead())
+                .isMine(false)
+                .build();
     }
 
     public static MessageResponseDTO from(Messages message, Users currentUser) {
@@ -35,6 +50,7 @@ public class MessageResponseDTO {
 
         return MessageResponseDTO.builder()
                 .id(message.getId())
+                .conversationId(message.getConversation().getId())
                 .content(message.getContent())
                 .createdAt(message.getCreatedAt())
                 .sender(message.getSender().getFullName())

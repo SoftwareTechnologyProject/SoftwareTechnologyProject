@@ -166,13 +166,33 @@ export default function BookAdmin() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     
-    // Giả lập preview ảnh
-    const newImageUrls = files.map(file => URL.createObjectURL(file));
-    const currentVariant = formData.variants[variantIndex];
-    const updatedImages = [...(currentVariant.imageUrls || []), ...newImageUrls];
-    updateVariant(variantIndex, 'imageUrls', updatedImages);
+    const loadingToast = toast.loading(`Đang upload ${files.length} ảnh...`);
+    
+    try {
+      // Upload từng file lên S3
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await axiosClient.post('/books/upload-image', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data.url; // Return URL from S3
+      });
+      
+      const uploadedUrls = await Promise.all(uploadPromises);
+      
+      // Cập nhật state với URLs từ S3
+      const currentVariant = formData.variants[variantIndex];
+      const updatedImages = [...(currentVariant.imageUrls || []), ...uploadedUrls];
+      updateVariant(variantIndex, 'imageUrls', updatedImages);
+      
+      toast.success(`Đã upload ${files.length} ảnh thành công!`, { id: loadingToast });
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error('Upload ảnh thất bại. Vui lòng thử lại!', { id: loadingToast });
+    }
+    
     e.target.value = null;
-    toast.success(`Đã thêm ${files.length} ảnh mới`);
   };
 
   // --- LOGIC PHÂN TRANG (Render số trang) ---

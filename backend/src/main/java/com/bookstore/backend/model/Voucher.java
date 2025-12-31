@@ -238,7 +238,8 @@ public class Voucher {
         if (quantity == null) {
             return null;
         }
-        return Math.max(0, quantity - usedCount);
+        int used = (usedCount == null) ? 0 : usedCount;
+        return Math.max(0, quantity - used);
     }
 
     @Override

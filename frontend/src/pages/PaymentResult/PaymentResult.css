@@ -1,0 +1,105 @@
+.payment-result {
+    width: 100%;
+}
+
+.payment-result__content {
+    margin: 16px auto;
+    width: calc(100% - 192px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 500px;
+    background-color: #fffdfd;
+    border-radius: 0.75rem;
+}
+
+.spinner {
+    width: 80px;
+    height: 80px;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.payment-result__icon {
+    width: 130px;
+    height: 130px;
+    fill: #ffa500;
+}
+
+.payment-result__title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0;
+}
+
+.payment-result__message {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.payment-result__message p {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.payment-result__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-result__btn {
+    padding: 8px 80px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.home-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.home-btn:hover {
+    opacity: 0.9;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .payment-result__content {
+        width: calc(100% - 32px);
+        height: auto;
+        min-height: 400px;
+        padding: 2rem 1rem;
+    }
+
+    .payment-result__title {
+        font-size: 1.5rem;
+    }
+
+    .payment-result__message p {
+        font-size: 0.9rem;
+    }
+
+    .payment-result__btn {
+        padding: 8px 40px;
+    }
+}

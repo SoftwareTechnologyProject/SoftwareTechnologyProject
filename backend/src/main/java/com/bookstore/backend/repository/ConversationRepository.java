@@ -19,4 +19,11 @@ public interface ConversationRepository extends JpaRepository<Conversations, Lon
     Optional<Conversations> findBetweenUsers(Users u1, Users u2);
 
     List<Conversations> findByAdmin(Users admin);
+    
+    @Query("""
+        SELECT c FROM Conversations c
+        WHERE c.admin.role IN ('ADMIN', 'STAFF')
+        ORDER BY c.updatedAt DESC
+        """)
+    List<Conversations> findAllAdminConversations();
 }

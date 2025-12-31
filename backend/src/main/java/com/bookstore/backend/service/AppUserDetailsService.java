@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.bookstore.backend.model.Account;
 import com.bookstore.backend.model.Users;
+import com.bookstore.backend.model.enums.AccountStatus;
 import com.bookstore.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,14 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
         throw new UsernameNotFoundException("Account not found for user: " + email);
     }
 
+    // Kiểm tra trạng thái tài khoản
+    AccountStatus status = account.getStatus();
+    if (status == AccountStatus.DELETED) {
+        throw new UsernameNotFoundException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+    }
+    
     boolean enabled = account.getIsAccountVerified() != null && account.getIsAccountVerified();
+    boolean locked = (status == AccountStatus.LOCKED);
 
     return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
@@ -39,9 +47,9 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
             )
             .accountExpired(false)
-            .accountLocked(false)
+            .accountLocked(locked) // Khóa nếu status = LOCKED
             .credentialsExpired(false)
-            .disabled(!enabled)
+            .disabled(!enabled) // Vô hiệu hóa nếu chưa verify
             .build();
 }
 }

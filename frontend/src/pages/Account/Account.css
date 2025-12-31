@@ -42,8 +42,8 @@
   @apply grid !grid-cols-[20%_70%] items-center gap-4;
 }
 
-.form-label {
-  @apply w-1/4 min-w-[120px];
+.form-label-account {
+  @apply w-full min-w-[120px];
 }
 
 .form-input-wrapper {
@@ -55,7 +55,7 @@
 }
 
 /* Text input */
-.form-input {
+.form-input-account {
   @apply w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:border-blue-500 transition-colors;
 }
 
@@ -111,13 +111,32 @@
   @apply !bg-[var(--primary-color)] hover:bg-red-800 text-white font-medium py-2 px-8 rounded shadow-sm transition-colors;
 }
 
+/* ==================== PASSWORD INPUT ==================== */
+.password-wrapper {
+  @apply relative flex items-center;
+}
+
+.password-wrapper .form-input {
+  @apply pr-10; /* chừa chỗ cho icon */
+}
+
+.toggle-password {
+  @apply absolute right-3 top-1/2 -translate-y-1/2
+         cursor-pointer text-gray-500
+         transition-colors duration-200;
+}
+
+.toggle-password:hover {
+  @apply text-gray-800;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .account-container {
     @apply grid-cols-1 mx-4;
   }
 
-  .form-label {
+  .form-label-account {
     @apply col-span-12 mb-1;
   }
 

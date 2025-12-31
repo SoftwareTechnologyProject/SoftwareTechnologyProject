@@ -2,8 +2,11 @@ package com.bookstore.backend.model;
 
 import com.bookstore.backend.model.enums.PaymentType;
 import com.bookstore.backend.model.enums.StatusOrder;
+import com.bookstore.backend.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -35,6 +38,10 @@ public class Orders {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentType paymentType;
 
     @ManyToOne
@@ -47,6 +54,8 @@ public class Orders {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<OrderDetails> orderDetails;
+
+    private BigDecimal totalAmount;
 
     @PrePersist
     protected void onCreate() {

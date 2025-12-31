@@ -208,7 +208,6 @@ const TrendPage = () => {
                   const variant = book.variants?.[0];
                   const imageUrl = variant?.imageUrls?.[0] || ex1;
                   const price = variant?.price || 0;
-                  const oldPrice = Math.round(price * 1.1);
 
                   return (
                     <Link key={book.id || index} to={`/books/${book.id}`} className="product-card">
@@ -222,12 +221,12 @@ const TrendPage = () => {
                         />
                       </div>
                       <div className="product-info">
-                        <h3>{book.title?.substring(0, 50) + (book.title?.length > 50 ? '...' : '')}</h3>
-                        <p className="author">{book.authorNames?.join(", ")}</p>
-                        <div className="price-section">
-                          <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
-                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
-                          <span className="discount">-10%</span>
+                        <div className="label-price">
+                          <h3>{book.title}</h3>
+                          <p className="author">{book.authorNames?.join(", ")}</p>
+                          <p className="special-price">
+                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                          </p>
                         </div>
                         <div className="progress-bar-trend">
                           <span> Đã Bán {book.variants[0].sold}</span>

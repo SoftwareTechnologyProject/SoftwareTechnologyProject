@@ -13,6 +13,7 @@ import com.bookstore.backend.repository.PublisherRepository;
 import com.bookstore.backend.repository.CartItemRepository;
 import com.bookstore.backend.repository.BookVariantsRepository;
 import com.bookstore.backend.repository.OrderDetailRepository;
+import com.bookstore.backend.repository.BookImagesRepository;
 import org.springframework.beans.factory.annotation.Autowired;  
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -48,6 +49,9 @@ public class BookService {
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private BookImagesRepository bookImagesRepository;
 
     @Autowired
     private S3Service s3Service;
@@ -230,7 +234,25 @@ public class BookService {
                 variant.setStatus(vdto.getStatus());
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book);
-                // TODO: map image URLs nếu cần
+                
+                // Map image URLs - lưu vào database
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    // Xóa các ảnh cũ nếu có
+                    if (vdto.getId() != null) {
+                        bookImagesRepository.deleteAll(bookImagesRepository.findByBookVariantId(vdto.getId()));
+                    }
+                    
+                    // Thêm ảnh mới
+                    List<BookImages> images = new ArrayList<>();
+                    for (String imageUrl : vdto.getImageUrls()) {
+                        BookImages img = new BookImages();
+                        img.setImageUrl(imageUrl);
+                        img.setBookVariant(variant);
+                        images.add(img);
+                    }
+                    variant.setImages(images);
+                }
+                
                 book.getVariants().add(variant);
             }
         }
@@ -364,6 +386,19 @@ public class BookService {
                 variant.setStatus(vdto.getStatus());
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book); // gắn variant với book
+                
+                // Map image URLs - lưu vào database
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    List<BookImages> images = new ArrayList<>();
+                    for (String imageUrl : vdto.getImageUrls()) {
+                        BookImages img = new BookImages();
+                        img.setImageUrl(imageUrl);
+                        img.setBookVariant(variant);
+                        images.add(img);
+                    }
+                    variant.setImages(images);
+                }
+                
                 book.getVariants().add(variant);
             }
         }

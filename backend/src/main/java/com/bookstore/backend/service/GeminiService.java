@@ -1,6 +1,7 @@
 package com.bookstore.backend.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -59,21 +60,24 @@ public class GeminiService {
             String url = apiUrl + "?key=" + apiKey;
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 entity,
-                Map.class
+                new ParameterizedTypeReference<Map<String, Object>>() {}
             );
 
             // Parse response
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> responseBody = response.getBody();
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
                 
                 if (candidates != null && !candidates.isEmpty()) {
                     Map<String, Object> candidate = candidates.get(0);
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> contentResponse = (Map<String, Object>) candidate.get("content");
+                    @SuppressWarnings("unchecked")
                     List<Map<String, String>> parts = (List<Map<String, String>>) contentResponse.get("parts");
                     
                     if (parts != null && !parts.isEmpty()) {

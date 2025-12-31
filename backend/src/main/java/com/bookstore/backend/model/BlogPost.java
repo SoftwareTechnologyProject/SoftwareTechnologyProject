@@ -31,7 +31,7 @@ public class BlogPost {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
     
-    @Column(length = 500)
+    @Column(nullable = false, length = 500)
     private String coverImage;
     
     @Column(nullable = false)

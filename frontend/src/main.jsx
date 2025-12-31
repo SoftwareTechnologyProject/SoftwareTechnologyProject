@@ -11,13 +11,20 @@ import HeaderAdmin from './components/HeaderAdmin/HeaderAdmin.jsx';
 import AccountLayout from './components/AccountLayout/AccountLayout.jsx';
 import ChatFloating from "./components/Chatbox/ChatFloating.jsx";
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute.jsx';
+import ScrollTop from './components/ScrollTop/ScrollTop.jsx';
 
 // Pages
 import HomePage from './pages/HomePage/HomePage';
 import Account from './pages/Account/Account.jsx';
-import ProductDetail from './pages/Book/ProductDetail.jsx';
+import ProductDetail from './pages/Book/ProductDetail';
 import VoucherManagement from './pages/VoucherManagement/VoucherManagement.jsx';
 import VoucherWallet from './pages/VoucherWallet/VoucherWallet';
+import Cart from "./pages/Cart/Cart.jsx";
+import Checkout from "./pages/Checkout/Checkout.jsx";
+import PaymentResult from "./pages/PaymentResult/PaymentResult.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess.jsx";
+import PaymentPending from "./pages/PaymentPending/PaymentPending.jsx";
+import PaymentFailed from "./pages/PaymentFailed/PaymentFailed.jsx";
 import Order from './pages/Order/Order';
 import OrderAdmin from './pages/OrderAdmin/OrderAdmin';
 import OrderDetail from './pages/OrderDetail/OrderDetail';
@@ -26,26 +33,40 @@ import BlogDetail from './pages/Blog/BlogDetail';
 import BlogAdmin from './pages/Blog/BlogAdmin';
 import BookAdmin from './pages/BookAdmin/BookAdmin';
 import Login from "./pages/Login/Login.jsx";
+import UserManagement from './pages/User/UserManagement';
+import RevenueStatistics from './pages/Statistics/RevenueStatistics';
 import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
-import ResetPassword from "./pages/ResetPassword/ResetPassword.jsx";
-import VerifyEmail from "./pages/VerifyEmail/VerifyEmail.jsx";
 import TrendPage from "./pages/TrendPage/TrendPage.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollTop />
+
       <Routes>
-        {/* Blog routes - standalone without Header/Footer */}
-        <Route path="/blog" element={<BlogList />} />
-        <Route path="/blog/posts/:id" element={<BlogDetail />} />
+        {/* Blog routes */}
+        <Route path="/blog" element={
+          <>
+            <Header />
+            <BlogList />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
+        <Route path="/blog/posts/:id" element={
+          <>
+            <Header />
+            <BlogDetail />
+            <Footer />
+            <ChatFloating />
+          </>
+        } />
 
         {/* Login page - standalone without Header/Footer */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* Public routes with Header/Footer */}
         <Route path="/" element={
@@ -57,7 +78,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/books/:id" element={
           <>
             <Header />
@@ -67,7 +88,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/search" element={
           <>
             <Header />
@@ -78,7 +99,7 @@ createRoot(document.getElementById("root")).render(
           </>
         } />
 
-        <Route path="/trend" element={
+        <Route path="/trend/:trendSlug" element={
           <>
             <Header />
             <TrendPage />
@@ -87,7 +108,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/vouchers" element={
           <>
             <Header />
@@ -97,7 +118,7 @@ createRoot(document.getElementById("root")).render(
             <ChatFloating />
           </>
         } />
-        
+
         <Route path="/voucher-management" element={
           <>
             <Header />
@@ -137,24 +158,111 @@ createRoot(document.getElementById("root")).render(
           <Route path="order/:id" element={<OrderDetail />} />
         </Route>
 
+        {/* Cart and Checkout */}
+        <Route path="/cart" element={
+          <>
+            <Header />
+            <Cart />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+
+        <Route path="/checkout" element={
+          <>
+            <Header />
+            <Checkout />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route path="/payment/result" element={
+          <>
+            <Header />
+            <PaymentResult />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route
+          path="/payment/success"
+          element={<>
+            <Header />
+            <PaymentSuccess />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+        <Route path="/payment/failed" element={<>
+          <Header />
+          <PaymentFailed />
+          <Recommend />
+          <Footer />
+          <ChatFloating />
+        </>}
+        ></Route>
+        <Route
+          path="/payment/pending"
+          element={<>
+            <Header />
+            <PaymentPending />
+            <Recommend />
+            <Footer />
+            <ChatFloating />
+          </>}
+        ></Route>
+
         {/* Admin routes - YÊU CẦU ĐĂNG NHẬP + ROLE ADMIN */}
         <Route path="/admin" element={
-          <PrivateRoute requiredRole="ADMIN">
+          <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
             <HeaderAdmin />
           </PrivateRoute>
         }>
-          <Route path="books" element={<BookAdmin />} />
-          <Route path="vouchers" element={<VoucherManagement />} />
-          <Route path="blog" element={<BlogAdmin />} />
-          <Route path="orderAdmin" element={<OrderAdmin />} />
-          <Route path="order/:id" element={<OrderDetail />} />
+          <Route path="books" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <BookAdmin />
+            </PrivateRoute>
+          } />
+          <Route path="vouchers" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <VoucherManagement />
+            </PrivateRoute>
+          } />
+          <Route path="blog" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <BlogAdmin />
+            </PrivateRoute>
+          } />
+          <Route path="orderAdmin" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <OrderAdmin />
+            </PrivateRoute>
+          } />
+          <Route path="order/:id" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <BookAdmin />
+            </PrivateRoute>
+          } />
+          <Route path="customers" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <UserManagement />
+            </PrivateRoute>
+          } />
+          <Route path="statistics" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <RevenueStatistics />
+            </PrivateRoute>
+          } />
+          <Route path="chat" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <AdminChatBox />
+            </PrivateRoute>
+          } />
         </Route>
-        
-        <Route path="/admin/chat" element={
-          <PrivateRoute requiredRole="ADMIN">
-            <AdminChatBox />
-          </PrivateRoute>
-        } />
       </Routes>
     </BrowserRouter>
   </StrictMode>

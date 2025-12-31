@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +34,9 @@ public class VoucherController {
     @Autowired
     private VoucherServiceImpl voucherService;
 
-    // GET /vouchers - Lấy tất cả voucher
+    // GET /vouchers - Lấy tất cả voucher (CHỈ ADMIN)
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<VoucherDTO>> getAllVouchers() {
         List<Voucher> vouchers = voucherService.getAllVouchers();
         List<VoucherDTO> voucherDTOs = vouchers.stream()
@@ -43,8 +45,9 @@ public class VoucherController {
         return ResponseEntity.ok(voucherDTOs);
     }
 
-    // GET /vouchers/{id} - Lấy voucher theo ID
+    // GET /vouchers/{id} - Lấy voucher theo ID (CHỈ ADMIN)
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VoucherDTO> getVoucherById(@PathVariable Long id) {
         Voucher voucher = voucherService.getVoucherById(id);
         VoucherDTO voucherDTO = voucherService.convertToDTO(voucher);
@@ -69,8 +72,9 @@ public class VoucherController {
         return ResponseEntity.ok(voucherDTOs);
     }
 
-    // GET /vouchers/search?keyword={keyword} - Tìm kiếm voucher
+    // GET /vouchers/search?keyword={keyword} - Tìm kiếm voucher (CHỈ ADMIN)
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<VoucherDTO>> searchVouchers(@RequestParam String keyword) {
         List<Voucher> vouchers = voucherService.searchVouchers(keyword);
         List<VoucherDTO> voucherDTOs = vouchers.stream()
@@ -79,8 +83,9 @@ public class VoucherController {
         return ResponseEntity.ok(voucherDTOs);
     }
 
-    // POST /vouchers - Tạo voucher mới
+    // POST /vouchers - Tạo voucher mới (CHỈ ADMIN)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VoucherDTO> createVoucher(@Valid @RequestBody VoucherDTO voucherDTO) {
         Voucher voucher = voucherService.convertToEntity(voucherDTO);
         Voucher savedVoucher = voucherService.createVoucher(voucher);
@@ -88,8 +93,9 @@ public class VoucherController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedVoucherDTO);
     }
 
-    // PUT /vouchers/{id} - Cập nhật voucher
+    // PUT /vouchers/{id} - Cập nhật voucher (CHỈ ADMIN)
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VoucherDTO> updateVoucher(
             @PathVariable Long id,
             @Valid @RequestBody VoucherDTO voucherDTO) {
@@ -99,8 +105,9 @@ public class VoucherController {
         return ResponseEntity.ok(updatedVoucherDTO);
     }
 
-    // DELETE /vouchers/{id} - Xóa voucher
+    // DELETE /vouchers/{id} - Xóa voucher (CHỈ ADMIN)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteVoucher(@PathVariable Long id) {
         voucherService.deleteVoucher(id);
         return ResponseEntity.noContent().build();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiTag } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 import './VoucherManagement.css';
 
 const API_URL = 'http://localhost:8080/api/vouchers';
@@ -83,12 +84,23 @@ const VoucherManagement = () => {
 
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/search?keyword=${searchKeyword}`);
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(`${API_URL}/search?keyword=${encodeURIComponent(searchKeyword)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Không thể tìm kiếm voucher');
+            }
+            
             const data = await response.json();
-            setVouchers(data);
+            setVouchers(Array.isArray(data) ? data : []);
+            toast.success(`Tìm thấy ${data.length} voucher`);
         } catch (error) {
             console.error('Error searching vouchers:', error);
-            alert('Không thể tìm kiếm voucher');
+            toast.error('Không thể tìm kiếm voucher: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -97,6 +109,42 @@ const VoucherManagement = () => {
     // Create voucher
     const handleCreate = async (e) => {
         e.preventDefault();
+        
+        // Validation
+        if (formData.discountType === 'PERCENTAGE') {
+            if (formData.discountValue <= 0 || formData.discountValue > 100) {
+                toast.error('Giảm giá theo phần trăm phải từ 0.01% đến 100%');
+                return;
+            }
+        } else {
+            if (formData.discountValue <= 0) {
+                toast.error('Giá trị giảm giá phải lớn hơn 0');
+                return;
+            }
+        }
+        
+        if (formData.startDate && formData.endDate) {
+            if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+                toast.error('Ngày kết thúc phải sau ngày bắt đầu');
+                return;
+            }
+        }
+        
+        if (formData.minOrderValue < 0) {
+            toast.error('Đơn hàng tối thiểu không được âm');
+            return;
+        }
+        
+        if (formData.maxDiscount < 0) {
+            toast.error('Giảm giá tối đa không được âm');
+            return;
+        }
+        
+        if (formData.quantity !== null && formData.quantity < 0) {
+            toast.error('Số lượng không được âm');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -111,22 +159,22 @@ const VoucherManagement = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Không thể tạo voucher');
+                const error = await response.text();
+                throw new Error(error || 'Không thể tạo voucher');
             }
 
-            alert('Tạo voucher thành công!');
+            toast.success('Tạo voucher thành công!');
             setShowModal(false);
             resetForm();
             fetchVouchers();
         } catch (error) {
             console.error('Error creating voucher:', error);
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -135,6 +183,42 @@ const VoucherManagement = () => {
     // Update voucher
     const handleUpdate = async (e) => {
         e.preventDefault();
+        
+        // Validation tương tự như handleCreate
+        if (formData.discountType === 'PERCENTAGE') {
+            if (formData.discountValue <= 0 || formData.discountValue > 100) {
+                toast.error('Giảm giá theo phần trăm phải từ 0.01% đến 100%');
+                return;
+            }
+        } else {
+            if (formData.discountValue <= 0) {
+                toast.error('Giá trị giảm giá phải lớn hơn 0');
+                return;
+            }
+        }
+        
+        if (formData.startDate && formData.endDate) {
+            if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+                toast.error('Ngày kết thúc phải sau ngày bắt đầu');
+                return;
+            }
+        }
+        
+        if (formData.minOrderValue < 0) {
+            toast.error('Đơn hàng tối thiểu không được âm');
+            return;
+        }
+        
+        if (formData.maxDiscount < 0) {
+            toast.error('Giảm giá tối đa không được âm');
+            return;
+        }
+        
+        if (formData.quantity !== null && formData.quantity < 0) {
+            toast.error('Số lượng không được âm');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -149,23 +233,23 @@ const VoucherManagement = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Không thể cập nhật voucher');
+                const error = await response.text();
+                throw new Error(error || 'Không thể cập nhật voucher');
             }
 
-            alert('Cập nhật voucher thành công!');
+            toast.success('Cập nhật voucher thành công!');
             setShowModal(false);
             setEditingVoucher(null);
             resetForm();
             fetchVouchers();
         } catch (error) {
             console.error('Error updating voucher:', error);
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -173,7 +257,7 @@ const VoucherManagement = () => {
 
     // Delete voucher
     const handleDelete = async (id) => {
-        if (!window.confirm('Bạn có chắc muốn xóa voucher này?')) return;
+        if (!window.confirm('Bạn có chắc muốn xóa voucher này?\n\nLưu ý: Voucher đang hoạt động hoặc đang được sử dụng trong đơn hàng không thể xóa.')) return;
 
         setLoading(true);
         try {
@@ -186,19 +270,20 @@ const VoucherManagement = () => {
             });
 
             if (response.status === 403) {
-                alert('Bạn không có quyền thực hiện thao tác này');
+                toast.error('Bạn không có quyền thực hiện thao tác này');
                 return;
             }
 
             if (!response.ok) {
-                throw new Error('Không thể xóa voucher');
+                const errorText = await response.text();
+                throw new Error(errorText || 'Không thể xóa voucher');
             }
 
-            alert('Xóa voucher thành công!');
+            toast.success('Xóa voucher thành công!');
             fetchVouchers();
         } catch (error) {
             console.error('Error deleting voucher:', error);
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -457,10 +542,14 @@ const VoucherManagement = () => {
                                         value={formData.discountValue}
                                         onChange={handleInputChange}
                                         required
-                                        min="0"
+                                        min="0.01"
+                                        max={formData.discountType === 'PERCENTAGE' ? '100' : undefined}
                                         step="0.01"
-                                        placeholder={formData.discountType === 'PERCENTAGE' ? 'VD: 10' : 'VD: 50000'}
+                                        placeholder={formData.discountType === 'PERCENTAGE' ? 'VD: 10 (tối đa 100)' : 'VD: 50000'}
                                     />
+                                    {formData.discountType === 'PERCENTAGE' && (
+                                        <small style={{color: '#64748b'}}>Lưu ý: Giảm giá từ 0.01% đến 100%</small>
+                                    )}
                                 </div>
                             </div>
 
@@ -474,8 +563,9 @@ const VoucherManagement = () => {
                                         onChange={handleInputChange}
                                         min="0"
                                         step="1000"
-                                        placeholder="0"
+                                        placeholder="0 (áp dụng cho tất cả)"
                                     />
+                                    <small style={{color: '#64748b'}}>Đơn hàng tối thiểu để áp dụng voucher</small>
                                 </div>
 
                                 <div className="form-group">
@@ -489,6 +579,7 @@ const VoucherManagement = () => {
                                         step="1000"
                                         placeholder="0 (không giới hạn)"
                                     />
+                                    <small style={{color: '#64748b'}}>Giới hạn số tiền giảm tối đa (cho voucher %)</small>
                                 </div>
                             </div>
 
@@ -500,9 +591,10 @@ const VoucherManagement = () => {
                                         name="quantity"
                                         value={formData.quantity || ''}
                                         onChange={handleInputChange}
-                                        min="0"
+                                        min="1"
                                         placeholder="Để trống = không giới hạn"
                                     />
+                                    <small style={{color: '#64748b'}}>Số lần voucher có thể được sử dụng</small>
                                 </div>
 
                                 <div className="form-group">
@@ -517,6 +609,7 @@ const VoucherManagement = () => {
                                         <option value="INACTIVE">Tạm ngưng</option>
                                         <option value="EXPIRED">Hết hạn</option>
                                     </select>
+                                    <small style={{color: '#64748b'}}>Chỉ voucher ACTIVE mới được áp dụng</small>
                                 </div>
                             </div>
 
@@ -529,6 +622,7 @@ const VoucherManagement = () => {
                                         value={formData.startDate}
                                         onChange={handleInputChange}
                                     />
+                                    <small style={{color: '#64748b'}}>Để trống = có hiệu lực ngay</small>
                                 </div>
 
                                 <div className="form-group">
@@ -539,6 +633,7 @@ const VoucherManagement = () => {
                                         value={formData.endDate}
                                         onChange={handleInputChange}
                                     />
+                                    <small style={{color: '#64748b'}}>Để trống = không giới hạn</small>
                                 </div>
                             </div>
 

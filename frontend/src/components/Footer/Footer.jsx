@@ -81,9 +81,9 @@ const Footer = () => {
                             <div>
                                 <h2>TÀI KHOẢN CỦA TÔI</h2>
                                 <ul>
-                                    <li><Link to="/account/login">Đăng nhập / Tạo tài khoản</Link></li>
+                                    <li><Link to="/login">Đăng nhập / Tạo tài khoản</Link></li>
                                     <li><Link to="/account/address">Thay đổi địa chỉ</Link></li>
-                                    <li><Link to="/account">Chi tiết tài khoản</Link></li>
+                                    <li><Link to="/account/accountInf">Chi tiết tài khoản</Link></li>
                                     <li><Link to="/orders">Lịch sử mua hàng</Link></li>
                                 </ul>
                             </div>

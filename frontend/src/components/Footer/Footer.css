@@ -13,7 +13,7 @@ h2 {
 }
 
 .footer-left {
-    @apply mr-10 border-r-1;
+    @apply ml-30 mr-10 border-r-1;
 }
 
 .footer-left img {
@@ -21,7 +21,7 @@ h2 {
 }
 
 .social-icons {
-    @apply flex flex-row justify-center items-center m-10;
+    @apply flex flex-row justify-center items-center m-10 gap-10;
 }
 
 .footer-service {
@@ -37,17 +37,21 @@ h2 {
 }
 
 .footer-contact ul {
-    @apply flex flex-row pt-2;
+    @apply mt-4 grid grid-cols-3;
 }
 
 .footer-contact li {
-    @apply flex flex-row pr-4;
+    @apply flex flex-row pr-4 gap-3;
 }
 
 .logo-delivery {
-    @apply grid grid-cols-3;
+    @apply mr-30 grid grid-cols-3;
 }
 
 .logo-delivery img {
     @apply size-30 object-contain m-auto;
+}
+
+.footer-right {
+    @apply my-5;
 }

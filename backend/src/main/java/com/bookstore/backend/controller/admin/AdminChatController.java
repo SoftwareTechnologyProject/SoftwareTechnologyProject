@@ -1,23 +1,19 @@
 package com.bookstore.backend.controller.admin;
 
 import com.bookstore.backend.DTO.BoxChatDTO;
-import com.bookstore.backend.DTO.MessageRequestDTO;
-import com.bookstore.backend.DTO.MessageResponseDTO;
-import com.bookstore.backend.service.admin.AdminChatService;
 import com.bookstore.backend.service.admin.AdminMessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/chat")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class AdminChatController {
     private final AdminMessageService adminMessageService;
 

@@ -9,7 +9,6 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,11 +41,12 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
             }
 
             String token = authHeader.substring(7);
-            System.out.println("🔍 Extracted WS JWT = " + token);
+            System.out.println("🔍 Extracted WS JWT for user authentication");
 
             try {
                 // Extract email/username
                 String email = jwtUtils.extractEmail(token);
+                System.out.println("✅ WebSocket authenticated for: " + email);
 
                 // Create Authentication object WITHOUT loading authorities
                 Authentication authentication =
