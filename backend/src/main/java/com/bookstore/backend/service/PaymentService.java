@@ -63,7 +63,7 @@ public class PaymentService {
         System.out.println("✅ Order #" + orderId + " marked as PAID. Transaction: " + transactionNo);
         NotificationRequestDTO notificationRequest = NotificationRequestDTO.builder()
                 .content("Thanh toán thành công cho đơn hàng #" + orderId + " của bạn")
-                .url("http://localhost:5173/payment/result?paymentKey=" + paymentKey + "&transactionDate=" + transactionDate)
+                .url("http://localhost:5173/payment/result?orderId=" + orderId)
                 .type(com.bookstore.backend.model.enums.NotificationType.PERSONAL)
                 .userId(userIdFromOrder)
                 .build();
