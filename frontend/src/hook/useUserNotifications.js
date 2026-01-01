@@ -57,7 +57,10 @@ const useUserNotifications = (onNotification, onChatMessage) => {
     console.log("🚀 WebSocket Activated");
 
     return () => {
-      console.log("🔹 WS cleanup");
+      console.log("🔹 WS cleanup - deactivating...");
+      if (clientRef.current?.active) {
+        clientRef.current.deactivate();
+      }
     };
   }, []); // Chỉ chạy 1 lần
 

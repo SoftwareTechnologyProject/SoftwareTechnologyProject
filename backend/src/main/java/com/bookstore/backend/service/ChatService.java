@@ -72,9 +72,9 @@ public class ChatService {
             
             for (var adminStaff : allAdminStaff) {
                 System.out.println("📤 Broadcasting to other admin/staff: " + adminStaff.getEmail());
-                // Gửi message với perspective phù hợp
-                MessageResponseDTO broadcastDTO = isAdminReply ? senderDTO : receiveDTO;
-                simpMessagingTemplate.convertAndSendToUser(adminStaff.getEmail(), "/queue/chat", broadcastDTO);
+                // FIX: Luôn gửi receiveDTO (mine=false) cho admin/staff khác
+                // Vì họ không phải người gửi tin nhắn, họ chỉ "xem" cuộc hội thoại
+                simpMessagingTemplate.convertAndSendToUser(adminStaff.getEmail(), "/queue/chat", receiveDTO);
             }
         }
         

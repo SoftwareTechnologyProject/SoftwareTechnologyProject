@@ -48,10 +48,6 @@ const AdminChatBox = () => {
     console.log("   Current activeBox conversationId:", activeBox?.conversationId);
     console.log("   Message conversationId:", msg.conversationId);
     
-    // Luôn reload boxChats để update last message trong sidebar
-    console.log("🔄 Reloading boxChats...");
-    loadBoxChats();
-    
     // Thêm tin nhắn vào danh sách nếu đang active conversation này
     if (activeBox && msg.conversationId === activeBox.conversationId) {
         console.log("✅ Message belongs to active conversation, adding to messages list");
@@ -67,6 +63,10 @@ const AdminChatBox = () => {
         // Nếu tin nhắn từ conversation khác, fetch unread count
         fetchUnread();
     }
+    
+    // Reload boxChats để update last message trong sidebar (cuối cùng để không block)
+    console.log("🔄 Reloading boxChats...");
+    loadBoxChats();
   });
 
   // --- API CALLS ---
