@@ -81,7 +81,8 @@ public class OrdersService {
         order.setOrderDetails(orderDetails);
         // ===== TOTAL AMOUNT (SAU GIẢM GIÁ) =====
         BigDecimal totalAmount = calculateTotalAmount(orderDetails, voucher);
-        order.setTotalAmount(totalAmount);
+        BigDecimal shippingFee = BigDecimal.valueOf(32000); 
+        order.setTotalAmount(totalAmount.add(shippingFee));
 
         Orders savedOrder = ordersRepository.save(order);
 
@@ -165,47 +166,6 @@ public class OrdersService {
                 .collect(Collectors.toList());
     }
 
-
-    // ------------------- CALCULATE ORDER TOTAL AMOUNT -------------------
-    public java.math.BigDecimal calculateOrderTotalAmount(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-
-        // Tính tổng tiền từ order details
-        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
-                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
-                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
-        // Áp dụng giảm giá từ voucher nếu có
-        if (order.getVoucher() != null) {
-            Voucher voucher = order.getVoucher();
-            if (voucher.isValid()) {
-                // Xử lý theo loại giảm giá
-                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
-                    // Giảm theo phần trăm
-                    java.math.BigDecimal discount = totalAmount
-                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
-                            .divide(java.math.BigDecimal.valueOf(100));
-
-                    // Áp dụng giới hạn giảm giá tối đa nếu có
-                    if (voucher.getMaxDiscount() != null) {
-                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
-                        discount = discount.min(maxDiscount);
-                    }
-                    totalAmount = totalAmount.subtract(discount);
-                } else {
-                    // Giảm số tiền cố định
-                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
-                    totalAmount = totalAmount.subtract(discount);
-                }
-            }
-        }
-
-        return totalAmount;
-    }
-
-
     // ------------------- UPDATE PAYMENT STATUS -------------------
     public void updatePaymentStatus(Long orderId, PaymentStatus paymentStatus, PaymentType paymentType) {
         Orders order = ordersRepository.findById(orderId)
@@ -242,6 +202,7 @@ public class OrdersService {
         dto.setPaymentStatus(order.getPaymentStatus());
         dto.setStatus(order.getStatus());
         dto.setOrderDate(order.getOrderDate());
+        dto.setTotalAmount(order.getTotalAmount());
 
         if (order.getVoucher() != null) {
             dto.setVoucherCode(order.getVoucher().getCode());
@@ -269,36 +230,6 @@ public class OrdersService {
                         ))
                         .collect(Collectors.toList())
         );
-
-        // Tính totalAmount trực tiếp từ order object thay vì gọi calculateOrderTotalAmount
-        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
-                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
-                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
-        // Áp dụng voucher discount nếu có
-        if (order.getVoucher() != null) {
-            Voucher voucher = order.getVoucher();
-            if (voucher.isValid()) {
-                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
-                    java.math.BigDecimal discount = totalAmount
-                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
-                            .divide(java.math.BigDecimal.valueOf(100));
-
-                    if (voucher.getMaxDiscount() != null) {
-                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
-                        discount = discount.min(maxDiscount);
-                    }
-                    totalAmount = totalAmount.subtract(discount);
-                } else {
-                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
-                    totalAmount = totalAmount.subtract(discount);
-                }
-            }
-        }
-
-        dto.setTotalAmount(totalAmount);
-
         return dto;
     }
     private void deductVariantStock(Long orderId) {

@@ -103,6 +103,7 @@ function Checkout() {
     const [useFPoint, setUseFPoint] = useState(false);
     const [useFreeship, setUseFreeship] = useState(false);
     const [exportInvoice, setExportInvoice] = useState(false);
+    const [orderLoading, setOrderLoading] = useState(false);
 
     //Kiểm tra xem có hàng để thanh toán không
     useEffect(() => {
@@ -183,6 +184,7 @@ function Checkout() {
             return;
         }
 
+        setOrderLoading(true);
         try {
             // Tìm tên Tỉnh/Huyện/Xã từ ID
             const provinceName =
@@ -242,10 +244,12 @@ function Checkout() {
                 }
             } else {
                 alert("Lỗi tạo đơn hàng: " + response.data.message);
+                setOrderLoading(false);
             }
         } catch (error) {
             console.error("❌ Error creating order:", error);
             alert("Không thể tạo đơn hàng. Vui lòng thử lại!");
+            setOrderLoading(false);
         }
     };
 
@@ -681,12 +685,44 @@ function Checkout() {
                         <button
                             onClick={handleOrderSubmit}
                             className="checkout-button mt-4 w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            disabled={orderLoading}
                         >
                             Xác nhận thanh toán
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Loading overlay for Order Submit */}
+            {orderLoading && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 10000,
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: "white",
+                            padding: "24px 48px",
+                            borderRadius: "8px",
+                            fontSize: "16px",
+                            fontWeight: "500",
+                            color: "#333",
+                        }}
+                    >
+                        Đang xử lý đơn hàng...
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

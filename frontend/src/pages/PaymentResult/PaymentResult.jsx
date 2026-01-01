@@ -10,20 +10,18 @@ const PaymentResult = () => {
     const [loading, setLoading] = useState(true);
     const [paymentData, setPaymentData] = useState(null);
     const [error, setError] = useState(null);
-    const [verificationStatus, setVerificationStatus] = useState("verifying");
 
-    // 🔒 useRef để khóa API call (chống React Strict Mode chạy 2 lần)
-    const hasVerified = useRef(false);
+    // useRef để khóa API call (chống React Strict Mode chạy 2 lần)
+    const hasFetched = useRef(false);
 
     useEffect(() => {
-        // ⚠️ Nếu đã verify rồi thì return ngay (ngăn duplicate call)
-        if (hasVerified.current) {
-            console.log("⏭️ Skip: Already verified");
+        // Nếu đã fetch rồi thì return ngay (ngăn duplicate call)
+        if (hasFetched.current) {
+            console.log("⏭️ Skip: Already fetched");
             return;
         }
 
-        const paymentKey = searchParams.get("paymentKey");
-        const transactionDate = searchParams.get("transactionDate");
+        const orderId = searchParams.get("orderId");
         const urlError = searchParams.get("error");
 
         // Kiểm tra lỗi từ URL
@@ -33,91 +31,25 @@ const PaymentResult = () => {
             return;
         }
 
-        if (!paymentKey) {
-            setError("Không tìm thấy thông tin thanh toán");
+        if (!orderId) {
+            setError("Không tìm thấy thông tin đơn hàng");
             setLoading(false);
             return;
         }
 
-        if (!transactionDate) {
-            setError("Thiếu thông tin ngày giao dịch");
-            setLoading(false);
-            return;
-        }
+        // Đánh dấu đã fetch để không gọi lại
+        hasFetched.current = true;
 
-        // 🔐 Đánh dấu đã verify để không gọi lại
-        hasVerified.current = true;
-
-        // ✅ Gọi API verify để xác thực thanh toán với VNPay
-        verifyPayment(paymentKey, transactionDate);
+        // Lấy thông tin đơn hàng (đã được verify ở backend)
+        fetchOrderDetails(orderId);
     }, [searchParams]);
 
-    const verifyPayment = async (paymentKey, transactionDate) => {
+    const fetchOrderDetails = async (orderId) => {
         try {
-            console.log("🔐 Verifying payment:", paymentKey);
-
-            const formData = new URLSearchParams();
-            formData.append("paymentKey", paymentKey);
-            formData.append("transactionDate", transactionDate);
+            console.log("📦 Fetching order details for orderId:", orderId);
 
             const response = await fetch(
-                "http://localhost:8080/api/payment/verify",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: formData,
-                }
-            );
-
-            // ⚠️ Đọc data trước khi check response.ok để lấy message lỗi
-            const data = await response.json();
-
-            // Logic xử lý lỗi thông minh hơn
-            if (!response.ok) {
-                // 👇 QUAN TRỌNG: Nếu lỗi là "đã xử lý rồi" -> Coi như thành công
-                if (
-                    data.message &&
-                    (data.message.includes("already processed") ||
-                        data.message.includes("processed"))
-                ) {
-                    console.log(
-                        "⚠️ Payment already processed -> Treating as SUCCESS"
-                    );
-                    setVerificationStatus("success");
-                    fetchOrderDetails(paymentKey);
-                    return; // Thoát hàm, không throw error nữa
-                }
-
-                // Nếu là lỗi khác thì mới báo lỗi
-                throw new Error(
-                    data.message || "Không thể xác thực thanh toán"
-                );
-            }
-
-            console.log("Verification result:", data);
-
-            if (data.paymentStatus === "SUCCESS") {
-                setVerificationStatus("success");
-                fetchOrderDetails(paymentKey);
-            } else {
-                setVerificationStatus("failed");
-                setError(data.message || "Thanh toán không thành công");
-                setLoading(false);
-            }
-        } catch (err) {
-            console.error("❌ Verification error:", err);
-            setError(err.message || "Không thể xác thực thanh toán");
-            setVerificationStatus("failed");
-            setLoading(false);
-        }
-    };
-
-    const fetchOrderDetails = async (paymentKey) => {
-        try {
-            const response = await fetch(
-                `http://localhost:8080/api/payment/result?paymentKey=${paymentKey}`
+                `http://localhost:8080/api/payment/result?orderId=${orderId}`
             );
 
             if (!response.ok) {
@@ -125,12 +57,12 @@ const PaymentResult = () => {
             }
 
             const data = await response.json();
+            console.log("Order data:", data);
             setPaymentData(data);
             setLoading(false);
         } catch (err) {
             console.error("Order details error:", err);
-            // Vẫn hiển thị success nhưng không có chi tiết order
-            setPaymentData({ paymentStatus: "PAID" });
+            setError(err.message || "Không thể lấy thông tin đơn hàng");
             setLoading(false);
         }
     };
@@ -141,16 +73,10 @@ const PaymentResult = () => {
                 <div className="payment-result__content">
                     <div className="spinner"></div>
                     <h1 className="payment-result__title">
-                        {verificationStatus === "verifying"
-                            ? "Đang xác thực thanh toán"
-                            : "Đang tải thông tin đơn hàng"}
+                        Đang tải thông tin đơn hàng
                     </h1>
                     <div className="payment-result__message">
-                        <p>
-                            {verificationStatus === "verifying"
-                                ? "Đang xác thực giao dịch với VNPay..."
-                                : "Đang tải chi tiết đơn hàng của bạn..."}
-                        </p>
+                        <p>Đang tải chi tiết đơn hàng của bạn...</p>
                         <p>Vui lòng không tắt trang này</p>
                     </div>
                 </div>
@@ -189,16 +115,11 @@ const PaymentResult = () => {
         );
     }
 
-    if (
-        verificationStatus === "success" &&
-        paymentData?.paymentStatus === "PAID"
-    ) {
+    if (paymentData?.paymentStatus === "PAID") {
         return <PaymentSuccess orderData={paymentData} />;
     }
 
-    return (
-        <PaymentFailed error={error} verificationStatus={verificationStatus} />
-    );
+    return <PaymentFailed error={error || "Thanh toán không thành công"} />;
 };
 
 export default PaymentResult;

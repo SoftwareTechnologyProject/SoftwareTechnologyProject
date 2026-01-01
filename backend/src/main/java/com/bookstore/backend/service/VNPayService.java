@@ -104,7 +104,7 @@ public class VNPayService {
         params.remove("vnp_SecureHashType");
         params.remove("vnp_SecureHash");
 
-        // ✅ Sử dụng VNPayConfig.hashAllFields (giống servlet)
+        // Sử dụng VNPayConfig.hashAllFields (giống servlet)
         String hash = vnPayConfig.hashAllFields(params); 
         return hash.equals(vnp_SecureHash);
     }
@@ -132,11 +132,11 @@ public class VNPayService {
         vnp_Params.put("vnp_CreateDate", now.format(formatter));
         vnp_Params.put("vnp_IpAddr", "127.0.0.1");
 
-        // ✅ Create secure hash cho QueryDR API (Dùng dấu | theo đúng spec VNPay)
+        // Create secure hash cho QueryDR API (Dùng dấu | theo đúng spec VNPay)
         String hashData = buildQueryDRHashData(vnp_Params);
         String vnp_SecureHash = VNPayConfig.hmacSHA512(vnPayConfig.secretKey, hashData);
         
-        System.out.println("🔐 QueryDR Hash Data: " + hashData);
+        System.out.println("QueryDR Hash Data: " + hashData);
         
         // JSON request body
         JsonObject requestJson = new JsonObject();
@@ -145,7 +145,7 @@ public class VNPayService {
         }
         requestJson.addProperty("vnp_SecureHash", vnp_SecureHash);
 
-        System.out.println("🔐 Query request: " + requestJson.toString());
+        System.out.println("Query request: " + requestJson.toString());
 
         // Send POST request to VNPay
         URL url = new URL(vnPayConfig.vnpApiUrl);
@@ -175,10 +175,6 @@ public class VNPayService {
         return gson.fromJson(response.toString(), JsonObject.class);
     }
 
-    /**
-     * Build hash data cho QueryDR API theo đúng spec của VNPay
-     * Format: vnp_RequestId|vnp_Version|vnp_Command|vnp_TmnCode|vnp_TxnRef|vnp_TransactionDate|vnp_CreateDate|vnp_IpAddr|vnp_OrderInfo
-     */
     private String buildQueryDRHashData(Map<String, String> params) {
         StringBuilder hashData = new StringBuilder();
         
