@@ -30,7 +30,6 @@ const Checkout = () => {
     // Voucher
     const [availableVouchers, setAvailableVouchers] = useState([]);
     const [selectedVoucher, setSelectedVoucher] = useState(null);
-    const [voucherDiscount, setVoucherDiscount] = useState(0);
     const [loadingVouchers, setLoadingVouchers] = useState(false);
 
     // Loading state
@@ -45,7 +44,7 @@ const Checkout = () => {
     // Fetch thông tin user từ localStorage hoặc API
     const fetchUserInfo = async () => {
         try {
-            const response = await axiosClient.get('/users/profile');
+            const response = await axiosClient.get('/users/me');
             const user = response.data;
             
             setCustomerInfo({
@@ -57,15 +56,18 @@ const Checkout = () => {
             // Nếu có địa chỉ mặc định
             if (user.address) {
                 setDeliveryAddress({
-                    street: user.address.street || '',
-                    ward: user.address.ward || '',
-                    district: user.address.district || '',
-                    city: user.address.city || ''
+                    street: user.address || '',
+                    ward: '',
+                    district: '',
+                    city: ''
                 });
             }
         } catch (error) {
             console.error('Error fetching user info:', error);
-            // Fallback to empty form if API fails
+            if (error.response?.status === 401) {
+                toast.error('Phiên đăng nhập hết hạn');
+                navigate('/login');
+            }
         }
     };
 
@@ -137,7 +139,6 @@ const Checkout = () => {
         if (voucherCode) {
             const voucher = availableVouchers.find(v => v.code === voucherCode);
             if (voucher) {
-                const discount = calculateVoucherDiscount();
                 toast.success(`Đã áp dụng voucher: ${voucher.name}`);
             }
         }
@@ -188,51 +189,56 @@ const Checkout = () => {
         setIsSubmitting(true);
 
         try {
-            // Chuẩn bị data theo OrderCreationRequestDTO
+            // Chuẩn bị data để gửi lên backend
+            const fullAddress = `${deliveryAddress.street}, ${deliveryAddress.ward ? deliveryAddress.ward + ', ' : ''}${deliveryAddress.district ? deliveryAddress.district + ', ' : ''}${deliveryAddress.city}`.trim();
+
             const orderData = {
-                customerInfo: {
-                    fullName: customerInfo.fullName,
-                    phoneNumber: customerInfo.phoneNumber,
-                    email: customerInfo.email || null
-                },
-                deliveryAddress: {
-                    street: deliveryAddress.street,
-                    ward: deliveryAddress.ward || '',
-                    district: deliveryAddress.district || '',
-                    city: deliveryAddress.city,
-                    fullAddress: `${deliveryAddress.street}, ${deliveryAddress.ward}, ${deliveryAddress.district}, ${deliveryAddress.city}`
-                },
-                items: items.map(item => ({
-                    bookId: item.bookVariantId,
-                    bookTitle: item.name,
+                details: items.map(item => ({
+                    bookVariantId: item.bookVariantId,
                     quantity: item.quantity,
-                    pricePurchased: item.price,
-                    subTotal: item.price * item.quantity,
-                    imageUrl: item.image
+                    pricePurchased: item.price
                 })),
-                couponCode: selectedVoucher || null,
-                paymentMethod: paymentMethod,
-                totalAmount: calculateTotal()
+                voucherCode: selectedVoucher || null,
+                paymentType: paymentMethod,
+                shippingAddress: fullAddress,
+                phoneNumber: customerInfo.phoneNumber
             };
 
             console.log('Submitting order:', orderData);
 
-            const response = await axiosClient.post('/checkout', orderData);
+            const response = await axiosClient.post('/orders', orderData);
 
             console.log('Order response:', response.data);
 
-            if (response.data.code === '00') {
+            if (response.data && response.data.id) {
+                const orderId = response.data.id;
                 toast.success('Đặt hàng thành công!');
 
-                // Nếu thanh toán VNPAY, redirect tới payment URL
-                if (response.data.requiresPayment && response.data.paymentUrl) {
-                    window.location.href = response.data.paymentUrl;
+                // Nếu thanh toán VNPAY, tạo payment và redirect
+                if (paymentMethod === 'BANKING' || paymentMethod === 'VNPAY') {
+                    try {
+                        const paymentResponse = await axiosClient.post('/payment/create', {
+                            orderId: orderId
+                        });
+
+                        if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                            // Redirect đến VNPay
+                            window.location.href = paymentResponse.data.paymentUrl;
+                        } else {
+                            toast.error('Không thể tạo link thanh toán');
+                            navigate(`/orders/${orderId}`);
+                        }
+                    } catch (paymentError) {
+                        console.error('Payment creation error:', paymentError);
+                        toast.error('Lỗi tạo thanh toán, vui lòng thanh toán sau');
+                        navigate(`/orders/${orderId}`);
+                    }
                 } else {
-                    // COD - redirect tới trang pending
-                    navigate(`/payment/pending?orderId=${response.data.orderId}`);
+                    // COD - redirect tới trang chi tiết đơn hàng
+                    navigate(`/orders/${orderId}`);
                 }
             } else {
-                throw new Error(response.data.message || 'Đặt hàng thất bại');
+                throw new Error('Không nhận được thông tin đơn hàng');
             }
 
         } catch (error) {
@@ -380,8 +386,8 @@ const Checkout = () => {
                                     <input
                                         type="radio"
                                         name="paymentMethod"
-                                        value="VNPAY"
-                                        checked={paymentMethod === 'VNPAY'}
+                                        value="BANKING"
+                                        checked={paymentMethod === 'BANKING'}
                                         onChange={(e) => setPaymentMethod(e.target.value)}
                                     />
                                     <span className="payment-label">
@@ -481,8 +487,18 @@ const Checkout = () => {
                     </div>
                 </form>
             </div>
+
+            {/* Loading overlay */}
+            {isSubmitting && (
+                <div className="loading-overlay">
+                    <div className="loading-content">
+                        Đang xử lý đơn hàng...
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default Checkout;
+

@@ -179,6 +179,22 @@ public class AuthController {
         }
     }
 
+    // Gửi lại OTP đăng ký (không tạo user mới)
+    @PostMapping("/resend-registration-otp")
+    public ResponseEntity<String> resendRegistrationOtp(@RequestBody Map<String, Object> request) {
+        String email = (String) request.get("email");
+        if (email == null) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        try {
+            profileService.sendVerificationEmail(email);
+            return ResponseEntity.ok("OTP has been resent to your email");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send OTP: " + e.getMessage());
+        }
+    }
+
     // Xác thực tài khoản bằng OTP khi đăng ký
     @PostMapping("/verify-registration-otp")
     public ResponseEntity<String> verifyRegistrationOtp(@RequestBody Map<String, Object> request) {

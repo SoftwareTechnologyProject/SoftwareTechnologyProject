@@ -3,7 +3,7 @@ import logoImage from "../../assets/logo/logo2.png";
 import backgroundImage from "../../assets/banner/login-banner.png"
 import { FaEyeSlash } from "react-icons/fa";
 import { IoEyeSharp } from "react-icons/io5";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import './Login.css';
 import { AppContext } from "../../context/AppContext";
 import axios from "axios";
@@ -37,6 +37,10 @@ const Login = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    // OTP Timer states
+    const [otpTimer, setOtpTimer] = useState(0);
+    const [canResendOtp, setCanResendOtp] = useState(true);
 
     // Context
     const { backendURL, setIsLoggedIn, setUserData } = useContext(AppContext);
@@ -44,6 +48,25 @@ const Login = () => {
 
     // Nội dung động
     const buttonText = isCreateAccount ? "Đăng Ký" : "Đăng Nhập";
+
+    // OTP Timer countdown effect
+    useEffect(() => {
+        let interval = null;
+        if (otpTimer > 0 && !canResendOtp) {
+            interval = setInterval(() => {
+                setOtpTimer((prevTimer) => {
+                    if (prevTimer <= 1) {
+                        setCanResendOtp(true);
+                        return 0;
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [otpTimer, canResendOtp]);
 
     // Xử lý API
     const onSubmitHandler = async (e) => {
@@ -91,6 +114,11 @@ const Login = () => {
                     showSuccess("Đăng ký thành công!");
                     toast.success("Vui lòng kiểm tra email để lấy mã OTP xác nhận tài khoản.");
                     setVerificationMode(true);
+                    
+                    // Start OTP countdown timer
+                    setCanResendOtp(false);
+                    setOtpTimer(60);
+                    
                     setPhoneNumber("");
                     setAddress("");
                     setDateOfBirth("");
@@ -159,22 +187,27 @@ const Login = () => {
     };
 
     const handleResendOtp = async () => {
+        if (!canResendOtp) {
+            toast.error(`Vui lòng chờ ${otpTimer}s trước khi gửi lại!`);
+            return;
+        }
+        
         setLoading(true);
         try {
-            const payload = {
-                fullName: name || "Dummy",
-                phoneNumber: phoneNumber || "0000000000",
-                address: address || "Dummy Address",
-                email: email,
-                password: password
-            };
-            const response = await axios.post(`${backendURL}/register`, payload);
+            const response = await axios.post(`${backendURL}/auth/resend-registration-otp`, { email });
             if (response.status === 200) {
                 toast.success("OTP đã được gửi lại đến email của bạn.");
                 showSuccess("OTP đã được gửi lại. Hãy kiểm tra email!");
+                
+                // Start 60s countdown
+                setCanResendOtp(false);
+                setOtpTimer(60);
             }
         } catch (error) {
-            toast.error("Gửi lại OTP không thành công. Vui lòng thử lại!");
+            console.error("Resend OTP error:", error);
+            const errorMsg = error.response?.data || "Gửi lại OTP không thành công";
+            toast.error(errorMsg);
+            showError(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -451,9 +484,13 @@ const Login = () => {
                                     type="button"
                                     className="resend-btn"
                                     onClick={handleResendOtp}
-                                    disabled={loading}
+                                    disabled={loading || !canResendOtp}
+                                    style={{
+                                        opacity: !canResendOtp ? 0.6 : 1,
+                                        cursor: !canResendOtp ? 'not-allowed' : 'pointer'
+                                    }}
                                 >
-                                    Gửi lại OTP
+                                    {!canResendOtp ? `Gửi lại OTP (${otpTimer}s)` : "Gửi lại OTP"}
                                 </button>
                                 <p className="toggle-text">
                                     <span className="toggle-link" onClick={() => setVerificationMode(false)}>

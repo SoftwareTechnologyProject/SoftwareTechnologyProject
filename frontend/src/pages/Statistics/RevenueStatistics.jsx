@@ -36,7 +36,10 @@ const RevenueStatistics = () => {
             
             // Thông báo nếu không có dữ liệu
             if (!response.data.hasData) {
-                toast.info('Chưa có dữ liệu đơn hàng thành công trong 6 tháng qua');
+                toast('Chưa có dữ liệu đơn hàng thành công trong 6 tháng qua', {
+                    icon: 'ℹ️',
+                    duration: 4000
+                });
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || 'Không thể tải dữ liệu thống kê';

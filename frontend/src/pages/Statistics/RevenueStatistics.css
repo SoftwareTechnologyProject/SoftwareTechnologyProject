@@ -8,6 +8,18 @@
     margin-bottom: 2rem;
 }
 
+.month-header {
+    text-align: left;
+}
+
+.books-header {
+    text-align: center;
+}
+
+.revenue-header {
+    text-align: right;
+}
+
 .page-header h1 {
     font-size: 2rem;
     color: #2c3e50;
@@ -296,8 +308,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Error Message */
@@ -355,4 +371,22 @@
     .percentage-cell {
         width: 150px;
     }
+}
+
+.statistics-table th:nth-child(1),
+.statistics-table td:nth-child(1) {
+    width: 25%;
+    text-align: left;
+}
+
+.statistics-table th:nth-child(2),
+.statistics-table td:nth-child(2) {
+    width: 45%;
+    text-align: center;
+}
+
+.statistics-table th:nth-child(3),
+.statistics-table td:nth-child(3) {
+    width: 30%;
+    text-align: right;
 }

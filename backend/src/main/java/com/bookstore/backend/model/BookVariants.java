@@ -47,9 +47,11 @@ public class BookVariants {
     private String size;
     private String edition;
     private Double weight;
+    
+    @Column(unique = true)
     private String isbn;
 
-    @OneToMany(mappedBy = "bookVariant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "bookVariant", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private List<BookImages> images;

@@ -5,7 +5,7 @@
 -- Insert test users
 INSERT INTO users (fullname, phonenumber, address, email, dateofbirth, role) VALUES
 ('Admin User', '0123456789', 'Admin Office', 'ndtoan.work@gmail.com', '1990-01-01', 'ADMIN'),
-('Test Customer', '0987654321', '123 Test Street', 'customer@gamil.com', '1995-05-15', 'USER'),
+('Test Customer', '0987654321', '123 Test Street', 'customer@gmail.com', '1995-05-15', 'USER'),
 ('Staff User', '0456789123', 'Store Location', 'staff@gmail.com', '1992-03-10', 'STAFF');
 
 -- Insert accounts with verified status

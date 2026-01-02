@@ -47,11 +47,25 @@ const AdminChatBox = () => {
     console.log("📩 Admin received WebSocket message:", msg);
     console.log("   Current activeBox conversationId:", activeBox?.conversationId);
     console.log("   Message conversationId:", msg.conversationId);
+    console.log("   Is mine?", msg.mine);
     
     // Thêm tin nhắn vào danh sách nếu đang active conversation này
     if (activeBox && msg.conversationId === activeBox.conversationId) {
-        console.log("✅ Message belongs to active conversation, adding to messages list");
-        setMessages((prev) => [...prev, msg]);
+        console.log("✅ Message belongs to active conversation");
+        
+        // Check duplicate: nếu là tin nhắn của mình broadcast lại thì skip
+        const isDuplicate = messages.some(m => 
+            m.senderEmail === msg.senderEmail && 
+            m.content === msg.content && 
+            Math.abs(new Date(m.createdAt) - new Date(msg.createdAt)) < 1000 // within 1 second
+        );
+        
+        if (isDuplicate) {
+            console.log("⚠️ Duplicate message detected, skipping");
+        } else {
+            console.log("➕ Adding message to list");
+            setMessages((prev) => [...prev, msg]);
+        }
         
         // Nếu tin nhắn không phải của mình thì mark read
         if (!msg.mine && msg.id) {
@@ -107,7 +121,18 @@ const AdminChatBox = () => {
       console.warn("⚠️ Cannot send: empty input or no activeBox");
       return;
     }
+    
+    // Optimistic UI: thêm tin nhắn ngay lập tức
+    const tempMessage = {
+      senderEmail: localStorage.getItem("email") || "me",
+      content: input,
+      createdAt: new Date().toISOString(),
+      mine: true,
+      id: null // temp message không có id
+    };
+    
     console.log("📤 Sending message to:", activeBox.receiverEmail);
+    setMessages((prev) => [...prev, tempMessage]);
     sendChatMessage({ receiveEmail: activeBox.receiverEmail, content: input });
     setInput("");
     console.log("✅ Message sent, input cleared");

@@ -15,6 +15,12 @@ spring:
         password: ${SPRING_DATASOURCE_PASSWORD:123456}
         driver-class-name: org.postgresql.Driver
 
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
+            enabled: true
+
     jpa:
         hibernate:
             ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create}
@@ -54,8 +60,8 @@ springdoc:
 vnpay:
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     return-url: http://localhost:8080/api/payment/vnpay-return
-    tmn-code: Y7ALQVWN
-    hash-secret: HP25LZ25TGFXN1X98S515TWW30PPH6KP
+    tmn-code: ${VNPAY_TMN_CODE}
+    hash-secret: ${VNPAY_HASH_SECRET}
     api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
     api-version: 2.1.0
 
@@ -87,4 +93,4 @@ gemini:
 # JWT configuration
 jwt:
     secret:
-        key: ${KEY_JWT:thisisthesecretkeyievercreatedinmydevelopmentcareer}
+        key: ${KEY_JWT}

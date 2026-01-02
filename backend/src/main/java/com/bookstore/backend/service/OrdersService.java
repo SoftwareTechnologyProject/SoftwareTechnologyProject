@@ -10,6 +10,8 @@ import com.bookstore.backend.model.enums.PaymentStatus;
 import com.bookstore.backend.model.enums.UserRole;
 import com.bookstore.backend.repository.*;
 import com.bookstore.backend.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrdersService {
+    private static final Logger log = LoggerFactory.getLogger(OrdersService.class);
+
     private final OrdersRepository ordersRepository;
     private final BookVariantsRepository bookVariantsRepository;
     private final VoucherRepository voucherRepository;
@@ -81,7 +85,8 @@ public class OrdersService {
         order.setOrderDetails(orderDetails);
         // ===== TOTAL AMOUNT (SAU GIẢM GIÁ) =====
         BigDecimal totalAmount = calculateTotalAmount(orderDetails, voucher);
-        order.setTotalAmount(totalAmount);
+        BigDecimal shippingFee = BigDecimal.valueOf(32000); 
+        order.setTotalAmount(totalAmount.add(shippingFee));
 
         Orders savedOrder = ordersRepository.save(order);
 
@@ -179,11 +184,11 @@ public class OrdersService {
 
         // Nếu có currentUser, kiểm tra quyền
         if (currentUser != null) {
-            System.out.println(currentUser.getRole());
+            log.debug("Current user role: {}", currentUser.getRole());
             // Kiểm tra quyền
             if (!order.getUsers().getId().equals(currentUser.getId())
                     && currentUser.getRole() != UserRole.ADMIN) {
-                System.out.println("Nguyễn Hữu Tâm");
+                log.warn("Access denied for user {} trying to access order {}", currentUser.getId(), orderId);
                 throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
             }
         }
@@ -199,47 +204,6 @@ public class OrdersService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
-
-    // ------------------- CALCULATE ORDER TOTAL AMOUNT -------------------
-    public java.math.BigDecimal calculateOrderTotalAmount(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-
-        // Tính tổng tiền từ order details
-        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
-                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
-                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
-        // Áp dụng giảm giá từ voucher nếu có
-        if (order.getVoucher() != null) {
-            Voucher voucher = order.getVoucher();
-            if (voucher.isValid()) {
-                // Xử lý theo loại giảm giá
-                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
-                    // Giảm theo phần trăm
-                    java.math.BigDecimal discount = totalAmount
-                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
-                            .divide(java.math.BigDecimal.valueOf(100));
-
-                    // Áp dụng giới hạn giảm giá tối đa nếu có
-                    if (voucher.getMaxDiscount() != null) {
-                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
-                        discount = discount.min(maxDiscount);
-                    }
-                    totalAmount = totalAmount.subtract(discount);
-                } else {
-                    // Giảm số tiền cố định
-                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
-                    totalAmount = totalAmount.subtract(discount);
-                }
-            }
-        }
-
-        return totalAmount;
-    }
-
 
     // ------------------- UPDATE PAYMENT STATUS -------------------
     public void updatePaymentStatus(Long orderId, PaymentStatus paymentStatus, PaymentType paymentType) {
@@ -277,6 +241,7 @@ public class OrdersService {
         dto.setPaymentStatus(order.getPaymentStatus());
         dto.setStatus(order.getStatus());
         dto.setOrderDate(order.getOrderDate());
+        dto.setTotalAmount(order.getTotalAmount());
 
         if (order.getVoucher() != null) {
             dto.setVoucherCode(order.getVoucher().getCode());
@@ -304,36 +269,6 @@ public class OrdersService {
                         ))
                         .collect(Collectors.toList())
         );
-
-        // Tính totalAmount trực tiếp từ order object thay vì gọi calculateOrderTotalAmount
-        java.math.BigDecimal totalAmount = order.getOrderDetails().stream()
-                .map(detail -> java.math.BigDecimal.valueOf(detail.getPricePurchased())
-                        .multiply(java.math.BigDecimal.valueOf(detail.getQuantity())))
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
-        // Áp dụng voucher discount nếu có
-        if (order.getVoucher() != null) {
-            Voucher voucher = order.getVoucher();
-            if (voucher.isValid()) {
-                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENTAGE) {
-                    java.math.BigDecimal discount = totalAmount
-                            .multiply(java.math.BigDecimal.valueOf(voucher.getDiscountValue()))
-                            .divide(java.math.BigDecimal.valueOf(100));
-
-                    if (voucher.getMaxDiscount() != null) {
-                        java.math.BigDecimal maxDiscount = java.math.BigDecimal.valueOf(voucher.getMaxDiscount());
-                        discount = discount.min(maxDiscount);
-                    }
-                    totalAmount = totalAmount.subtract(discount);
-                } else {
-                    java.math.BigDecimal discount = java.math.BigDecimal.valueOf(voucher.getDiscountValue());
-                    totalAmount = totalAmount.subtract(discount);
-                }
-            }
-        }
-
-        dto.setTotalAmount(totalAmount);
-
         return dto;
     }
     private void deductVariantStock(Long orderId) {
@@ -341,12 +276,15 @@ public class OrdersService {
         List<OrderDetails> details = orderDetailRepository.findByOrdersId(orderId);
 
         for (OrderDetails detail : details) {
-            BookVariants variant = detail.getBookVariant();
+            // ✅ Sử dụng pessimistic lock để tránh race condition
+            BookVariants variant = bookVariantsRepository.findByIdWithLock(detail.getBookVariant().getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể: " + detail.getBookVariant().getId()));
 
             int qty = detail.getQuantity();
 
             if (variant.getQuantity() < qty) {
-                throw new RuntimeException("Không đủ hàng cho biến thể: " + variant.getId());
+                throw new RuntimeException("Không đủ hàng cho biến thể: " + variant.getId() + 
+                    " (Còn: " + variant.getQuantity() + ", Yêu cầu: " + qty + ")");
             }
 
             variant.setQuantity(variant.getQuantity() - qty);
@@ -372,7 +310,8 @@ public class OrdersService {
 
             variant.setQuantity(variant.getQuantity() + qty);
 
-            variant.setSold(variant.getSold() - qty);
+            // Fix: Không cho sold < 0
+            variant.setSold(Math.max(0, variant.getSold() - qty));
 
             // Tự động chuyển status về AVAILABLE khi có hàng trở lại
             if (variant.getQuantity() > 0 && "OUT_OF_STOCK".equals(variant.getStatus())) {

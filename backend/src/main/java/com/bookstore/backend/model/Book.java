@@ -2,6 +2,9 @@ package com.bookstore.backend.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,8 +34,11 @@ public class Book {
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
+    @Min(value = 1000, message = "Năm xuất bản phải từ năm 1000 trở đi")
+    @Max(value = 2100, message = "Năm xuất bản không được vượt quá năm 2100")
     private Integer publisherYear;
 
+    @Size(max = 10000, message = "Mô tả không được vượt quá 10000 ký tự")
     @Column(columnDefinition = "TEXT")
     private String description;
 

@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -162,7 +164,7 @@ public class BookService {
         book.setPublisherYear(dto.getPublisherYear());
 
         // Map publisher
-        if (dto.getPublisherId() != null) {
+        if (dto.getPublisherId() != null && !dto.getPublisherId().toString().trim().isEmpty()) {
             Publisher publisher = publisherRepository.findById(dto.getPublisherId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Publisher not found with id: " + dto.getPublisherId()));
@@ -200,9 +202,31 @@ public class BookService {
             book.setCategories(new HashSet<>());
         }
 
-        // Map variants
+        // Map variants - KHÔNG dùng clear() để tránh StaleObjectStateException
         if (dto.getVariants() != null) {
-            book.getVariants().clear();
+            // CRITICAL: Force load images collection cho tất cả variants trước khi manipulate
+            for (BookVariants v : book.getVariants()) {
+                if (v.getImages() != null) {
+                    v.getImages().size(); // Trigger lazy load
+                }
+            }
+            
+            // Build map của variants hiện tại theo ID
+            Map<Long, BookVariants> existingVariantsMap = book.getVariants().stream()
+                    .filter(v -> v.getId() != null)
+                    .collect(Collectors.toMap(BookVariants::getId, v -> v));
+            
+            // Xác định variants cần xóa (có trong DB nhưng không có trong DTO)
+            Set<Long> incomingIds = dto.getVariants().stream()
+                    .map(BookVariantDTO::getId)
+                    .filter(variantId -> variantId != null)
+                    .collect(Collectors.toSet());
+            
+            List<BookVariants> toRemove = book.getVariants().stream()
+                    .filter(v -> v.getId() != null && !incomingIds.contains(v.getId()))
+                    .collect(Collectors.toList());
+            book.getVariants().removeAll(toRemove);
+            
             for (BookVariantDTO vdto : dto.getVariants()) {
                 // Validate ISBN unique khi update (chỉ check nếu ISBN thay đổi)
                 if (vdto.getIsbn() != null && !vdto.getIsbn().isEmpty()) {
@@ -224,36 +248,69 @@ public class BookService {
                     }
                 }
 
-                BookVariants variant = new BookVariants();
+                // CRITICAL FIX: Nếu có ID → lấy từ existingVariantsMap, không fetch lại từ DB!
+                BookVariants variant;
                 if (vdto.getId() != null) {
-                    variant.setId(vdto.getId());
+                    // Lấy variant từ collection hiện tại của book (đã được Hibernate manage)
+                    variant = existingVariantsMap.get(vdto.getId());
+                    if (variant == null) {
+                        throw new ResourceNotFoundException(
+                                "BookVariant not found with id: " + vdto.getId());
+                    }
+                } else {
+                    variant = new BookVariants();
+                    variant.setBook(book);
+                    book.getVariants().add(variant); // Add variant mới ngay
                 }
+                
+                // Update fields
                 variant.setPrice(vdto.getPrice());
                 variant.setQuantity(vdto.getQuantity());
                 variant.setSold(vdto.getSold());
                 variant.setStatus(vdto.getStatus());
                 variant.setIsbn(vdto.getIsbn());
-                variant.setBook(book);
                 
-                // Map image URLs - lưu vào database
-                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
-                    // Xóa các ảnh cũ nếu có
-                    if (vdto.getId() != null) {
-                        bookImagesRepository.deleteAll(bookImagesRepository.findByBookVariantId(vdto.getId()));
-                    }
-                    
-                    // Thêm ảnh mới
-                    List<BookImages> images = new ArrayList<>();
-                    for (String imageUrl : vdto.getImageUrls()) {
-                        BookImages img = new BookImages();
-                        img.setImageUrl(imageUrl);
-                        img.setBookVariant(variant);
-                        images.add(img);
-                    }
-                    variant.setImages(images);
+                // CRITICAL: Initialize images collection nếu null
+                if (variant.getImages() == null) {
+                    variant.setImages(new ArrayList<>());
                 }
                 
-                book.getVariants().add(variant);
+                // Map image URLs - Xử lý manual deletion vì đã tắt orphanRemoval
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    Set<String> newUrls = new HashSet<>(vdto.getImageUrls());
+                    
+                    // Tìm images cần xóa (không còn trong newUrls)
+                    List<BookImages> toDelete = variant.getImages().stream()
+                            .filter(img -> !newUrls.contains(img.getImageUrl()))
+                            .collect(Collectors.toList());
+                    
+                    // Xóa khỏi collection và DB
+                    variant.getImages().removeAll(toDelete);
+                    if (!toDelete.isEmpty()) {
+                        bookImagesRepository.deleteAll(toDelete);
+                    }
+                    
+                    // Lấy URLs hiện có để check ảnh mới
+                    Set<String> existingUrls = variant.getImages().stream()
+                            .map(BookImages::getImageUrl)
+                            .collect(Collectors.toSet());
+                    
+                    // Thêm ảnh mới (chưa có trong collection)
+                    for (String imageUrl : vdto.getImageUrls()) {
+                        if (!existingUrls.contains(imageUrl)) {
+                            BookImages img = new BookImages();
+                            img.setImageUrl(imageUrl);
+                            img.setBookVariant(variant);
+                            variant.getImages().add(img);
+                        }
+                    }
+                } else {
+                    // Nếu không có imageUrls, xóa tất cả ảnh cũ
+                    if (!variant.getImages().isEmpty()) {
+                        bookImagesRepository.deleteAll(variant.getImages());
+                        variant.getImages().clear();
+                    }
+                }
             }
         }
 

@@ -3,7 +3,6 @@ package com.bookstore.backend.service;
 import com.bookstore.backend.DTO.CartItemsDTO;
 import com.bookstore.backend.model.*;
 import com.bookstore.backend.repository.*;
-import com.bookstore.backend.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

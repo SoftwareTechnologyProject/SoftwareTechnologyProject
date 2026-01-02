@@ -7,18 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.bookstore.backend.DTO.NotificationRequestDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PaymentService {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
     private final OrdersService ordersService;
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final Map<String, Long> pendingPayments = new HashMap<>();
+    private final Map<String, Long> pendingPayments = new ConcurrentHashMap<>();
 
     @Autowired
     public PaymentService(OrdersService ordersService, NotificationService notificationService, EmailService emailService) {
@@ -60,10 +64,10 @@ public class PaymentService {
         
         pendingPayments.remove(paymentKey);
         
-        System.out.println("✅ Order #" + orderId + " marked as PAID. Transaction: " + transactionNo);
+        log.info("✅ Order #{} marked as PAID. Transaction: {}", orderId, transactionNo);
         NotificationRequestDTO notificationRequest = NotificationRequestDTO.builder()
                 .content("Thanh toán thành công cho đơn hàng #" + orderId + " của bạn")
-                .url("/payment/result?paymentKey=" + paymentKey + "&transactionDate=" + transactionDate)
+                .url("http://localhost:5173/payment/result?orderId=" + orderId)
                 .type(com.bookstore.backend.model.enums.NotificationType.PERSONAL)
                 .userId(userIdFromOrder)
                 .build();
@@ -79,9 +83,9 @@ public class PaymentService {
                 user.getFullName(),
                 orderDTO
             );
-            System.out.println("📧 Order confirmation email sent to: " + user.getEmail());
+            log.info("📧 Order confirmation email sent to: {}", user.getEmail());
         } catch (Exception e) {
-            System.err.println("⚠️ Failed to send order confirmation email: " + e.getMessage());
+            log.warn("⚠️ Failed to send order confirmation email: {}", e.getMessage());
         }
     }
 
@@ -96,7 +100,7 @@ public class PaymentService {
         
         pendingPayments.remove(paymentKey);
         
-        System.out.println("❌ Order #" + orderId + " marked as FAILED");
+        log.warn("❌ Order #{} marked as FAILED", orderId);
     }
 
     public String getPaymentStatus(String paymentKey) {
@@ -127,7 +131,7 @@ public class PaymentService {
             throw new Exception("Payment information not found");
         }
         
-        return ordersService.calculateOrderTotalAmount(orderId);
+        return ordersService.getOrderEntityById(orderId).getTotalAmount();
     }
 
     public Long getOrderIdByPaymentKey(String paymentKey) {
