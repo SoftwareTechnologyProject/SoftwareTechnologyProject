@@ -111,14 +111,22 @@
 .stat-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; }
 .stat-value { font-size: 1.3rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
 
-/* --- UNIFIED TOOLBAR (New Design) --- */
+/* --------------------------------------------------------
+   --- UNIFIED TOOLBAR (ĐÃ SỬA LẠI ĐỂ CĂN GIỮA) --- 
+   --------------------------------------------------------
+*/
 .filters-section {
   background: var(--bg-surface);
   border-radius: var(--radius-xl);
   padding: 0.5rem;
   box-shadow: var(--shadow-card);
+  
+  /* CẤU HÌNH FLEX ĐỂ ĐẨY CÁC PHẦN TỬ RA 2 BÊN */
   display: flex;
   align-items: center;
+  justify-content: space-between; 
+  gap: 16px;
+  
   margin-bottom: 2rem;
   border: 1px solid white;
   transition: box-shadow 0.2s;
@@ -137,6 +145,7 @@
   padding-right: 1rem;
   border-right: 1px solid var(--border-color);
   min-width: 180px;
+  flex-shrink: 0; /* Giữ kích thước cố định, không bị co */
 }
 
 .filter-icon {
@@ -170,12 +179,17 @@
   pointer-events: none;
 }
 
-/* Search Group */
+/* Search Group 
+   QUAN TRỌNG: Đã xóa flex:1 và thêm margin: 0 auto để căn giữa 
+*/
 .search-group {
-  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
+  
+  width: 100%;           
+  max-width: 600px;     /* Giới hạn độ rộng tối đa */
+  margin: 0 auto;       /* Tự động căn giữa */
 }
 
 .search-icon {
@@ -194,6 +208,10 @@
   background: transparent;
   padding: 0.8rem 1rem 0.8rem 3rem;
   color: var(--text-main);
+  border-radius: 8px; /* Thêm border radius khi hover background hiện rõ đẹp hơn */
+}
+.search-input:focus {
+    background: var(--bg-app); /* Highlight nhẹ khi focus */
 }
 
 .search-input::placeholder {
@@ -218,7 +236,8 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  margin-left: 0.5rem;
+  /* margin-left đã bị xóa vì dùng justify-content rồi */
+  flex-shrink: 0; 
   font-size: 1.2rem;
 }
 
@@ -341,6 +360,7 @@
 @media (max-width: 768px) {
   .filters-section { flex-direction: column; align-items: stretch; gap: 0.5rem; padding: 1rem; }
   .filter-group { border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 0.5rem; }
+  .search-group { max-width: 100%; margin: 0; }
   .btn-refresh { width: 100%; margin-left: 0; margin-top: 0.5rem; }
   .table-container { overflow-x: auto; }
 }

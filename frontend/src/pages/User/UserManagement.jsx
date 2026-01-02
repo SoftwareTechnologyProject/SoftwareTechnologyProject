@@ -82,11 +82,11 @@ const UserManagement = () => {
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Bạn có chắc muốn vô hiệu hóa người dùng này? Tài khoản sẽ chuyển sang trạng thái DELETED.')) {
             try {
-                const response = await axios.delete(`/api/users/${userId}`);
+                const response = await axios.delete(`/users/${userId}`);
                 toast.success(response.data || 'Đã vô hiệu hóa tài khoản thành công');
                 fetchUsers();
             } catch (err) {
-                const errorMsg = err.response?.data || 'Không thể xóa người dùng.';
+                const errorMsg = err.response?.data?.message || err.response?.data || 'Không thể xóa người dùng.';
                 toast.error(errorMsg);
             }
         }
@@ -96,14 +96,14 @@ const UserManagement = () => {
         if (!selectedUser) return;
         try {
             const response = await axios.patch(
-                `/api/users/${selectedUser.id}/status?status=${status}`
+                `/users/${selectedUser.id}/status?status=${status}`
             );
             toast.success(response.data || `Đã cập nhật trạng thái thành ${status}`);
             setShowStatusModal(false);
             setSelectedUser(null);
             fetchUsers();
         } catch (err) {
-            const errorMsg = err.response?.data || 'Không thể cập nhật trạng thái.';
+            const errorMsg = err.response?.data?.message || err.response?.data || 'Không thể cập nhật trạng thái.';
             toast.error(errorMsg);
         }
     };

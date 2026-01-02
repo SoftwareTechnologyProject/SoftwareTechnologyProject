@@ -3,14 +3,14 @@ import axiosClient from "../../api/axiosClient";
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 
-// Import icons
+// Import icons (Đã thêm IoCalendarOutline)
 import {
   IoAdd, IoSearch, IoClose, IoTrash, IoCreate,
   IoCloudUpload, IoBookOutline,
   IoChevronBack, IoChevronForward,
   IoPlaySkipBack, IoPlaySkipForward,
   IoCubeOutline, IoPricetagsOutline,
-  IoLibrary
+  IoLibrary, IoCalendarOutline
 } from "react-icons/io5";
 
 import "./BookAdmin.css";
@@ -19,10 +19,15 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
-// Helper để lấy ngày hiện tại hiển thị ở Header
-const getTodayString = () => {
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date().toLocaleDateString('vi-VN', options);
+// Helper để lấy ngày hiện tại (Format giống bên Voucher)
+const getCurrentDate = () => {
+  const date = new Date();
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dayName = days[date.getDay()];
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${dayName}, ${day} tháng ${month}, ${year}`;
 };
 
 // Skeleton Loader
@@ -166,7 +171,10 @@ export default function BookAdmin() {
         try {
           await axiosClient.delete(`/books/${id}`);
           Swal.fire('Đã xóa!', 'Sách đã được xóa', 'success'); fetchBooks();
-        } catch (error) { Swal.fire('Lỗi', 'Không thể xóa sách này', 'error'); }
+        } catch (error) { 
+          const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Không thể xóa sách này';
+          Swal.fire('Lỗi', errorMessage, 'error'); 
+        }
       }
     })
   };
@@ -216,13 +224,13 @@ export default function BookAdmin() {
     <div className="book-admin-page">
       <Toaster position="top-center" reverseOrder={false} />
 
-      {/* --- NEW MODERN HEADER --- */}
+      {/* --- MODIFIED HEADER --- */}
       <div className="admin-header-card">
         <div className="header-content">
           <h1 className="header-title">Quản Lý Sách Elite</h1>
-          <div className="header-subtitle">
-            <span style={{width:'8px', height:'8px', background:'var(--success-text)', borderRadius:'50%', display:'inline-block'}}></span>
-            {getTodayString()}
+          {/* Đã thay đổi phần này */}
+          <div className="header-subtitle" style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem'}}>
+            <IoCalendarOutline /> {getCurrentDate()}
           </div>
         </div>
 
