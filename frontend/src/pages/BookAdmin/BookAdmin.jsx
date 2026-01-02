@@ -3,15 +3,14 @@ import axiosClient from "../../api/axiosClient";
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 
-// Sử dụng bộ icon IO5
+// Import icons
 import {
   IoAdd, IoSearch, IoClose, IoTrash, IoCreate,
   IoCloudUpload, IoBookOutline,
   IoChevronBack, IoChevronForward,
-  IoPlaySkipBack, IoPlaySkipForward, 
+  IoPlaySkipBack, IoPlaySkipForward,
   IoCubeOutline, IoPricetagsOutline,
-  IoLibrary, IoStatsChart, IoAlertCircle,
-  IoArrowForward // Icon cho nút Go
+  IoLibrary
 } from "react-icons/io5";
 
 import "./BookAdmin.css";
@@ -20,23 +19,41 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
+// Helper để lấy ngày hiện tại hiển thị ở Header
+const getTodayString = () => {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date().toLocaleDateString('vi-VN', options);
+};
+
+// Skeleton Loader
+const SkeletonRow = () => (
+  <tr className="animate-pulse" style={{borderBottom:'none'}}>
+    <td colSpan="6" style={{padding:'1rem 0'}}>
+      <div style={{background:'white', borderRadius:'12px', padding:'1rem', display:'flex', alignItems:'center', boxShadow:'0 2px 4px rgba(0,0,0,0.02)'}}>
+        <div style={{width:'48px', height:'72px', background:'#f1f5f9', borderRadius:'4px', marginRight:'1rem'}}></div>
+        <div style={{flex:1}}>
+          <div style={{height:'16px', background:'#f1f5f9', borderRadius:'4px', width:'30%', marginBottom:'8px'}}></div>
+          <div style={{height:'12px', background:'#f1f5f9', borderRadius:'4px', width:'20%'}}></div>
+        </div>
+      </div>
+    </td>
+  </tr>
+);
+
 export default function BookAdmin() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchType, setSearchType] = useState("title");
 
-  // State phân trang
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [jumpPage, setJumpPage] = useState(""); // State cho ô nhập trang
 
   const [showDrawer, setShowDrawer] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [modalMode, setModalMode] = useState("create");
   const [selectedBook, setSelectedBook] = useState(null);
 
-  // State tìm kiếm tác giả
   const [authorSearch, setAuthorSearch] = useState(""); 
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
 
@@ -49,12 +66,12 @@ export default function BookAdmin() {
   const [publishers, setPublishers] = useState([]);
   const [authors, setAuthors] = useState([]);
 
-  // Fetch dữ liệu
+  // Fetch logic
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      let url = `/books?page=${page}&size=7&sortBy=id`;
-      if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=7`;
+      let url = `/books?page=${page}&size=6&sortBy=id`;
+      if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=6`;
 
       const response = await axiosClient.get(url);
       if (response.data.content) {
@@ -72,19 +89,15 @@ export default function BookAdmin() {
 
   const fetchMetadata = async () => {
     try {
-      const [pubRes, authRes] = await Promise.all([
-        axiosClient.get("/publishers"),
-        axiosClient.get("/authors")
-      ]);
-      setPublishers(pubRes.data || []);
-      setAuthors(authRes.data || []);
+      const [pubRes, authRes] = await Promise.all([axiosClient.get("/publishers"), axiosClient.get("/authors")]);
+      setPublishers(pubRes.data || []); setAuthors(authRes.data || []);
     } catch (error) { console.error("Metadata error", error); }
   };
 
   useEffect(() => { fetchBooks(); }, [page]);
   useEffect(() => { fetchMetadata(); }, []);
 
-  // --- XỬ LÝ FORM ---
+  // Form Handlers
   const handleCreate = () => {
     setModalMode("create"); setActiveTab("general");
     setAuthorSearch(""); setShowAuthorDropdown(false);
@@ -99,15 +112,12 @@ export default function BookAdmin() {
   const handleEdit = (book) => {
     setModalMode("edit"); setActiveTab("general"); setSelectedBook(book);
     setAuthorSearch(""); setShowAuthorDropdown(false);
-
     const mappedVariants = (book.variants || []).map(v => ({
       id: v.id, price: v.price || 0, quantity: v.quantity || 0, sold: v.sold || 0,
       status: v.status || "AVAILABLE", isbn: v.isbn || "", imageUrls: v.imageUrls || []
     }));
-
     setFormData({
-      title: book.title,
-      description: book.description || "",
+      title: book.title, description: book.description || "",
       publisherYear: book.publisherYear || new Date().getFullYear(),
       publisherId: book.publisherId || "",
       authorIds: book.authorIds || (book.authors ? book.authors.map(a => a.id) : []),
@@ -119,439 +129,261 @@ export default function BookAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate dữ liệu trước khi gửi
     const errors = [];
+    if (!formData.title?.trim()) errors.push("Tiêu đề sách không được để trống");
+    if (!formData.variants || formData.variants.length === 0) errors.push("Phải có ít nhất 1 phiên bản");
     
-    // Validate title
-    if (!formData.title || formData.title.trim() === "") {
-      errors.push("Tiêu đề sách không được để trống");
-    }
-    
-    // Validate publisherYear
-    if (formData.publisherYear) {
-      const year = parseInt(formData.publisherYear);
-      if (year < 1000 || year > 2100) {
-        errors.push("Năm xuất bản phải từ 1000 đến 2100");
-      }
-    }
-    
-    // Validate description length
-    if (formData.description && formData.description.length > 10000) {
-      errors.push("Mô tả không được vượt quá 10,000 ký tự");
-    }
-    
-    // Validate variants
-    if (!formData.variants || formData.variants.length === 0) {
-      errors.push("Phải có ít nhất 1 phiên bản sách");
-    } else {
-      formData.variants.forEach((v, index) => {
-        if (v.price === null || v.price === undefined || v.price < 0) {
-          errors.push(`Phiên bản ${index + 1}: Giá phải lớn hơn hoặc bằng 0`);
-        }
-        if (v.quantity < 0) {
-          errors.push(`Phiên bản ${index + 1}: Số lượng phải lớn hơn hoặc bằng 0`);
-        }
-        if (!v.status) {
-          errors.push(`Phiên bản ${index + 1}: Trạng thái không được để trống`);
-        }
-      });
-    }
-    
-    // Hiển thị lỗi validation
     if (errors.length > 0) {
-      toast.error(
-        <div>
-          <strong>Vui lòng kiểm tra lại:</strong>
-          <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-            {errors.map((err, i) => <li key={i}>{err}</li>)}
-          </ul>
-        </div>,
-        { duration: 5000 }
-      );
+      toast.error(<div><strong>Kiểm tra lại:</strong><ul style={{margin:'5px 0 0 15px'}}>{errors.map((e,i)=><li key={i}>{e}</li>)}</ul></div>);
       return;
     }
     
-    // Clean formData: convert empty strings to null
     const cleanedData = {
       ...formData,
-      publisherId: formData.publisherId === "" ? null : formData.publisherId,
-      authorIds: formData.authorIds.length === 0 ? [] : formData.authorIds,
-      categoryIds: formData.categoryIds.length === 0 ? [] : formData.categoryIds,
-      variants: formData.variants.map(v => ({
-        ...v,
-        isbn: v.isbn === "" ? null : v.isbn
-      }))
+      publisherId: formData.publisherId || null,
+      variants: formData.variants.map(v => ({ ...v, isbn: v.isbn || null }))
     };
     
-    console.log("Submit formData:", JSON.stringify(cleanedData, null, 2));
     try {
       if (modalMode === "create") {
-        console.log("POST /books");
         await axiosClient.post("/books", cleanedData);
         toast.success("Thêm sách mới thành công!");
       } else {
-        console.log(`PUT /books/${selectedBook.id}`);
-        const response = await axiosClient.put(`/books/${selectedBook.id}`, cleanedData);
-        console.log("Update response:", response.data);
-        toast.success("Cập nhật sách thành công!");
+        await axiosClient.put(`/books/${selectedBook.id}`, cleanedData);
+        toast.success("Cập nhật thành công!");
       }
-      setShowDrawer(false);
-      fetchBooks();
-    } catch (error) {
-      console.error("Submit error:", error);
-      console.error("Error response:", error.response?.data);
-      
-      // Xử lý các loại lỗi khác nhau từ backend
-      const errorData = error.response?.data;
-      if (errorData) {
-        if (errorData.message) {
-          // Lỗi có message rõ ràng
-          toast.error(errorData.message, { duration: 5000 });
-        } else if (errorData.errors) {
-          // Lỗi validation từ Spring Boot
-          const validationErrors = Object.values(errorData.errors);
-          toast.error(
-            <div>
-              <strong>Lỗi validation:</strong>
-              <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                {validationErrors.map((err, i) => <li key={i}>{err}</li>)}
-              </ul>
-            </div>,
-            { duration: 5000 }
-          );
-        } else if (errorData.error) {
-          // Lỗi chung
-          toast.error(`Lỗi: ${errorData.error}`, { duration: 5000 });
-        } else {
-          toast.error("Không thể lưu dữ liệu, vui lòng thử lại sau", { duration: 5000 });
-        }
-      } else if (error.message) {
-        toast.error(`Lỗi: ${error.message}`, { duration: 5000 });
-      } else {
-        toast.error("Không thể lưu dữ liệu, vui lòng thử lại sau", { duration: 5000 });
-      }
-    }
+      setShowDrawer(false); fetchBooks();
+    } catch (error) { toast.error(error.response?.data?.message || "Lỗi lưu dữ liệu"); }
   };
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'Xóa sách này?',
-      text: "Hành động này không thể hoàn tác!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Xóa ngay',
-      cancelButtonText: 'Hủy'
+      title: 'Xác nhận xóa?', text: "Hành động này không thể hoàn tác!", icon: 'warning',
+      showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b',
+      confirmButtonText: 'Xóa ngay', cancelButtonText: 'Hủy'
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await axiosClient.delete(`/books/${id}`);
-          Swal.fire('Đã xóa!', 'Sách đã được xóa thành công', 'success');
-          fetchBooks();
-        } catch (error) {
-          console.error("Delete error:", error);
-          
-          // Xử lý lỗi xóa chi tiết
-          const errorData = error.response?.data;
-          let errorMessage = "Không thể xóa sách";
-          
-          if (errorData?.message) {
-            errorMessage = errorData.message;
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-          
-          Swal.fire({
-            icon: 'error',
-            title: 'Không thể xóa!',
-            html: `<div style="text-align: left">${errorMessage}</div>`,
-            confirmButtonColor: '#3b82f6'
-          });
-        }
+          Swal.fire('Đã xóa!', 'Sách đã được xóa', 'success'); fetchBooks();
+        } catch (error) { Swal.fire('Lỗi', 'Không thể xóa sách này', 'error'); }
       }
     })
   };
 
-  // --- LOGIC XỬ LÝ BIẾN THỂ & UPLOAD ẢNH ---
   const updateVariant = (idx, field, val) => {
-    const newVars = [...formData.variants];
-    newVars[idx][field] = val;
+    const newVars = [...formData.variants]; newVars[idx][field] = val;
     setFormData({ ...formData, variants: newVars });
   };
 
-  // Upload ảnh bìa (chỉ 1 ảnh, đặt ở vị trí đầu tiên)
-  const handleCoverImageUpload = async (e, variantIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const loadingToast = toast.loading('Đang upload ảnh bìa...');
-    
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-      const response = await axiosClient.post('/books/upload-image', uploadFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      const coverUrl = response.data.url;
-      const currentVariant = formData.variants[variantIndex];
-      const currentImages = currentVariant.imageUrls || [];
-      
-      // Đặt ảnh bìa ở vị trí đầu tiên, giữ nguyên các ảnh minh họa (từ index 1 trở đi)
-      const updatedImages = [coverUrl, ...currentImages.slice(1)];
-      updateVariant(variantIndex, 'imageUrls', updatedImages);
-      
-      toast.success('Đã upload ảnh bìa thành công!', { id: loadingToast });
-    } catch (error) {
-      console.error('Upload cover failed:', error);
-      toast.error('Upload ảnh bìa thất bại!', { id: loadingToast });
-    }
-    
-    e.target.value = null;
-  };
-
-  // Upload ảnh minh họa (nhiều ảnh, đặt sau ảnh bìa)
-  const handleGalleryImagesUpload = async (e, variantIndex) => {
+  const handleUpload = async (e, variantIndex, isCover) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    
-    const loadingToast = toast.loading(`Đang upload ${files.length} ảnh minh họa...`);
-    
+    const loadingToast = toast.loading('Đang tải ảnh lên...');
     try {
-      const uploadPromises = files.map(async (file) => {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        const response = await axiosClient.post('/books/upload-image', uploadFormData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        return response.data.url;
-      });
+      const urls = await Promise.all(files.map(async (file) => {
+        const fd = new FormData(); fd.append('file', file);
+        const res = await axiosClient.post('/books/upload-image', fd);
+        return res.data.url;
+      }));
       
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const currentVariant = formData.variants[variantIndex];
-      const currentImages = currentVariant.imageUrls || [];
-      
-      // Giữ ảnh bìa (index 0), thêm ảnh minh họa vào cuối
-      const coverImage = currentImages[0] || null;
-      const galleryImages = currentImages.slice(1);
-      const updatedImages = coverImage 
-        ? [coverImage, ...galleryImages, ...uploadedUrls]
-        : [...uploadedUrls];
-      
-      updateVariant(variantIndex, 'imageUrls', updatedImages);
-      
-      toast.success(`Đã upload ${files.length} ảnh minh họa!`, { id: loadingToast });
-    } catch (error) {
-      console.error('Upload gallery failed:', error);
-      toast.error('Upload ảnh minh họa thất bại!', { id: loadingToast });
-    }
-    
+      const current = formData.variants[variantIndex];
+      let newImages = [];
+      if (isCover) {
+        newImages = [urls[0], ...(current.imageUrls || []).slice(1)];
+      } else {
+        const cover = (current.imageUrls && current.imageUrls[0]) || null;
+        newImages = cover ? [cover, ...(current.imageUrls || []).slice(1), ...urls] : [...urls];
+      }
+      updateVariant(variantIndex, 'imageUrls', newImages);
+      toast.success('Xong!', { id: loadingToast });
+    } catch (error) { toast.error('Lỗi upload', { id: loadingToast }); }
     e.target.value = null;
   };
 
-  // --- LOGIC PHÂN TRANG (Render số trang) ---
+  // Pagination Helper
   const renderPageNumbers = () => {
     const pageNumbers = [];
-    let startPage = Math.max(0, page - 2);
-    let endPage = Math.min(totalPages - 1, page + 2);
-
-    if (endPage - startPage < 4) {
-      if (startPage === 0) endPage = Math.min(totalPages - 1, 4);
-      else if (endPage === totalPages - 1) startPage = Math.max(0, totalPages - 5);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(
-        <button key={i} className={`page-btn ${page === i ? 'active' : ''}`} onClick={() => setPage(i)}>{i + 1}</button>
-      );
-    }
+    let start = Math.max(0, page - 2), end = Math.min(totalPages - 1, page + 2);
+    if (end - start < 4) { if (start === 0) end = Math.min(totalPages - 1, 4); else start = Math.max(0, totalPages - 5); }
+    for (let i = start; i <= end; i++) pageNumbers.push(<button key={i} className={`page-btn ${page === i ? 'active' : ''}`} onClick={() => setPage(i)}>{i + 1}</button>);
     return pageNumbers;
   };
 
-  // Logic xử lý nhảy trang
-  const handleJumpPage = () => {
-    const p = parseInt(jumpPage);
-    if (p >= 1 && p <= totalPages) {
-      setPage(p - 1);
-      setJumpPage("");
-    } else {
-      toast.error(`Trang không hợp lệ! (1 - ${totalPages})`);
-    }
-  };
-
-  // Tính toán thống kê Header
-  const totalStock = books.reduce((acc, b) => acc + (b.variants?.reduce((vAcc, v) => vAcc + v.quantity, 0) || 0), 0);
-  const lowStockCount = books.filter(b => b.variants?.some(v => v.quantity < 5)).length;
+  const totalStock = books.reduce((acc, b) => acc + (b.variants?.reduce((v, i) => v + i.quantity, 0) || 0), 0);
 
   return (
     <div className="book-admin-page">
-      <Toaster position="top-right" />
+      <Toaster position="top-center" reverseOrder={false} />
 
-      {/* Header */}
+      {/* --- NEW MODERN HEADER --- */}
       <div className="admin-header-card">
-        <IoLibrary className="header-bg-decoration" />
         <div className="header-content">
           <h1 className="header-title">Quản Lý Sách Elite</h1>
-          <div className="header-stats-row">
-            <div className="stat-item"><IoLibrary color="var(--primary)" /> <span>Đầu sách: <strong>{books.length}</strong></span></div>
-            <div className="stat-item"><IoStatsChart color="#10b981" /> <span>Tồn kho: <strong>{totalStock}</strong></span></div>
-            <div className="stat-item"><IoAlertCircle color="#f59e0b" /> <span>Sắp hết: <strong>{lowStockCount}</strong></span></div>
+          <div className="header-subtitle">
+            <span style={{width:'8px', height:'8px', background:'var(--success-text)', borderRadius:'50%', display:'inline-block'}}></span>
+            {getTodayString()}
           </div>
         </div>
-        <button className="btn-create-glow" onClick={handleCreate}><IoAdd size={24} /> <span>Thêm Sách Mới</span></button>
-      </div>
 
-      {/* Search Bar */}
-      <div className="search-section">
-        <select className="search-select" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-          <option value="title">Tên sách</option>
-          <option value="author">Tác giả</option>
-        </select>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <input className="search-input" placeholder="Tìm kiếm sách, tác giả, ISBN..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchBooks()} />
+        <div className="header-actions">
+          {/* Nhóm Thống kê (Stats) */}
+          <div className="header-stats-group">
+            <div className="stat-box blue">
+              <div className="stat-icon-wrapper"><IoLibrary /></div>
+              <div className="stat-info"><span className="stat-label">Đầu sách</span><span className="stat-value">{books.length}</span></div>
+            </div>
+            <div className="stat-box green">
+              <div className="stat-icon-wrapper"><IoCubeOutline /></div>
+              <div className="stat-info"><span className="stat-label">Tổng Kho</span><span className="stat-value">{totalStock}</span></div>
+            </div>
+          </div>
+
+          <button className="btn-create-glow" onClick={handleCreate}>
+            <div style={{background:'white', color:'var(--primary)', borderRadius:'50%', padding:'4px', display:'flex'}}><IoAdd size={20} /></div>
+            <span>Thêm Mới</span>
+          </button>
         </div>
-        <button className="btn-search" onClick={() => { setPage(0); fetchBooks(); }}><IoSearch size={20} /></button>
       </div>
 
-      {/* Table */}
+      {/* --- FILTER BAR --- */}
+      <div style={{display:'flex', justifyContent:'center'}}>
+        <div className="search-section">
+          <select className="search-select" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
+            <option value="title">Tên sách</option>
+            <option value="author">Tác giả</option>
+          </select>
+          <input className="search-input" placeholder="Tìm kiếm nhanh..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchBooks()} />
+          <button className="btn-search" onClick={() => { setPage(0); fetchBooks(); }}><IoSearch size={20} /></button>
+        </div>
+      </div>
+
+      {/* --- TABLE (CARD STYLE) --- */}
       <div className="books-table-container">
-        {loading ? <div className="loading-container"><div className="spinner"></div><span>Đang tải dữ liệu...</span></div> : books.length > 0 ? (
-          <table className="books-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>#ID</th>
-                <th style={{ width: '40%' }}>Thông tin sách</th>
-                <th>Nhà Xuất Bản</th>
-                <th>Giá & Kho</th>
-                <th>Trạng thái</th>
-                <th style={{ textAlign: 'right' }}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {books.map((book) => {
+        <table className="books-table">
+          <thead>
+            <tr>
+              <th style={{ width: '60px' }}>ID</th>
+              <th style={{ width: '35%' }}>Sách & Tác giả</th>
+              <th style={{ width: '20%' }}>Xuất Bản</th>
+              <th style={{ width: '20%' }}>Giá & Kho</th>
+              <th style={{ width: '15%' }}>Trạng thái</th>
+              <th style={{ textAlign: 'right' }}>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? [...Array(5)].map((_, i) => <SkeletonRow key={i} />) : books.length > 0 ? (
+              books.map((book) => {
                 const prices = book.variants?.map(v => v.price) || [];
-                const priceDisplay = prices.length ? (Math.min(...prices) === Math.max(...prices) ? formatCurrency(Math.min(...prices)) : `${formatCurrency(Math.min(...prices))} - ${formatCurrency(Math.max(...prices))}`) : '0 đ';
+                const priceDisplay = prices.length ? (Math.min(...prices) === Math.max(...prices) ? formatCurrency(Math.min(...prices)) : `${formatCurrency(Math.min(...prices))} +`) : '0 đ';
+                const coverImg = book.variants?.[0]?.imageUrls?.[0] || "https://placehold.co/48x72?text=No+Img";
 
                 return (
                   <tr key={book.id}>
-                    <td style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>#{book.id}</td>
-                    <td className="book-title">
-                      <strong>{book.title}</strong>
-                      <div className="book-meta"><IoBookOutline /> {book.authorNames?.join(", ") || "Chưa có tác giả"}</div>
-                    </td>
-                    <td><div style={{ fontWeight: 600 }}>{book.publisherName}</div><small style={{ color: 'var(--text-secondary)' }}>Năm: {book.publisherYear}</small></td>
+                    <td style={{ fontWeight: '800', color: '#cbd5e1' }}>#{book.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 4 }}><IoPricetagsOutline size={14} /> {priceDisplay}</div>
-                      <small style={{ color: 'var(--text-secondary)' }}>{book.variants?.length || 0} phiên bản</small>
+                      <div style={{display:'flex', gap:'1.25rem', alignItems:'center'}}>
+                         <div className="book-cover-wrapper">
+                            <img src={coverImg} className="book-cover-img" alt="" onError={(e) => e.target.src = "https://placehold.co/48x72?text=Error"} />
+                         </div>
+                         <div>
+                            <div className="book-title"><strong>{book.title}</strong></div>
+                            <div className="book-meta"><IoBookOutline /> {book.authorNames?.join(", ") || "Chưa cập nhật"}</div>
+                         </div>
+                      </div>
                     </td>
                     <td>
-                      {book.variants && book.variants.length > 0 ? (
-                        (() => {
-                          const variant = book.variants[0];
-                          const isAvailable = variant.status === 'AVAILABLE' && variant.quantity > 0;
-                          return (
-                            <span className={`status-badge ${isAvailable ? 'available' : 'out_of_stock'}`}>
-                              {isAvailable ? 'Sẵn hàng' : 'Hết hàng'}
-                            </span>
-                          );
-                        })()
-                      ) : <span className="status-badge">---</span>}
+                      <div style={{fontWeight: 600, color:'var(--text-main)'}}>{book.publisherName}</div>
+                      <div style={{fontSize:'0.8rem', color:'var(--text-light)'}}>{book.publisherYear}</div>
+                    </td>
+                    <td>
+                      <div style={{fontWeight: 700, color: 'var(--primary)', display:'flex', alignItems:'center', gap:4}}>
+                        <IoPricetagsOutline /> {priceDisplay}
+                      </div>
+                      <div style={{fontSize:'0.8rem', color:'var(--text-secondary)', marginTop:'2px'}}>{book.variants?.length || 0} phiên bản</div>
+                    </td>
+                    <td>
+                      {(() => {
+                        const v = book.variants?.[0];
+                        const isAvail = v?.status === 'AVAILABLE' && v?.quantity > 0;
+                        return <span className={`status-badge ${isAvail ? 'available' : 'out_of_stock'}`}>{isAvail ? 'Sẵn hàng' : 'Hết hàng'}</span>
+                      })()}
                     </td>
                     <td>
                       <div className="actions">
-                        <button className="btn-icon btn-edit" onClick={() => handleEdit(book)} title="Sửa"><IoCreate size={20} /></button>
-                        <button className="btn-icon btn-delete" onClick={() => handleDelete(book.id)} title="Xóa"><IoTrash size={20} /></button>
+                        <button className="btn-icon btn-edit" onClick={() => handleEdit(book)}><IoCreate size={18} /></button>
+                        <button className="btn-icon btn-delete" onClick={() => handleDelete(book.id)}><IoTrash size={18} /></button>
                       </div>
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <div className="empty-state"><IoCubeOutline size={64} style={{ color: '#cbd5e1', marginBottom: '1rem' }} /><div>Không tìm thấy dữ liệu</div></div>
-        )}
+              })
+            ) : (
+              <tr><td colSpan="6"><div style={{textAlign:'center', padding:'3rem', color:'#cbd5e1'}}><IoCubeOutline size={64}/><p>Chưa có dữ liệu</p></div></td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* --- PAGINATION (Cập nhật 3 cột: Thông tin - Nút - Ô nhập) --- */}
+      {/* --- PAGINATION (FIXED) --- */}
       {!loading && totalPages > 0 && (
         <div className="pagination-wrapper">
-          {/* CỘT TRÁI: Thông tin trang */}
-          <div className="pagination-info">
-            Trang <strong>{page + 1}</strong> / {totalPages}
-          </div>
-
-          {/* CỘT GIỮA: Các nút điều hướng */}
-          <div className="pagination-controls">
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(0)} title="Trang đầu"><IoPlaySkipBack /></button>
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} title="Trang trước"><IoChevronBack /></button>
-            
+          <div style={{fontSize:'0.9rem', color:'var(--text-secondary)'}}>Trang <strong>{page + 1}</strong> / {totalPages}</div>
+          <div style={{display:'flex', gap:'5px'}}>
+            <button className="page-btn" disabled={page===0} onClick={()=>setPage(0)} title="Trang đầu"><IoPlaySkipBack/></button>
+            <button className="page-btn" disabled={page===0} onClick={()=>setPage(p=>p-1)} title="Trang trước"><IoChevronBack/></button>
             {renderPageNumbers()}
-            
-            <button className="page-btn" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)} title="Trang sau"><IoChevronForward /></button>
-            <button className="page-btn" disabled={page === totalPages - 1} onClick={() => setPage(totalPages - 1)} title="Trang cuối"><IoPlaySkipForward /></button>
+            <button className="page-btn" disabled={page===totalPages-1} onClick={()=>setPage(p=>p+1)} title="Trang sau"><IoChevronForward/></button>
+            <button className="page-btn" disabled={page===totalPages-1} onClick={()=>setPage(totalPages-1)} title="Trang cuối"><IoPlaySkipForward/></button>
           </div>
-
-          {/* CỘT PHẢI: Ô nhập số trang */}
-          <div className="pagination-jump">
-            <span>Đến trang:</span>
-            <input 
-              className="page-input" 
-              type="number" 
-              min="1" 
-              max={totalPages}
-              value={jumpPage}
-              onChange={(e) => setJumpPage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleJumpPage()}
-            />
-          </div>
+          <input 
+            type="number" className="page-btn" 
+            style={{width:'50px', textAlign:'center', border:'1px solid #e2e8f0'}} 
+            placeholder="Go" 
+            onKeyDown={(e) => { if(e.key==='Enter') { const p = parseInt(e.target.value); if(p>=1 && p<=totalPages) setPage(p-1); } }} 
+          />
         </div>
       )}
 
-      {/* Drawer */}
+      {/* --- DRAWER FORM --- */}
       <div className={`drawer-overlay ${showDrawer ? 'open' : ''}`} onClick={() => setShowDrawer(false)}>
         <div className="drawer-panel" onClick={e => e.stopPropagation()}>
           <div className="drawer-header">
-            <h2>{modalMode === 'create' ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}</h2>
-            <button className="btn-icon" onClick={() => setShowDrawer(false)} style={{ width: 36, height: 36, background: '#f1f5f9' }}><IoClose size={20} /></button>
+            <h2 style={{margin:0, fontSize:'1.4rem', color:'var(--text-main)'}}>{modalMode === 'create' ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}</h2>
+            <button className="btn-icon" onClick={() => setShowDrawer(false)} style={{background:'#f1f5f9'}}><IoClose size={20} /></button>
           </div>
+          
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="drawer-body">
               <div className="form-tabs">
-                <button type="button" className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>Thông tin chung</button>
-                <button type="button" className={`tab-btn ${activeTab === 'variants' ? 'active' : ''}`} onClick={() => setActiveTab('variants')}>Phiên bản ({formData.variants.length})</button>
+                <button type="button" className={`tab-btn ${activeTab==='general'?'active':''}`} onClick={()=>setActiveTab('general')}>Thông tin chung</button>
+                <button type="button" className={`tab-btn ${activeTab==='variants'?'active':''}`} onClick={()=>setActiveTab('variants')}>Phiên bản ({formData.variants.length})</button>
               </div>
 
               {activeTab === 'general' && (
-                <div className="tab-content fade-in">
-                  <div className="form-group"><label>Tên sách</label><input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
+                <div className="animate-fade-in">
+                  <div className="form-group"><label>Tên sách <span style={{color:'red'}}>*</span></label><input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
                   <div className="form-group"><label>Mô tả ngắn</label><textarea rows="4" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
                   <div style={{display:'flex', gap:'1rem'}}>
                     <div className="form-group" style={{flex:1}}><label>Năm XB</label><input type="number" value={formData.publisherYear} onChange={e => setFormData({ ...formData, publisherYear: e.target.value })} /></div>
                     <div className="form-group" style={{flex:1}}><label>Nhà XB</label><select value={formData.publisherId} onChange={e => setFormData({ ...formData, publisherId: e.target.value })}>{publishers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
                   </div>
-                  {/* Combobox Author */}
-                  <div className="form-group">
+                  
+                  <div className="form-group" style={{position:'relative'}}>
                      <label>Tác giả</label>
-                     <div className="combobox-wrapper">
-                       <div className="combobox-input-wrapper">
-                         <IoSearch className="combobox-icon"/>
-                         <input className="combobox-input" placeholder="Tìm tác giả..." value={authorSearch} onChange={e=>{setAuthorSearch(e.target.value);setShowAuthorDropdown(true)}} onFocus={()=>setShowAuthorDropdown(true)}/>
-                       </div>
-                       {showAuthorDropdown && <div className="combobox-dropdown show">
-                          {authors.filter(a=>a.name.toLowerCase().includes(authorSearch.toLowerCase()) && !formData.authorIds.includes(a.id)).map(a=>(
-                            <div key={a.id} className="combobox-item" onClick={()=>{setFormData({...formData, authorIds:[...formData.authorIds, a.id]}); setAuthorSearch(""); setShowAuthorDropdown(false);}}>
-                               {a.name}
-                            </div>
-                          ))}
-                       </div>}
+                     <div style={{display:'flex', alignItems:'center', border:'1px solid var(--border-color)', borderRadius:'8px', background:'#f8fafc', padding:'0 10px'}}>
+                        <IoSearch color="#94a3b8"/>
+                        <input style={{border:'none', background:'transparent', boxShadow:'none'}} placeholder="Tìm tác giả..." value={authorSearch} onChange={e=>{setAuthorSearch(e.target.value);setShowAuthorDropdown(true)}} onFocus={()=>setShowAuthorDropdown(true)}/>
                      </div>
-                     <div className="selected-tags-wrapper">
+                     {showAuthorDropdown && <div style={{position:'absolute', width:'100%', background:'white', border:'1px solid #e2e8f0', zIndex:50, maxHeight:'200px', overflowY:'auto', borderRadius:'8px', boxShadow:'0 10px 15px -3px rgba(0,0,0,0.1)'}}>
+                        {authors.filter(a=>a.name.toLowerCase().includes(authorSearch.toLowerCase()) && !formData.authorIds.includes(a.id)).map(a=>(
+                          <div key={a.id} style={{padding:'10px', cursor:'pointer', borderBottom:'1px solid #f1f5f9'}} onClick={()=>{setFormData({...formData, authorIds:[...formData.authorIds, a.id]}); setAuthorSearch(""); setShowAuthorDropdown(false);}} className="hover:bg-slate-50">{a.name}</div>
+                        ))}
+                     </div>}
+                     <div style={{display:'flex', flexWrap:'wrap', gap:'8px', marginTop:'10px'}}>
                         {formData.authorIds.map(id => {
                            const a = authors.find(au=>au.id===id);
-                           return a ? <span key={id} className="tag-badge">{a.name} <button type="button" className="tag-remove-btn" onClick={()=>setFormData({...formData, authorIds:formData.authorIds.filter(i=>i!==id)})}><IoClose/></button></span> : null;
+                           return a ? <span key={id} className="tag-badge" style={{padding:'4px 10px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'5px', fontSize:'0.85rem'}}>{a.name} <IoClose style={{cursor:'pointer'}} onClick={()=>setFormData({...formData, authorIds:formData.authorIds.filter(i=>i!==id)})}/></span> : null;
                         })}
                      </div>
                      {showAuthorDropdown && <div style={{position:'fixed',inset:0,zIndex:40}} onClick={()=>setShowAuthorDropdown(false)}></div>}
@@ -560,75 +392,55 @@ export default function BookAdmin() {
               )}
 
               {activeTab === 'variants' && (
-                <div className="tab-content fade-in">
+                <div className="animate-fade-in">
                   {formData.variants.map((v, idx) => (
-                    <div key={idx} className="variant-card">
+                    <div key={idx} style={{background:'#fff', padding:'1.5rem', borderRadius:'12px', border:'1px solid #e2e8f0', marginBottom:'1.5rem', boxShadow:'0 2px 5px rgba(0,0,0,0.02)'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                         <h4 style={{ margin: 0, color: 'var(--primary)' }}>Phiên bản #{idx + 1}</h4>
-                        {idx > 0 && <button type="button" style={{color:'var(--red-delete)', background:'none', border:'none', cursor:'pointer', fontWeight:600}} onClick={() => {
+                        {idx > 0 && <button type="button" style={{color:'#ef4444', background:'none', border:'none', cursor:'pointer', fontWeight:600}} onClick={() => {
                           const nv = [...formData.variants]; nv.splice(idx, 1); setFormData({ ...formData, variants: nv });
-                        }}>Xóa bỏ</button>}
+                        }}>Xóa</button>}
                       </div>
-                      
                       <div style={{ display: 'flex', gap: '1rem' }}>
                         <div className="form-group" style={{ flex: 1 }}><label>Giá bán</label><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} /></div>
                         <div className="form-group" style={{ flex: 1 }}><label>Kho</label><input type="number" value={v.quantity} onChange={e => updateVariant(idx, 'quantity', e.target.value)} /></div>
                       </div>
-
-                      {/* --- KHU VỰC UPLOAD ẢNH BÌA (1 ảnh) --- */}
-                      <div className="variant-images-section" style={{marginTop:'1rem', marginBottom:'1.5rem'}}>
-                        <label style={{fontWeight:600, marginBottom:'0.5rem', display:'block', color:'var(--primary)'}}>Ảnh bìa (hiển thị ở trang chủ)</label>
-                        <input type="file" id={`cover-upload-${idx}`} accept="image/*" style={{display:'none'}} onChange={(e) => handleCoverImageUpload(e, idx)} />
-                        
+                      <div className="form-group">
+                        <label>Ảnh bìa</label>
+                        <input type="file" id={`cover-${idx}`} accept="image/*" hidden onChange={(e) => handleUpload(e, idx, true)} />
                         {v.imageUrls && v.imageUrls[0] ? (
-                          <div className="img-preview-item" style={{width:'150px', height:'200px', position:'relative'}}>
-                            <img src={v.imageUrls[0]} alt="cover" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'8px'}} onError={(e) => e.target.src = "https://placehold.co/150x200?text=Error"} />
-                            <button type="button" className="btn-remove-img" onClick={() => {
-                                const newImages = v.imageUrls.slice(1); // Xóa ảnh bìa, giữ ảnh minh họa
-                                updateVariant(idx, 'imageUrls', newImages);
-                              }} style={{position:'absolute', top:'5px', right:'5px'}}><IoClose size={14} /></button>
-                            <label htmlFor={`cover-upload-${idx}`} style={{position:'absolute', bottom:'5px', left:'5px', right:'5px', background:'rgba(0,0,0,0.7)', color:'white', padding:'5px', borderRadius:'5px', cursor:'pointer', textAlign:'center', fontSize:'12px'}}>Thay đổi</label>
+                          <div style={{position:'relative', width:'100px', height:'140px'}}>
+                            <img src={v.imageUrls[0]} alt="cover" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'8px', boxShadow:'var(--shadow-book)'}} />
+                            <label htmlFor={`cover-${idx}`} style={{position:'absolute', bottom:'-10px', left:'50%', transform:'translateX(-50%)', background:'black', color:'white', fontSize:'10px', padding:'4px 8px', borderRadius:'10px', cursor:'pointer', whiteSpace:'nowrap'}}>Thay đổi</label>
                           </div>
                         ) : (
-                          <label htmlFor={`cover-upload-${idx}`} className="upload-zone" style={{maxWidth:'300px'}}>
-                            <IoCloudUpload size={40} className="upload-icon-large" />
-                            <div><div className="upload-text">Nhấn để tải ảnh bìa</div><div className="upload-subtext">Chỉ 1 ảnh (JPG, PNG - Max 5MB)</div></div>
-                          </label>
+                          <label htmlFor={`cover-${idx}`} className="upload-zone"><IoCloudUpload size={24} style={{marginBottom:'5px', color:'#94a3b8'}}/><div>Tải ảnh bìa</div></label>
                         )}
                       </div>
-
-                      {/* --- KHU VỰC UPLOAD ẢNH MINH HỌA (nhiều ảnh) --- */}
-                      <div className="variant-images-section" style={{marginTop:'1rem'}}>
-                        <label style={{fontWeight:600, marginBottom:'0.5rem', display:'block', color:'var(--secondary)'}}>Ảnh minh họa chi tiết (hiển thị khi xem chi tiết sách)</label>
-                        <input type="file" id={`gallery-upload-${idx}`} multiple accept="image/*" style={{display:'none'}} onChange={(e) => handleGalleryImagesUpload(e, idx)} />
-                        <label htmlFor={`gallery-upload-${idx}`} className="upload-zone">
-                          <IoCloudUpload size={40} className="upload-icon-large" />
-                          <div><div className="upload-text">Nhấn để tải nhiều ảnh</div><div className="upload-subtext">Nhiều ảnh (JPG, PNG - Max 5MB/ảnh)</div></div>
-                        </label>
-                        <div className="img-preview-list">
-                          {v.imageUrls && v.imageUrls.slice(1).map((url, imgIdx) => (
-                            <div key={imgIdx} className="img-preview-item">
-                              <img src={url} alt="gallery" onError={(e) => e.target.src = "https://placehold.co/100x130?text=Error"} />
-                              <button type="button" className="btn-remove-img" onClick={() => {
-                                  // Xóa ảnh minh họa tại vị trí imgIdx+1 (vì slice(1))
-                                  const newImages = v.imageUrls.filter((_, i) => i !== imgIdx + 1);
-                                  updateVariant(idx, 'imageUrls', newImages);
-                                }}><IoClose size={14} /></button>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="form-group">
+                         <label>Ảnh chi tiết</label>
+                         <input type="file" id={`gallery-${idx}`} multiple accept="image/*" hidden onChange={(e) => handleUpload(e, idx, false)} />
+                         <div style={{display:'flex', gap:'10px', overflowX:'auto', paddingBottom:'5px'}}>
+                           <label htmlFor={`gallery-${idx}`} style={{width:'60px', height:'80px', border:'1px dashed #cbd5e1', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0}}><IoAdd size={24} color="#94a3b8"/></label>
+                           {v.imageUrls && v.imageUrls.slice(1).map((url, imgIdx) => (
+                             <div key={imgIdx} style={{position:'relative', width:'60px', height:'80px', flexShrink:0}}>
+                               <img src={url} alt="" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'6px'}} />
+                               <div onClick={()=>{const newImgs = v.imageUrls.filter((_, i) => i !== imgIdx + 1); updateVariant(idx, 'imageUrls', newImgs);}} style={{position:'absolute', top:-5, right:-5, background:'red', color:'white', borderRadius:'50%', width:'16px', height:'16px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px', cursor:'pointer'}}>x</div>
+                             </div>
+                           ))}
+                         </div>
                       </div>
                     </div>
                   ))}
-                  <button type="button" className="btn-secondary" style={{ width: '100%', borderStyle: 'dashed', borderColor: 'var(--primary)', color: 'var(--primary)' }} onClick={() => {
+                  <button type="button" className="btn-secondary" style={{ width: '100%', borderStyle: 'dashed' }} onClick={() => {
                     setFormData({ ...formData, variants: [...formData.variants, { price: 0, quantity: 0, status: 'AVAILABLE', imageUrls: [] }] })
-                  }}><IoAdd size={18} /> Thêm phiên bản khác</button>
+                  }}>+ Thêm phiên bản</button>
                 </div>
               )}
             </div>
             <div className="drawer-footer">
-              <button type="button" className="btn-secondary" onClick={() => setShowDrawer(false)}>Đóng</button>
-              <button type="submit" className="btn-primary">Lưu thông tin</button>
+              <button type="button" className="btn-secondary" onClick={() => setShowDrawer(false)}>Hủy bỏ</button>
+              <button type="submit" className="btn-primary">Lưu thay đổi</button>
             </div>
           </form>
         </div>
