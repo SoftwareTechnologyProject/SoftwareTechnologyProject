@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axiosClient';
-import { AppConstants } from '../../util/constant';
+// import { AppConstants } from '../../util/constant'; 
 import { toast } from 'react-toastify';
+
+// Import Icons
+import { 
+    IoSearch, IoReload, IoFilter,
+    IoCreateOutline, IoTrashOutline, 
+    IoPerson, IoShieldCheckmark, IoKeyOutline,
+    IoCheckmarkCircle, IoLockClosed, IoCloseCircle 
+} from "react-icons/io5";
+
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -19,7 +28,7 @@ const UserManagement = () => {
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            alert('Vui lòng đăng nhập để truy cập trang này');
+            toast.warn('Vui lòng đăng nhập để truy cập trang này'); 
             navigate('/login');
             return;
         }
@@ -36,7 +45,6 @@ const UserManagement = () => {
             const response = await axios.get('/users');
             console.log('Users data:', response.data);
             
-            // Xử lý circular reference: chỉ lấy thông tin cần thiết
             const cleanedUsers = Array.isArray(response.data) 
                 ? response.data.map(user => ({
                     id: user.id,
@@ -55,23 +63,22 @@ const UserManagement = () => {
         } catch (err) {
             setError('Không thể tải danh sách người dùng. Vui lòng thử lại.');
             console.error('Error fetching users:', err);
-            setUsers([]); // Reset về array rỗng khi có lỗi
+            setUsers([]); 
         } finally {
             setLoading(false);
         }
     };
 
-    // Lọc users theo tìm kiếm và role
+    // Filter Logic
     const filteredUsers = Array.isArray(users) ? users.filter(user => {
         const matchesSearch = user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             user.phoneNumber?.includes(searchTerm);
-        
         const matchesRole = filterRole === 'ALL' || user.role === filterRole;
-        
         return matchesSearch && matchesRole;
     }) : [];
 
+    // Handlers
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Bạn có chắc muốn vô hiệu hóa người dùng này? Tài khoản sẽ chuyển sang trạng thái DELETED.')) {
             try {
@@ -81,14 +88,12 @@ const UserManagement = () => {
             } catch (err) {
                 const errorMsg = err.response?.data || 'Không thể xóa người dùng.';
                 toast.error(errorMsg);
-                console.error('Error deleting user:', err);
             }
         }
     };
     
     const handleUpdateStatus = async (status) => {
         if (!selectedUser) return;
-        
         try {
             const response = await axios.patch(
                 `/api/users/${selectedUser.id}/status?status=${status}`
@@ -100,7 +105,6 @@ const UserManagement = () => {
         } catch (err) {
             const errorMsg = err.response?.data || 'Không thể cập nhật trạng thái.';
             toast.error(errorMsg);
-            console.error('Error updating status:', err);
         }
     };
     
@@ -109,56 +113,83 @@ const UserManagement = () => {
         setShowStatusModal(true);
     };
 
-    const getRoleBadgeClass = (role) => {
+    // Helpers for UI
+    const getRoleConfig = (role) => {
         switch (role) {
-            case 'ADMIN': return 'role-owner';
-            case 'STAFF': return 'role-staff';
-            case 'USER': return 'role-customer';
-            default: return 'role-customer';
+            case 'ADMIN': return { class: 'role-admin', icon: <IoKeyOutline />, label: 'Chủ sở hữu' };
+            case 'STAFF': return { class: 'role-staff', icon: <IoShieldCheckmark />, label: 'Nhân viên' };
+            default: return { class: 'role-customer', icon: <IoPerson />, label: 'Khách hàng' };
         }
     };
-    
-    const getStatusBadgeClass = (status) => {
+
+    const getStatusConfig = (status) => {
         switch (status) {
-            case 'ACTIVE': return 'status-active';
-            case 'LOCKED': return 'status-locked';
-            case 'DELETED': return 'status-deleted';
-            default: return 'status-active';
+            case 'ACTIVE': return { class: 'status-active', label: 'Hoạt động' };
+            case 'LOCKED': return { class: 'status-locked', label: 'Tạm khóa' };
+            case 'DELETED': return { class: 'status-deleted', label: 'Vô hiệu' };
+            default: return { class: 'status-active', label: 'Hoạt động' };
         }
     };
 
-    if (loading) {
-        return (
-            <div className="user-management-container">
-                <div className="loading-spinner">
-                    <div className="spinner"></div>
-                    <p>Đang tải dữ liệu...</p>
-                </div>
-            </div>
-        );
-    }
+    const getTodayString = () => {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date().toLocaleDateString('vi-VN', options);
+    };
 
-    if (error) {
-        return (
-            <div className="user-management-container">
-                <div className="error-message">
-                    <p>{error}</p>
-                    <button onClick={fetchUsers} className="retry-btn">Thử lại</button>
-                </div>
-            </div>
-        );
-    }
+    // Statistics Calculation
+    const stats = {
+        total: users.length,
+        staff: users.filter(u => u.role === 'STAFF' || u.role === 'ADMIN').length,
+        customers: users.filter(u => u.role === 'USER').length
+    };
+
+    if (loading) return <div className="user-management-container"><div className="loading-spinner">Đang tải dữ liệu...</div></div>;
+    if (error) return <div className="user-management-container"><div className="error-message">{error} <button onClick={fetchUsers} className="refresh-btn" style={{margin:'10px auto', borderRadius:'8px', width:'auto', padding:'0 20px'}}>Thử lại</button></div></div>;
 
     return (
         <div className="user-management-container">
-            <div className="page-header">
-                <h1>Quản Lý Khách Hàng</h1>
-                <p>Tổng số người dùng: {users.length}</p>
+            {/* --- HEADER DASHBOARD --- */}
+            <div className="admin-header-card">
+                <div className="header-content">
+                    <h1 className="header-title">Quản Lý Khách Hàng</h1>
+                    <div className="header-subtitle">
+                        <span style={{width:'8px', height:'8px', background:'var(--status-active-text)', borderRadius:'50%', display:'inline-block'}}></span>
+                        {getTodayString()}
+                    </div>
+                </div>
+
+                <div className="header-stats-group">
+                    <div className="stat-box purple">
+                        <div className="stat-icon-wrapper"><IoPerson /></div>
+                        <div className="stat-info"><span className="stat-label">Tổng Users</span><span className="stat-value">{stats.total}</span></div>
+                    </div>
+                    <div className="stat-box orange">
+                        <div className="stat-icon-wrapper"><IoShieldCheckmark /></div>
+                        <div className="stat-info"><span className="stat-label">Nhân sự</span><span className="stat-value">{stats.staff}</span></div>
+                    </div>
+                     <div className="stat-box blue">
+                        <div className="stat-icon-wrapper"><IoCheckmarkCircle /></div>
+                        <div className="stat-info"><span className="stat-label">Khách hàng</span><span className="stat-value">{stats.customers}</span></div>
+                    </div>
+                </div>
             </div>
 
-            {/* Filters */}
+            {/* --- UNIFIED TOOLBAR --- */}
             <div className="filters-section">
-                <div className="search-box">
+                {/* Filter Group */}
+                <div className="filter-group">
+                    <IoFilter className="filter-icon" />
+                    <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="role-select">
+                        <option value="ALL">Tất cả vai trò</option>
+                        <option value="USER">Khách hàng</option>
+                        <option value="STAFF">Nhân viên</option>
+                        <option value="ADMIN">Quản trị viên</option>
+                    </select>
+                </div>
+
+                {/* Search Group */}
+                <div className="search-group">
+                    <IoSearch className="search-icon" />
                     <input
                         type="text"
                         placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
@@ -167,187 +198,130 @@ const UserManagement = () => {
                         className="search-input"
                     />
                 </div>
-                
-                <div className="role-filter">
-                    <select
-                        value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value)}
-                        className="role-select"
-                    >
-                        <option value="ALL">Tất cả vai trò</option>
-                        <option value="USER">Khách hàng</option>
-                        <option value="STAFF">Nhân viên</option>
-                        <option value="ADMIN">Chủ sở hữu</option>
-                    </select>
-                </div>
 
-                <button onClick={fetchUsers} className="refresh-btn">
-                    Làm mới
+                {/* Refresh Button */}
+                <button onClick={fetchUsers} className="btn-refresh" title="Làm mới dữ liệu">
+                    <IoReload />
                 </button>
             </div>
 
-            {/* Users Table */}
+            {/* --- TABLE --- */}
             <div className="table-container">
                 <table className="users-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Họ tên</th>
-                            <th>Email</th>
-                            <th>Số điện thoại</th>
-                            <th>Địa chỉ</th>
-                            <th>Ngày sinh</th>
-                            <th>Vai trò</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
+                            <th style={{width: '30%'}}>Thành viên</th>
+                            <th style={{width: '20%'}}>Liên hệ</th>
+                            <th style={{width: '20%'}}>Thông tin khác</th>
+                            <th style={{width: '15%'}}>Vai trò & Trạng thái</th>
+                            <th style={{textAlign: 'right'}}>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredUsers.length > 0 ? (
-                            filteredUsers.map(user => (
-                                <tr key={user.id}>
-                                    <td>{user.id}</td>
-                                    <td className="user-name">
-                                        <div className="name-cell">
-                                            {user.fullName || 'Chưa cập nhật'}
-                                        </div>
-                                    </td>
-                                    <td>{user.email}</td>
-                                    <td>{user.phoneNumber || 'Chưa cập nhật'}</td>
-                                    <td className="address-cell" title={user.address}>
-                                        {user.address ? (
-                                            user.address.length > 30 
-                                                ? user.address.substring(0, 30) + '...'
-                                                : user.address
-                                        ) : 'Chưa cập nhật'}
-                                    </td>
-                                    <td>
-                                        {user.dateOfBirth 
-                                            ? new Date(user.dateOfBirth).toLocaleDateString('vi-VN')
-                                            : 'Chưa cập nhật'
-                                        }
-                                    </td>
-                                    <td>
-                                        <span className={`role-badge ${getRoleBadgeClass(user.role)}`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge ${getStatusBadgeClass(user.accountStatus)}`}>
-                                            {user.accountStatus}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            {user.role !== 'ADMIN' ? (
-                                                <>
-                                                    <button 
-                                                        className="edit-btn"
-                                                        onClick={() => openStatusModal(user)}
-                                                        title="Chỉnh sửa trạng thái"
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button 
-                                                        className="delete-btn"
-                                                        onClick={() => handleDeleteUser(user.id)}
-                                                        title="Vô hiệu hóa tài khoản"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <span className="no-action">-</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
+                            filteredUsers.map(user => {
+                                const roleConf = getRoleConfig(user.role);
+                                const statusConf = getStatusConfig(user.accountStatus);
+                                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=random&color=fff&size=128`;
+
+                                return (
+                                    <tr key={user.id}>
+                                        <td>
+                                            <div className="user-profile">
+                                                <img src={avatarUrl} alt="avatar" className="user-avatar" />
+                                                <div className="user-info-text">
+                                                    <strong>{user.fullName || 'Chưa đặt tên'}</strong>
+                                                    <small>ID: #{user.id}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{fontWeight:500, fontSize:'0.9rem'}}>{user.email}</div>
+                                            <div style={{fontSize:'0.8rem', color:'var(--text-secondary)'}}>{user.phoneNumber || '---'}</div>
+                                        </td>
+                                        <td>
+                                            <div style={{fontSize:'0.85rem', color:'var(--text-main)'}}>
+                                                {user.address ? (user.address.length > 25 ? user.address.substring(0,25)+'...' : user.address) : 'Chưa có địa chỉ'}
+                                            </div>
+                                            <div style={{fontSize:'0.8rem', color:'var(--text-light)'}}>
+                                                NS: {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('vi-VN') : '--/--/----'}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{display:'flex', flexDirection:'column', gap:'6px', alignItems:'flex-start'}}>
+                                                <span className={`role-badge ${roleConf.class}`}>
+                                                    {roleConf.icon} {roleConf.label}
+                                                </span>
+                                                <span className={`status-badge ${statusConf.class}`}>
+                                                    {statusConf.label}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                {user.role !== 'ADMIN' ? (
+                                                    <>
+                                                        <button className="btn-icon btn-edit" onClick={() => openStatusModal(user)} title="Cập nhật trạng thái">
+                                                            <IoCreateOutline size={18} />
+                                                        </button>
+                                                        <button className="btn-icon btn-delete" onClick={() => handleDeleteUser(user.id)} title="Vô hiệu hóa">
+                                                            <IoTrashOutline size={18} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span style={{fontSize:'0.8rem', color:'#cbd5e1', fontStyle:'italic'}}>Locked</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
-                            <tr>
-                                <td colSpan="9" className="no-data">
-                                    Không tìm thấy người dùng nào
-                                </td>
-                            </tr>
+                            <tr><td colSpan="5" style={{textAlign:'center', padding:'3rem', color:'var(--text-light)'}}>Không tìm thấy kết quả phù hợp</td></tr>
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {/* Status Modal */}
+            {/* --- MODAL --- */}
             {showStatusModal && selectedUser && (
                 <div className="modal-overlay" onClick={() => setShowStatusModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Cập nhật trạng thái: {selectedUser.fullName}</h3>
-                        <p>Trạng thái hiện tại: <strong>{selectedUser.accountStatus}</strong></p>
+                        <h3>Cập nhật trạng thái</h3>
+                        <p>Đang chỉnh sửa: <strong>{selectedUser.fullName}</strong></p>
                         
                         <div className="status-buttons">
                             <button 
-                                className="status-btn active-btn"
+                                className={`status-btn active-btn ${selectedUser.accountStatus === 'ACTIVE' ? 'selected' : ''}`}
                                 onClick={() => handleUpdateStatus('ACTIVE')}
                                 disabled={selectedUser.accountStatus === 'ACTIVE'}
                             >
-                                ACTIVE - Hoạt động
+                                <span><IoCheckmarkCircle style={{marginRight:8}}/> Hoạt động (ACTIVE)</span>
                             </button>
+                            
                             <button 
-                                className="status-btn locked-btn"
+                                className={`status-btn locked-btn ${selectedUser.accountStatus === 'LOCKED' ? 'selected' : ''}`}
                                 onClick={() => handleUpdateStatus('LOCKED')}
                                 disabled={selectedUser.accountStatus === 'LOCKED'}
                             >
-                                LOCKED - Khóa tạm thời
+                                <span><IoLockClosed style={{marginRight:8}}/> Khóa tạm thời (LOCKED)</span>
                             </button>
+                            
                             <button 
-                                className="status-btn deleted-btn"
+                                className={`status-btn deleted-btn ${selectedUser.accountStatus === 'DELETED' ? 'selected' : ''}`}
                                 onClick={() => handleUpdateStatus('DELETED')}
                                 disabled={selectedUser.accountStatus === 'DELETED'}
                             >
-                                DELETED - Vô hiệu hóa
+                                <span><IoCloseCircle style={{marginRight:8}}/> Vô hiệu hóa (DELETED)</span>
                             </button>
                         </div>
                         
-                        <button 
-                            className="close-modal-btn"
-                            onClick={() => {
-                                setShowStatusModal(false);
-                                setSelectedUser(null);
-                            }}
-                        >
-                            Đóng
+                        <button className="close-modal-btn" onClick={() => setShowStatusModal(false)}>
+                            Đóng cửa sổ
                         </button>
                     </div>
                 </div>
             )}
-
-            {/* Statistics */}
-            <div className="statistics-section">
-                <div className="stat-card">
-                    <h3>Thống kê</h3>
-                    <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-label">Khách hàng:</span>
-                            <span className="stat-value">
-                                {users.filter(u => u.role === 'USER').length}
-                            </span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Nhân viên:</span>
-                            <span className="stat-value">
-                                {users.filter(u => u.role === 'STAFF').length}
-                            </span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Chủ sở hữu:</span>
-                            <span className="stat-value">
-                                {users.filter(u => u.role === 'ADMIN').length}
-                            </span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Tìm thấy:</span>
-                            <span className="stat-value">{filteredUsers.length}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
