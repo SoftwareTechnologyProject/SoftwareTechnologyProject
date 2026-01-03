@@ -398,7 +398,7 @@ const Header = () => {
                     <span className="flex-1 truncate">Ví Voucher</span>
                   </NavLink>
 
-                  <NavLink to="/reviews" className="account-logged-menu-item">
+                  <NavLink to="/account/review" className="account-logged-menu-item">
                     <CiStar className="w-5 h-5 flex-shrink-0" />
                     <span className="flex-1 truncate">Nhận xét của tôi</span>
                   </NavLink>

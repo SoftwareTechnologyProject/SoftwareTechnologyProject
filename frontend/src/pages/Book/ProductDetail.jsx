@@ -244,9 +244,9 @@ export default function BookDetail() {
         </div>
 
         <div className="policies-box">
-          <div>Giao hàng nhanh & uy tín</div>
-          <div>Đổi trả miễn phí toàn quốc</div>
-          <div>Ưu đãi cho khách mua sỉ</div>
+          <div className="policy-item">📦 Giao hàng nhanh & uy tín</div>
+          <div className="policy-item">🔄 Đổi trả miễn phí toàn quốc</div>
+          <div className="policy-item">🎁 Ưu đãi cho khách mua sỉ</div>
         </div>
       </div>
 
@@ -266,7 +266,6 @@ export default function BookDetail() {
           <div className="rating-sold">
             <div className="rating">
               <span className="stars">★★★★★</span>
-              <span>(Chưa có đánh giá)</span>
             </div>
             <span>Đã bán: {variant?.sold || 0}</span>
           </div>
@@ -280,17 +279,8 @@ export default function BookDetail() {
           <div className="stock-info">{variant?.quantity} sản phẩm còn hàng</div>
         </div>
 
-        {/* Offers + Category + Quantity */}
+        {/* Category + Quantity */}
         <div className="offers-category-qty">
-          <div className="offers-box">
-            <h4>Ưu đãi liên quan</h4>
-            <div className="offer-list">
-              <div>Giảm 10k - toàn sàn</div>
-              <div>Chờ Mai Thái</div>
-              <div>Shopeepay: -20k</div>
-            </div>
-          </div>
-
           <div className="category-qty-box">
             <div>
               <span>Phân loại: </span>
@@ -342,19 +332,19 @@ export default function BookDetail() {
           <h3>Thông tin chi tiết</h3>
           <div className="details-grid">
             <div>
-              <span>Mã hàng</span>
+              <span>Mã hàng: </span>
               <span>{variant?.isbn}</span>
             </div>
             <div>
-              <span>Nhà cung cấp</span>
+              <span>Nhà cung cấp: </span>
               <span>{book.publisherName}</span>
             </div>
             <div>
-              <span>Tác giả</span>
+              <span>Tác giả: </span>
               <span>{book.authorNames?.join(", ")}</span>
             </div>
             <div>
-              <span>Năm XB</span>
+              <span>Năm XB: </span>
               <span>{book.publisherYear}</span>
             </div>
           </div>
