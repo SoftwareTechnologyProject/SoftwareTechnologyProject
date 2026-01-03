@@ -1,265 +1,239 @@
-.order-page {
-  padding: 20px;
-  background: #f5f5f5;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* --- Copy từ BookAdmin để đồng bộ --- */
+  --primary: #d90429;
+  --primary-hover: #ef233c;
+  --primary-subtle: #fff0f3;
+  
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --text-light: #94a3b8;
+
+  --bg-app: #f1f5f9;
+  --bg-surface: #ffffff;
+  --border-color: #e2e8f0;
+
+  /* Status Colors */
+  --success-bg: #dcfce7; --success-text: #166534;
+  --warning-bg: #fef9c3; --warning-text: #854d0e; /* Thêm màu vàng cho Pending */
+  --info-bg: #e0f2fe;    --info-text: #0369a1;    /* Thêm màu xanh cho Delivery */
+  --error-bg: #fee2e2;   --error-text: #991b1b;
+
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-float: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-/* Header Section */
-.admin-header-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
 }
 
-.admin-header-section h1 {
-  margin: 0 0 8px 0;
-  color: #2c3e50;
-  font-size: 1.8rem;
+.order-admin-page {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-.admin-header-section p {
-  margin: 0;
-  color: #7f8c8d;
-  font-size: 0.95rem;
-}
-
-/* Alert */
-.alert {
-  background: #fff3cd;
-  padding: 12px;
-  border-left: 4px solid #ff984c;
-  margin-bottom: 20px;
-  border-radius: 4px;
-}
-
-.alert a {
-  color: red;
-  font-weight: bold;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-
-.tab {
-  cursor: pointer;
-  padding-bottom: 6px;
-}
-
-.tab.active {
-  color: red;
-  font-weight: bold;
-  border-bottom: 2px solid red;
-}
-
-/* Order card */
-.order-card {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-}
-
-.order-header {
+/* --- HEADER (Dùng lại class của BookAdmin) --- */
+.admin-header-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-card);
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.order-id {
-  color: #007bff;
-  cursor: pointer;
-}
-
-.status {
-  background: #e6f7ec;
-  padding: 4px 10px;
-  border-radius: 12px;
-  color: #27ae60;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.order-body {
-  display: flex;
   align-items: center;
-  gap: 20px;
-  justify-content: space-between;
-}
-/* Container để price trên, actions dưới */
-.right-side {
-  display: flex;
-  flex-direction: column; /* xếp theo cột */
-  align-items: flex-end;  /* căn phải */
-  gap: 6px;               /* khoảng cách giữa giá và nút */
+  position: relative;
+  overflow: hidden;
+  border: 1px solid white;
 }
 
-.book-img {
-  width: 70px;
-  border-radius: 4px;
+.admin-header-card::before {
+  content: ''; position: absolute; top: -50%; left: -10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, var(--primary-subtle) 0%, transparent 70%);
+  z-index: 0; pointer-events: none;
 }
 
-.info h4 {
-  margin: 0;
-  font-size: 15px;
+.header-content { z-index: 1; position: relative; }
+
+.header-title {
+  font-size: 1.8rem; font-weight: 800; margin: 0;
+  background: linear-gradient(135deg, var(--text-main) 0%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
 }
 
-.price {
-  margin-left: auto;
-  font-size: 14px;
+.header-subtitle {
+  font-size: 0.85rem; color: var(--text-secondary);
+  margin-top: 4px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
+.header-actions { z-index: 2; display: flex; align-items: center; }
+
+.header-stats-group {
+  display: flex; gap: 1.5rem;
+  /* Không cần border-right như BookAdmin vì trang này ko có nút Create to bự bên cạnh */
 }
 
-.button-actions {
-  width: 100px;          /* chiều ngang cố định */
-  height: 36px;
-  border: 1px solid #ddd;
-  padding: 6px 12px;
-  background: white;
-  border-radius: 4px;
+.stat-box {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.5rem 1rem; border-radius: 12px;
+  transition: transform 0.2s;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid transparent;
+}
+.stat-box:hover { transform: translateY(-2px); background: white; border-color: var(--border-color); }
+
+.stat-icon-wrapper {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+}
+.stat-box.orange .stat-icon-wrapper { background: #ffedd5; color: #ea580c; } /* Màu cam cho chờ xử lý */
+.stat-box.blue .stat-icon-wrapper { background: #e0f2fe; color: #0284c7; }
+
+.stat-info { display: flex; flex-direction: column; }
+.stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.stat-value { font-size: 1.4rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
+
+/* --- FILTER TABS (Thay thế cho Search Bar của BookAdmin) --- */
+.filter-container {
+  display: flex; justify-content: center; margin-bottom: 2rem;
 }
 
-.buy-again {
-  background: #d70018;
-  color: white;
-  border: none;
-  padding: 6px 18px;
-  border-radius: 4px;
+.status-tabs {
+  background: var(--bg-surface);
+  padding: 0.5rem; border-radius: 99px;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex; gap: 0.5rem;
+  border: 1px solid var(--border-color);
 }
 
-.empty {
-  text-align: center;
-  padding: 40px;
-  font-size: 16px;
-  color: #777;
-}
-.price-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+.tab-pill {
+  padding: 0.6rem 1.2rem; border-radius: 99px;
+  font-size: 0.9rem; font-weight: 600;
+  color: var(--text-secondary); cursor: pointer;
+  transition: all 0.2s; border: none; background: transparent;
 }
 
-.price-breakdown {
-  text-align: right;
-  font-size: 14px;
-  line-height: 1.6;
+.tab-pill:hover { background: var(--bg-app); color: var(--text-main); }
+.tab-pill.active { background: var(--text-main); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+/* --- TABLE (Dùng lại style .books-table) --- */
+.orders-table-container { min-height: 400px; }
+.orders-table {
+  width: 100%; border-collapse: separate; 
+  border-spacing: 0 12px;
 }
 
-.price-breakdown .subtotal {
-  color: #7f8c8d;
+.orders-table thead th {
+  text-align: left; padding: 0 1.5rem 0.5rem 1.5rem;
+  color: var(--text-secondary); font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
 }
 
-.price-breakdown .shipping {
-  color: #7f8c8d;
-  font-size: 13px;
+.orders-table tbody tr {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-radius: var(--radius-lg);
 }
 
-.price-breakdown .total-price {
-  color: #27ae60;
-  font-size: 16px;
-  font-weight: 600;
-  margin-top: 4px;
-  display: block;
+.orders-table tbody tr:hover {
+  transform: translateY(-3px) scale(1.005);
+  box-shadow: var(--shadow-float);
+  z-index: 10; position: relative;
 }
 
-.order-info-meta {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #7f8c8d;
+.orders-table td {
+  padding: 1.25rem 1.5rem; vertical-align: middle;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+.orders-table td:first-child { 
+  border-left: 1px solid var(--border-color);
+  border-top-left-radius: var(--radius-lg); 
+  border-bottom-left-radius: var(--radius-lg); 
+}
+.orders-table td:last-child { 
+  border-right: 1px solid var(--border-color);
+  border-top-right-radius: var(--radius-lg); 
+  border-bottom-right-radius: var(--radius-lg); 
 }
 
-.user-name {
-  display: inline-block;
-}
+/* Specific Columns */
+.order-id-cell { font-family: monospace; font-weight: 700; color: #cbd5e1; font-size: 1.1rem; }
+.order-id-cell span { color: var(--primary); cursor: pointer; }
 
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 30px;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-}
+.user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-main); }
+.item-preview { display: flex; align-items: center; gap: 12px; }
+.item-img { width: 40px; height: 56px; object-fit: cover; border-radius: 4px; background: #e2e8f0; border: 1px solid #e2e8f0; }
 
-.pagination-btn {
-  padding: 8px 16px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-}
+.price-main { font-weight: 800; color: var(--text-main); font-size: 1.1rem; }
+.price-sub { font-size: 0.8rem; color: var(--text-light); }
 
-.pagination-btn:hover:not(:disabled) {
-  background: #2980b9;
+/* Status Badges */
+.status-badge {
+  padding: 0.4rem 0.8rem; border-radius: 99px;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.5px;
 }
+.status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
 
-.pagination-btn:disabled {
-  background: #bdc3c7;
-  cursor: not-allowed;
-}
+.status-badge.pending { background: var(--warning-bg); color: var(--warning-text); }
+.status-badge.pending::before { background: var(--warning-text); }
 
-.page-info {
-  font-weight: 500;
-  color: #2c3e50;
-}
+.status-badge.delivery { background: var(--info-bg); color: var(--info-text); }
+.status-badge.delivery::before { background: var(--info-text); }
 
-/* Order ID clickable */
-.order-id {
-  color: #3498db;
-  cursor: pointer;
-  font-weight: 600;
-  transition: color 0.2s;
-}
+.status-badge.success { background: var(--success-bg); color: var(--success-text); }
+.status-badge.success::before { background: var(--success-text); }
 
-.order-id:hover {
-  color: #2980b9;
-  text-decoration: underline;
-}
+.status-badge.cancelled { background: var(--error-bg); color: var(--error-text); }
+.status-badge.cancelled::before { background: var(--error-text); }
 
-/* Status badges with colors */
-.status {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
+/* Actions */
+.actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+.btn-icon {
+  width: 38px; height: 38px; border-radius: 10px; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.2s;
 }
+.btn-check { background: #e0f2fe; color: #0284c7; }
+.btn-check:hover { background: #0284c7; color: white; }
 
-.status-PENDING {
-  background: #fff3cd;
-  color: #856404;
-}
+.btn-done { background: #dcfce7; color: #16a34a; }
+.btn-done:hover { background: #16a34a; color: white; }
 
-.status-DELIVERY {
-  background: #d1ecf1;
-  color: #0c5460;
-}
+.btn-cancel { background: #fef2f2; color: #ef4444; }
+.btn-cancel:hover { background: #ef4444; color: white; }
 
-.status-SUCCESS {
-  background: #d4edda;
-  color: #155724;
-}
+.btn-view { background: #f1f5f9; color: var(--text-secondary); }
+.btn-view:hover { background: var(--text-main); color: white; }
 
-.status-CANCELLED {
-  background: #f8d7da;
-  color: #721c24;
+/* Pagination (Copy exact from BookAdmin) */
+.pagination-wrapper {
+  margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem; background: var(--bg-surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
 }
+.page-btn {
+  width: 36px; height: 36px; border: none; background: transparent;
+  border-radius: 8px; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+}
+.page-btn:hover:not(:disabled) { background: var(--bg-app); color: var(--primary); }
+.page-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(217, 4, 41, 0.3); }
+.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
