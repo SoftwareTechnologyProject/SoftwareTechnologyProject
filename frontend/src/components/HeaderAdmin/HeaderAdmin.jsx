@@ -7,6 +7,7 @@ import { IoTicketSharp } from "react-icons/io5";
 import { IoStatsChartOutline } from "react-icons/io5";
 import { HiOutlineNewspaper } from "react-icons/hi";
 import { BiLogOut } from "react-icons/bi";
+import { MdRateReview } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./HeaderAdmin.css";
 
@@ -89,6 +90,16 @@ const HeaderAdmin = () => {
                         >
                             <IoStatsChartOutline className="nav-icon" />
                             <span>Thống Kê</span>
+                        </NavLink>
+
+                        <NavLink
+                            to="/admin/reviews"
+                            className={({ isActive }) =>
+                                `nav-item ${isActive ? "active" : ""}`
+                            }
+                        >
+                            <MdRateReview className="nav-icon" />
+                            <span>Quản Lý Đánh Giá</span>
                         </NavLink>
 
                         <button onClick={handleLogout} className="nav-item logout-btn">
@@ -174,6 +185,16 @@ const HeaderAdmin = () => {
                         >
                             <IoStatsChartOutline className="nav-icon" />
                             <span>Chat Hỗ Trợ</span>
+                        </NavLink>
+
+                        <NavLink
+                            to="/admin/reviews"
+                            className={({ isActive }) =>
+                                `nav-item ${isActive ? "active" : ""}`
+                            }
+                        >
+                            <MdRateReview className="nav-icon" />
+                            <span>Quản Lý Đánh Giá</span>
                         </NavLink>
 
                         <button onClick={handleLogout} className="nav-item logout-btn">

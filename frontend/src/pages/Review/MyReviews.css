@@ -1,0 +1,138 @@
+.my-reviews-container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  min-height: 400px;
+}
+
+.my-reviews-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.no-reviews-text {
+  font-size: 16px;
+  color: #777;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card {
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  border-radius: 6px;
+  background-color: #fafafa;
+  transition: box-shadow 0.2s ease;
+}
+
+.review-card.rejected {
+  border-color: #ffd0d0;
+  background-color: #fff8f8;
+}
+
+.review-card:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.review-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.review-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-product-title {
+  font-weight: 500;
+  font-size: 16px;
+  color: #222;
+  flex: 1;
+}
+
+.review-rating {
+  color: #f5a623; /* màu vàng cho sao */
+}
+
+.review-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-approved {
+  background-color: #d1e7dd;
+  color: #0a3622;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+.status-rejected {
+  background-color: #f8d7da;
+  color: #58151c;
+}
+
+.status-default {
+  background-color: #e7e7e7;
+  color: #333;
+}
+
+.rejection-note {
+  font-size: 13px;
+  color: #dc3545;
+  background-color: #ffe5e5;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+  border-left: 3px solid #dc3545;
+}
+
+.review-content {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-date {
+  font-size: 13px;
+  color: #888;
+}
+
+.review-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #0077ff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.review-btn:hover {
+  background-color: #005fcc;
+}
