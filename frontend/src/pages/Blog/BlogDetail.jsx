@@ -61,6 +61,17 @@ const BlogDetail = () => {
             return;
         }
 
+        // Validate lengths
+        if (commentForm.commenterName.length > 100) {
+            alert('Tên không được vượt quá 100 ký tự');
+            return;
+        }
+
+        if (commentForm.content.length > 1000) {
+            alert('Nội dung bình luận không được vượt quá 1000 ký tự');
+            return;
+        }
+
         try {
             setSubmitting(true);
             const response = await fetch(`${API_URL}/posts/${id}/comments`, {
@@ -72,14 +83,15 @@ const BlogDetail = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Không thể gửi bình luận');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Không thể gửi bình luận');
             }
 
             setCommentForm({ commenterName: '', content: '' });
             fetchComments();
             alert('Bình luận của bạn đã được gửi!');
         } catch (err) {
-            alert('Lỗi: ' + err.message);
+            alert(err.message);
             console.error('Error submitting comment:', err);
         } finally {
             setSubmitting(false);
@@ -192,15 +204,17 @@ const BlogDetail = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="content">Nội dung</label>
+                                        <label htmlFor="content">Nội dung <small>(tối đa 1000 ký tự)</small></label>
                                         <textarea
                                             id="content"
                                             placeholder="Viết bình luận..."
                                             value={commentForm.content}
                                             onChange={(e) => setCommentForm({...commentForm, content: e.target.value})}
                                             rows={4}
+                                            maxLength={1000}
                                             required
                                         ></textarea>
+                                        <small className="char-count">{commentForm.content.length}/1000</small>
                                     </div>
                                     <button type="submit" disabled={submitting} className="submit-button">
                                         <Send size={18} />

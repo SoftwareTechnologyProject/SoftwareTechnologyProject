@@ -4,7 +4,7 @@ import Footer from '../../components/Footer/Footer';
 import './BlogAdmin.css';
 
 const API_URL = 'http://localhost:8080/blog';
-//const API_URL = 'http://localhost:8080/blog';
+
 const BlogAdmin = () => {
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
@@ -57,7 +57,7 @@ const BlogAdmin = () => {
     };
 
     const handleDeleteComment = async (commentId) => {
-        if (!confirm('Bạn có chắc muốn xóa bình luận này?')) {
+        if (!window.confirm('Bạn có chắc muốn xóa bình luận này?')) {
             return;
         }
 
@@ -91,6 +91,47 @@ const BlogAdmin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validate form
+        if (!formData.title.trim()) {
+            alert('Vui lòng nhập tiêu đề');
+            return;
+        }
+
+        if (formData.title.length > 200) {
+            alert('Tiêu đề không được vượt quá 200 ký tự');
+            return;
+        }
+
+        if (!formData.description.trim()) {
+            alert('Vui lòng nhập mô tả');
+            return;
+        }
+
+        if (formData.description.length > 500) {
+            alert('Mô tả không được vượt quá 500 ký tự');
+            return;
+        }
+
+        if (!formData.content.trim()) {
+            alert('Vui lòng nhập nội dung');
+            return;
+        }
+
+        // Validate image file if selected
+        if (imageFile) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(imageFile.type)) {
+                alert('Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WebP)');
+                return;
+            }
+
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (imageFile.size > maxSize) {
+                alert('Kích thước ảnh không được vượt quá 5MB');
+                return;
+            }
+        }
         
         try {
             const token = localStorage.getItem('accessToken');
@@ -193,7 +234,7 @@ const BlogAdmin = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Bạn có chắc muốn xóa bài viết này?')) {
+        if (!window.confirm('Bạn có chắc muốn xóa bài viết này?')) {
             return;
         }
 
@@ -266,24 +307,26 @@ const BlogAdmin = () => {
                         <h2>{editingPost ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}</h2>
                         <form className="post-form" onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label>Tiêu đề</label>
+                                <label>Tiêu đề <small>(tối đa 200 ký tự)</small></label>
                                 <input
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                                     maxLength={200}
                                     required
+                                    placeholder="Nhập tiêu đề bài viết..."
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label>Mô tả ngắn (1-2 câu)</label>
+                                <label>Mô tả ngắn (1-2 câu) <small>(tối đa 500 ký tự)</small></label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                    // maxLength={500}
+                                    maxLength={500}
                                     rows={3}
                                     required
+                                    placeholder="Nhập mô tả ngắn..."
                                 ></textarea>
                             </div>
 
@@ -299,10 +342,10 @@ const BlogAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Ảnh bìa</label>
+                                <label>Ảnh bìa <small>(JPG, PNG, GIF, WebP - tối đa 5MB)</small></label>
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                     onChange={handleImageChange}
                                 />
                                 {imagePreview && (

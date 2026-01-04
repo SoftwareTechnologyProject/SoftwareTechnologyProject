@@ -74,6 +74,64 @@ public class StatisticsService {
         return result;
     }
 
+    public Map<String, Object> getRevenueCurrentYear() {
+        LocalDateTime now = LocalDateTime.now();
+        int currentYear = now.getYear();
+        LocalDateTime startOfYear = LocalDateTime.of(currentYear, 1, 1, 0, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(currentYear, 12, 31, 23, 59, 59);
+
+        // Lấy tất cả orders trong năm hiện tại
+        var orders = ordersRepository.findAllByOrderDateBetween(startOfYear, endOfYear);
+
+        // Tạo map để lưu dữ liệu theo tháng (12 tháng)
+        Map<Integer, MonthlyStats> monthlyStatsMap = new LinkedHashMap<>();
+        
+        // Khởi tạo 12 tháng với giá trị 0
+        for (int i = 1; i <= 12; i++) {
+            monthlyStatsMap.put(i, new MonthlyStats(0, 0.0));
+        }
+
+        // Tính toán thống kê cho từng order
+        orders.forEach(order -> {
+            int orderMonth = order.getOrderDate().getMonthValue();
+            MonthlyStats stats = monthlyStatsMap.get(orderMonth);
+            
+            // Tính tổng số lượng sách và tổng tiền từ order details
+            order.getOrderDetails().forEach(detail -> {
+                stats.totalBooks += detail.getQuantity();
+                stats.totalRevenue += detail.getQuantity() * detail.getPricePurchased();
+            });
+        });
+
+        // Chuyển đổi sang format trả về
+        List<String> months = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            months.add("Tháng " + i);
+        }
+        
+        List<Integer> booksSold = new ArrayList<>();
+        List<Double> revenues = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            MonthlyStats stats = monthlyStatsMap.get(i);
+            booksSold.add(stats.totalBooks);
+            revenues.add(stats.totalRevenue);
+        }
+
+        // Tính tổng
+        int totalBooksSold = booksSold.stream().mapToInt(Integer::intValue).sum();
+        double totalRevenue = revenues.stream().mapToDouble(Double::doubleValue).sum();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("year", currentYear);
+        result.put("months", months);
+        result.put("booksSold", booksSold);
+        result.put("revenues", revenues);
+        result.put("totalBooksSold", totalBooksSold);
+        result.put("totalRevenue", totalRevenue);
+
+        return result;
+    }
+
     // Inner class để lưu thống kê theo tháng
     private static class MonthlyStats {
         int totalBooks;

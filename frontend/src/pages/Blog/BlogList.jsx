@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Clock, User, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import './BlogList.css';
 
@@ -90,32 +91,45 @@ const BlogList = () => {
 
     if (loading) {
         return (
-            <div className="blog-list-page">
-                <div className="blog-list-container">
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Đang tải...</p>
+            <>
+                
+                <div className="blog-list-page">
+                    <div className="blog-list-container">
+                        <div className="loading-state">
+                            <div className="spinner"></div>
+                            <p>Đang tải...</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+              
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="blog-list-page">
-                <div className="blog-list-container">
-                    <div className="error-state">
-                        <p className="error-message">Lỗi: {error}</p>
+            <>
+               
+                <div className="blog-list-page">
+                    <div className="blog-list-container">
+                        <div className="error-state">
+                            <p className="error-message">Lỗi: {error}</p>
+                            <button onClick={fetchPosts} className="retry-btn">
+                                Thử lại
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+                
+            </>
         );
     }
 
     return (
-        <div className="blog-list-page">
-            <div className="blog-list-container">
+        <>
+            
+            <div className="blog-list-page">
+                <div className="blog-list-container">
                 <div className="blog-list-layout">
                     {/* Main Content */}
                     <main className="posts-main">
@@ -246,8 +260,8 @@ const BlogList = () => {
                     </aside>
                 </div>
             </div>
-        </div>
-    );
+        </div>        
+        </>    );
 };
 
 export default BlogList;

@@ -31,8 +31,9 @@ public class OrdersService {
     private final OrderDetailRepository orderDetailRepository;
     private final SecurityUtils securityUtils;
     private final CartService cartService;
+    private final VoucherService voucherService;
 
-    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils, CartService cartService) {
+    public OrdersService(OrdersRepository ordersRepository, BookVariantsRepository bookVariantsRepository, VoucherRepository voucherRepository, UserRepository userRepository, OrderDetailRepository orderDetailRepository, SecurityUtils securityUtils, CartService cartService, VoucherService voucherService) {
         this.ordersRepository = ordersRepository;
         this.bookVariantsRepository = bookVariantsRepository;
         this.voucherRepository = voucherRepository;
@@ -40,6 +41,7 @@ public class OrdersService {
         this.orderDetailRepository = orderDetailRepository;
         this.securityUtils = securityUtils;
         this.cartService = cartService;
+        this.voucherService = voucherService;
     }
 
     // ------------------- CREATE ORDER -------------------
@@ -63,9 +65,13 @@ public class OrdersService {
 
         // Voucher
         Voucher voucher = null;
-        if (voucherCode != null) {
-            voucher = voucherRepository.findByCode(voucherCode).orElse(null);
-            order.setVoucher(voucher);
+        if (voucherCode != null && !voucherCode.isEmpty()) {
+            try {
+                voucher = voucherService.applyVoucher(voucherCode);
+                order.setVoucher(voucher);
+            } catch (Exception e) {
+                throw new RuntimeException("Lỗi áp dụng voucher: " + e.getMessage());
+            }
         }
 
         // Mapping OrderDetails
@@ -148,7 +154,8 @@ public class OrdersService {
             System.out.println(currentUser.getRole());
             // Kiểm tra quyền
             if (!order.getUsers().getId().equals(currentUser.getId())
-                    && (currentUser.getRole() != UserRole.ADMIN || currentUser.getRole() != UserRole.STAFF) ) {
+                    && currentUser.getRole() != UserRole.ADMIN) {
+                System.out.println("Nguyễn Hữu Tâm");
                 throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
             }
         }

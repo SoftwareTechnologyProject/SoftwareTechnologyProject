@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../api/axiosClient';
+import axios from 'axios';
 import { FaBook, FaMoneyBillWave, FaChartLine, FaSync } from 'react-icons/fa';
 import './RevenueStatistics.css';
+import RevenueCharts from './RevenueCharts';
 
 const RevenueStatistics = () => {
     const navigate = useNavigate();
@@ -28,7 +29,7 @@ const RevenueStatistics = () => {
     const fetchStatistics = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/statistics/revenue/last-6-months');
+            const response = await axios.get('/api/statistics/revenue/last-6-months');
             console.log('Statistics data:', response.data);
             setStatistics(response.data);
             setError(null);
@@ -124,9 +125,9 @@ const RevenueStatistics = () => {
                 <table className="statistics-table">
                     <thead>
                         <tr>
-                            <th>Tháng</th>
-                            <th>Số Lượng Sách Đã Bán</th>
-                            <th>Doanh Thu</th>
+                            <th className="month-header">Tháng</th>
+                            <th className="books-header">Số Lượng Sách Đã Bán</th>
+                            <th className="revenue-header">Doanh Thu</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,6 +165,9 @@ const RevenueStatistics = () => {
                     </tfoot>
                 </table>
             </div>
+
+            {/* Biểu đồ doanh thu */}
+            <RevenueCharts />
         </div>
     );
 };
