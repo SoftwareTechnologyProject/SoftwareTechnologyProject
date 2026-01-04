@@ -16,7 +16,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             value = """
             SELECT b
             FROM Book b
-            ORDER BY b.id DESC
           """,
             countQuery = """
             SELECT COUNT(b)
@@ -32,7 +31,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             FROM Book b
             JOIN b.categories c
             WHERE c.name = :categoryName
-            ORDER BY b.id DESC
           """,
             countQuery = """
             SELECT COUNT(DISTINCT b)
