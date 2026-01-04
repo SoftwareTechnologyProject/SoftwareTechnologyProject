@@ -3,7 +3,6 @@ import axiosClient from "../../api/axiosClient";
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 
-// Sử dụng bộ icon IO5
 import {
   IoAdd, IoSearch, IoClose, IoTrash, IoCreate,
   IoCloudUpload, IoBookOutline,
@@ -11,8 +10,9 @@ import {
   IoPlaySkipBack, IoPlaySkipForward, 
   IoCubeOutline, IoPricetagsOutline,
   IoLibrary, IoStatsChart, IoAlertCircle,
-  IoArrowForward, IoFilter, IoSwapVertical,
-  IoCheckmarkCircle, IoWarning, IoCheckmark // Icons cho filter, sort, validation
+  IoFilter, IoSwapVertical,
+  IoCheckmark, IoWarning,
+  IoGrid, IoList, IoImage, IoEye // Thêm IoEye
 } from "react-icons/io5";
 
 import "./BookAdmin.css";
@@ -24,799 +24,505 @@ const formatCurrency = (amount) => {
 export default function BookAdmin() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [searchType, setSearchType] = useState("title");
-
-  // State phân trang
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [jumpPage, setJumpPage] = useState(""); // State cho ô nhập trang
-
-  // State Filter & Sort
   const [showFilters, setShowFilters] = useState(false);
-  const [tempFilters, setTempFilters] = useState({
-    category: "",
-    minPrice: "",
-    maxPrice: "",
-    publisher: "",
-    status: ""
-  });
-  const [appliedFilters, setAppliedFilters] = useState({
-    category: "",
-    minPrice: "",
-    maxPrice: "",
-    publisher: "",
-    status: ""
-  });
+  const [tempFilters, setTempFilters] = useState({ category: "", minPrice: "", maxPrice: "", publisher: "", status: "" });
+  const [appliedFilters, setAppliedFilters] = useState({ category: "", minPrice: "", maxPrice: "", publisher: "", status: "" });
   const [sortBy, setSortBy] = useState("id");
   const [sortOrder, setSortOrder] = useState("desc");
 
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [jumpPage, setJumpPage] = useState("");
+
+  // View Mode
+  const [viewMode, setViewMode] = useState("list");
+
+  // Selection & Bulk Actions (Mới)
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  // Modal State
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showQuickView, setShowQuickView] = useState(false); // Mới
+  const [quickViewBook, setQuickViewBook] = useState(null); // Mới
+  
   const [activeTab, setActiveTab] = useState("general");
   const [modalMode, setModalMode] = useState("create");
   const [selectedBook, setSelectedBook] = useState(null);
-
-  // State tìm kiếm tác giả
-  const [authorSearch, setAuthorSearch] = useState(""); 
-  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
-
-  // State Validation Errors
-  const [validationErrors, setValidationErrors] = useState({});
-
-  // State Drag & Drop
-  const [isDragging, setIsDragging] = useState({});
-
+  
+  // Form Data
   const [formData, setFormData] = useState({
     title: "", description: "", publisherYear: new Date().getFullYear(),
     publisherId: "", authorIds: [], categoryIds: [],
     variants: []
   });
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isDragging, setIsDragging] = useState({});
+  const [authorSearch, setAuthorSearch] = useState("");
+  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
 
+  // Metadata
   const [publishers, setPublishers] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // Fetch dữ liệu
+  // --- Data Fetching ---
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      let url = `/books?page=${page}&size=7&sortBy=${sortBy}&sortOrder=${sortOrder}`;
-      if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=7`;
-
+      let url = `/books?page=${page}&size=8&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+      if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=8`;
       const response = await axiosClient.get(url);
       if (response.data.content) {
         setBooks(response.data.content);
         setTotalPages(response.data.totalPages || 1);
+        setSelectedIds(new Set()); // Reset selection khi chuyển trang
       } else {
         setBooks([]); setTotalPages(0);
       }
-    } catch (error) {
-      toast.error("Không thể tải danh sách sách");
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { toast.error("Lỗi tải danh sách"); } finally { setLoading(false); }
   };
 
-  // Fetch ALL books for filtering (no pagination)
   const fetchAllBooksForFilter = async () => {
     try {
       setLoading(true);
-      // Fetch with large size to get all books
-      const response = await axiosClient.get(`/books?page=0&size=10000&sortBy=id&sortOrder=desc`);
+      const response = await axiosClient.get(`/books?page=0&size=2000&sortBy=id&sortOrder=desc`);
       if (response.data.content) {
         setBooks(response.data.content);
-        setTotalPages(response.data.totalPages || 1);
-      } else {
-        setBooks([]); setTotalPages(0);
+        setTotalPages(1);
+        setSelectedIds(new Set());
       }
-    } catch (error) {
-      toast.error("Không thể tải danh sách sách");
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { toast.error("Lỗi tải dữ liệu lọc"); } finally { setLoading(false); }
   };
 
   const fetchMetadata = async () => {
     try {
       const [pubRes, authRes, catRes] = await Promise.all([
-        axiosClient.get("/publishers"),
-        axiosClient.get("/authors"),
-        axiosClient.get("/categories")
+        axiosClient.get("/publishers"), axiosClient.get("/authors"), axiosClient.get("/categories")
       ]);
       setPublishers(pubRes.data || []);
       setAuthors(authRes.data || []);
-      
-      // Chỉ lấy 17 categories chính hiển thị ở trang chủ
       const allCategories = catRes.data || [];
-      
-      // Danh sách 17 categories từ trang chính
-      const mainCategoryIds = [
-        882,   // Sách Nông - Lâm - Ngư Nghiệp
-        1084,  // Truyện Tranh, Manga, Comic
-        1468,  // Tạp Chí - Catalogue
-        163,   // Ingredients, Methods & Appliances
-        14860, // Baking - Desserts
-        6445,  // Magazines
-        68078, // Beverages & Wine
-        159,   // Drinks & Beverages
-        14924, // Discovery & Exploration
-        276,   // Vietnam
-        14862, // Vegetarian & Vegan
-        11021, // Anthropology
-        273,   // Europe
-        275,   // Guidebook series
-        161,   // Diets - Weight Loss - Nutrition
-        68088, // Cooking Education & Reference
-        271    // Asia
-      ];
-      
-      const mainCategories = allCategories.filter(cat => mainCategoryIds.includes(cat.id));
-      
-      setCategories(mainCategories);
-    } catch (error) { console.error("Metadata error", error); }
+      // Demo category IDs
+      const mainCategoryIds = [882, 1084, 1468, 163, 14860, 6445, 68078, 159, 14924, 276, 14862, 11021, 273, 275, 161, 68088, 271];
+      setCategories(allCategories.filter(cat => mainCategoryIds.includes(cat.id)));
+    } catch (error) { console.error("Lỗi metadata", error); }
   };
 
-  // Check if any filter is active
   const hasActiveFilters = Object.values(appliedFilters).some(val => val !== "");
 
-  useEffect(() => { 
-    // When filter is active, fetch all books for client-side filtering
-    // Otherwise use normal pagination
-    if (hasActiveFilters) {
-      fetchAllBooksForFilter();
-    } else {
-      fetchBooks(); 
-    }
+  useEffect(() => {
+    if (hasActiveFilters) fetchAllBooksForFilter(); else fetchBooks();
   }, [page, sortBy, sortOrder, hasActiveFilters]);
+
   useEffect(() => { fetchMetadata(); }, []);
 
-  // Filter logic (client-side for displayed books)
+  // --- Filtering Logic ---
   const getFilteredBooks = useCallback(() => {
     let filtered = [...books];
-    
-    // Filter by category
     if (appliedFilters.category) {
-      const categoryIdToFind = parseInt(appliedFilters.category);
-      filtered = filtered.filter(book => {
-        if (!book.categoryIds || book.categoryIds.length === 0) return false;
-        
-        // Convert to array if needed and ensure number comparison
-        const categoryArray = Array.isArray(book.categoryIds) 
-          ? book.categoryIds 
-          : Array.from(book.categoryIds);
-        
-        // Convert all to numbers for comparison
-        return categoryArray.map(id => parseInt(id)).includes(categoryIdToFind);
-      });
+      const catId = parseInt(appliedFilters.category);
+      filtered = filtered.filter(b => (b.categoryIds || []).map(id=>parseInt(id)).includes(catId));
     }
-    
-    // Filter by price range
     if (appliedFilters.minPrice || appliedFilters.maxPrice) {
-      filtered = filtered.filter(book => {
-        if (!book.variants || book.variants.length === 0) return false;
-        
-        const prices = book.variants.map(v => v.price || 0);
-        const minBookPrice = Math.min(...prices);
-        const maxBookPrice = Math.max(...prices);
-        
-        const minFilter = appliedFilters.minPrice ? parseFloat(appliedFilters.minPrice) : 0;
-        const maxFilter = appliedFilters.maxPrice ? parseFloat(appliedFilters.maxPrice) : Infinity;
-        
-        return minBookPrice >= minFilter && maxBookPrice <= maxFilter;
+      filtered = filtered.filter(b => {
+        if (!b.variants || b.variants.length === 0) return false;
+        const prices = b.variants.map(v => v.price || 0);
+        const min = Math.min(...prices); const max = Math.max(...prices);
+        const minF = appliedFilters.minPrice ? parseFloat(appliedFilters.minPrice) : 0;
+        const maxF = appliedFilters.maxPrice ? parseFloat(appliedFilters.maxPrice) : Infinity;
+        return min >= minF && max <= maxF;
       });
     }
+    if (appliedFilters.publisher) filtered = filtered.filter(b => b.publisherName?.toLowerCase().includes(appliedFilters.publisher.toLowerCase()));
+    if (appliedFilters.status) filtered = filtered.filter(b => b.variants?.some(v => v.status === appliedFilters.status));
     
-    // Filter by publisher
-    if (appliedFilters.publisher) {
-      filtered = filtered.filter(book => 
-        book.publisherName?.toLowerCase().includes(appliedFilters.publisher.toLowerCase())
-      );
-    }
-    
-    // Filter by status
-    if (appliedFilters.status) {
-      filtered = filtered.filter(book => 
-        book.variants?.some(v => v.status === appliedFilters.status)
-      );
-    }
-    
-    // Apply sorting (client-side when filtering)
     if (hasActiveFilters) {
       filtered.sort((a, b) => {
         let aVal, bVal;
-        
-        switch(sortBy) {
-          case 'id':
-            aVal = a.id;
-            bVal = b.id;
-            break;
-          case 'title':
-            aVal = a.title?.toLowerCase() || '';
-            bVal = b.title?.toLowerCase() || '';
-            break;
-          case 'publisherYear':
-            aVal = a.publisherYear || 0;
-            bVal = b.publisherYear || 0;
-            break;
-          default:
-            aVal = a.id;
-            bVal = b.id;
-        }
-        
-        // Compare values
+        if(sortBy === 'title') { aVal=a.title?.toLowerCase(); bVal=b.title?.toLowerCase(); }
+        else if(sortBy === 'publisherYear') { aVal=a.publisherYear; bVal=b.publisherYear; }
+        else { aVal=a.id; bVal=b.id; }
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
     }
-    
     return filtered;
   }, [books, appliedFilters, hasActiveFilters, sortBy, sortOrder]);
 
-  // Form validation
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.title || formData.title.trim().length < 3) {
-      errors.title = "Tên sách phải có ít nhất 3 ký tự";
-    }
-    
-    if (!formData.publisherId) {
-      errors.publisherId = "Vui lòng chọn nhà xuất bản";
-    }
-    
-    if (formData.authorIds.length === 0) {
-      errors.authorIds = "Vui lòng chọn ít nhất 1 tác giả";
-    }
-    
-    formData.variants.forEach((v, idx) => {
-      if (!v.price || parseFloat(v.price) <= 0) {
-        errors[`variant_${idx}_price`] = "Giá phải lớn hơn 0";
-      }
-      
-      if (v.quantity === "" || v.quantity === null || parseInt(v.quantity) < 0) {
-        errors[`variant_${idx}_quantity`] = "Số lượng không được âm";
-      }
-      
-      if (!v.imageUrls || v.imageUrls.length === 0) {
-        errors[`variant_${idx}_images`] = "Phải có ít nhất 1 ảnh bìa";
-      }
-    });
-    
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // --- XỬ LÝ FORM ---
+  // --- Handlers ---
   const handleCreate = () => {
-    setModalMode("create"); setActiveTab("general");
-    setAuthorSearch(""); setShowAuthorDropdown(false);
-    setValidationErrors({});
-    setFormData({
-      title: "", description: "", publisherYear: new Date().getFullYear(),
-      publisherId: "", authorIds: [], categoryIds: [],
-      variants: [{ price: 0, quantity: 0, sold: 0, status: "AVAILABLE", isbn: "", imageUrls: [] }]
-    });
+    setModalMode("create"); setActiveTab("general"); setAuthorSearch(""); setValidationErrors({});
+    setFormData({ title: "", description: "", publisherYear: new Date().getFullYear(), publisherId: "", authorIds: [], categoryIds: [], variants: [{ price: 0, quantity: 0, status: "AVAILABLE", imageUrls: [] }] });
     setShowDrawer(true);
   };
 
   const handleEdit = (book) => {
-    setModalMode("edit"); setActiveTab("general"); setSelectedBook(book);
-    setAuthorSearch(""); setShowAuthorDropdown(false);
-    setValidationErrors({});
-
+    setModalMode("edit"); setActiveTab("general"); setSelectedBook(book); setAuthorSearch(""); setValidationErrors({});
     const mappedVariants = (book.variants || []).map(v => ({
-      id: v.id, price: v.price || 0, quantity: v.quantity || 0, sold: v.sold || 0,
-      status: v.status || "AVAILABLE", isbn: v.isbn || "", imageUrls: v.imageUrls || []
+      id: v.id, price: v.price || 0, quantity: v.quantity || 0, status: v.status || "AVAILABLE", imageUrls: v.imageUrls || []
     }));
-
     setFormData({
-      title: book.title,
-      description: book.description || "",
-      publisherYear: book.publisherYear || new Date().getFullYear(),
-      publisherId: book.publisherId || "",
-      authorIds: book.authorIds || (book.authors ? book.authors.map(a => a.id) : []),
+      title: book.title, description: book.description || "", publisherYear: book.publisherYear || new Date().getFullYear(),
+      publisherId: book.publisherId || "", authorIds: book.authorIds || (book.authors ? book.authors.map(a => a.id) : []),
       categoryIds: book.categoryIds || [],
       variants: mappedVariants.length > 0 ? mappedVariants : [{ price: 0, quantity: 0, status: "AVAILABLE", imageUrls: [] }]
     });
     setShowDrawer(true);
   };
 
+  // Quick View Handler
+  const handleQuickView = (book) => {
+    setQuickViewBook(book);
+    setShowQuickView(true);
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.title || formData.title.trim().length < 3) errors.title = "Tên sách tối thiểu 3 ký tự";
+    if (!formData.publisherId) errors.publisherId = "Chưa chọn nhà xuất bản";
+    if (formData.authorIds.length === 0) errors.authorIds = "Chọn ít nhất 1 tác giả";
+    formData.variants.forEach((v, idx) => {
+      if (!v.price || v.price <= 0) errors[`variant_${idx}_price`] = "Giá phải > 0";
+      if (v.quantity < 0) errors[`variant_${idx}_quantity`] = "Số lượng không âm";
+      if (!v.imageUrls || v.imageUrls.length === 0) errors[`variant_${idx}_images`] = "Thiếu ảnh bìa";
+    });
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form before submit
-    if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra lại thông tin!");
-      return;
-    }
-    
+    if (!validateForm()) { toast.error("Vui lòng kiểm tra lại form"); return; }
     try {
-      if (modalMode === "create") {
-        await axiosClient.post("/books", formData);
-        toast.success("Thêm sách mới thành công!");
-      } else {
-        await axiosClient.put(`/books/${selectedBook.id}`, formData);
-        toast.success("Cập nhật sách thành công!");
-      }
-      setShowDrawer(false);
-      fetchBooks();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Lỗi lưu dữ liệu");
-    }
+      if (modalMode === "create") { await axiosClient.post("/books", formData); toast.success("Thêm thành công!"); } 
+      else { await axiosClient.put(`/books/${selectedBook.id}`, formData); toast.success("Cập nhật thành công!"); }
+      setShowDrawer(false); 
+      if (!hasActiveFilters) fetchBooks(); else fetchAllBooksForFilter();
+    } catch (error) { toast.error(error.response?.data?.message || "Lỗi lưu dữ liệu"); }
   };
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'Xóa sách này?',
-      text: "Hành động này không thể hoàn tác!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Xóa ngay',
-      cancelButtonText: 'Hủy'
+      title: 'Xóa sách này?', text: "Dữ liệu sẽ không thể khôi phục!", icon: 'warning',
+      showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy'
     }).then(async (result) => {
       if (result.isConfirmed) {
+        try { await axiosClient.delete(`/books/${id}`); Swal.fire('Đã xóa!', '', 'success'); fetchBooks(); } 
+        catch (e) { toast.error("Không thể xóa sách này"); }
+      }
+    });
+  };
+
+  // Bulk Actions Handlers
+  const handleSelectOne = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const handleSelectAll = (currentBooks) => {
+    if (selectedIds.size === currentBooks.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(currentBooks.map(b => b.id)));
+  };
+
+  const handleBulkDelete = () => {
+    Swal.fire({
+      title: `Xóa ${selectedIds.size} sách đã chọn?`, text: "Hành động này không thể hoàn tác!", icon: 'warning',
+      showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Xóa Hết', cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        // Giả lập xóa hàng loạt bằng Promise.all vì API thường xóa theo ID lẻ
         try {
-          await axiosClient.delete(`/books/${id}`);
-          Swal.fire('Đã xóa!', '', 'success');
+          await Promise.all(Array.from(selectedIds).map(id => axiosClient.delete(`/books/${id}`)));
+          Swal.fire('Thành công', 'Đã xóa các sách đã chọn', 'success');
+          setSelectedIds(new Set());
           fetchBooks();
-        } catch (e) { toast.error("Không thể xóa sách này."); }
+        } catch (e) { toast.error("Có lỗi xảy ra khi xóa hàng loạt"); }
       }
-    })
+    });
   };
 
-  // --- LOGIC XỬ LÝ BIẾN THỂ & UPLOAD ẢNH ---
+  // --- Upload Logic ---
   const updateVariant = (idx, field, val) => {
-    const newVars = [...formData.variants];
-    newVars[idx][field] = val;
+    const newVars = [...formData.variants]; newVars[idx][field] = val;
     setFormData({ ...formData, variants: newVars });
-    
-    // Clear validation error for this field
-    const errorKey = `variant_${idx}_${field}`;
-    if (validationErrors[errorKey]) {
-      const newErrors = { ...validationErrors };
-      delete newErrors[errorKey];
-      setValidationErrors(newErrors);
+    if(validationErrors[`variant_${idx}_${field}`]) {
+        const newErrs = {...validationErrors}; delete newErrs[`variant_${idx}_${field}`]; setValidationErrors(newErrs);
     }
   };
 
-  // Drag & Drop handlers
-  const handleDragEnter = (e, variantIndex, type) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging({ [`${variantIndex}_${type}`]: true });
-  };
-
-  const handleDragLeave = (e, variantIndex, type) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging({ [`${variantIndex}_${type}`]: false });
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e, variantIndex, type) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging({ [`${variantIndex}_${type}`]: false });
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) return;
-
-    // Filter only image files
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    if (imageFiles.length === 0) {
-      toast.error('Vui lòng chỉ kéo thả file ảnh');
-      return;
-    }
-
-    if (type === 'cover') {
-      // Only take first file for cover
-      await uploadCoverImage(imageFiles[0], variantIndex);
-    } else {
-      // Upload multiple detail images
-      await uploadDetailImages(imageFiles, variantIndex);
-    }
-  };
-
-  // Upload ảnh bìa (chỉ 1 ảnh, sẽ là phần tử đầu tiên trong array)
-  const uploadCoverImage = async (file, variantIndex) => {
-    if (!file) return;
-
-    // Validate
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Ảnh không được vượt quá 5MB');
-      return;
-    }
-
-    const loadingToast = toast.loading('Đang upload ảnh bìa...');
+  const handleUpload = async (files, idx, type) => {
+    const loadingId = toast.loading('Đang upload...');
     try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
-      
-      const response = await axiosClient.post('/books/upload-image', formDataUpload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      const imageUrl = response.data.url;
-      const currentVariant = formData.variants[variantIndex];
-      const existingImages = currentVariant.imageUrls || [];
-      
-      // Thay thế ảnh bìa (index 0) hoặc thêm vào đầu
-      const updatedImages = existingImages.length > 0 
-        ? [imageUrl, ...existingImages.slice(1)] 
-        : [imageUrl];
-      
-      updateVariant(variantIndex, 'imageUrls', updatedImages);
-      toast.success('Upload ảnh bìa thành công!', { id: loadingToast });
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error.response?.data?.error || 'Lỗi upload ảnh', { id: loadingToast });
-    }
+      const uploadedUrls = await Promise.all(Array.from(files).map(async (file) => {
+         const fd = new FormData(); fd.append('file', file);
+         const res = await axiosClient.post('/books/upload-image', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+         return res.data.url;
+      }));
+      const currentUrls = formData.variants[idx].imageUrls || [];
+      if (type === 'cover') updateVariant(idx, 'imageUrls', [uploadedUrls[0], ...currentUrls.slice(1)]);
+      else updateVariant(idx, 'imageUrls', [...currentUrls, ...uploadedUrls]);
+      toast.success('Xong!', { id: loadingId });
+    } catch (e) { toast.error('Lỗi upload', { id: loadingId }); }
   };
 
-  const handleCoverUpload = async (e, variantIndex) => {
-    const file = e.target.files[0];
-    if (file) {
-      await uploadCoverImage(file, variantIndex);
-    }
-    e.target.value = null;
+  const handleDrag = (e, idx, type, status) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    setIsDragging({ ...isDragging, [`${idx}_${type}`]: status }); 
+  };
+  const onDrop = (e, idx, type) => {
+    handleDrag(e, idx, type, false);
+    if(e.dataTransfer.files?.length) handleUpload(e.dataTransfer.files, idx, type);
   };
 
-  // Upload ảnh chi tiết (nhiều ảnh, thêm vào sau ảnh bìa)
-  const uploadDetailImages = async (files, variantIndex) => {
-    if (files.length === 0) return;
-
-    // Validate từng file
-    for (const file of files) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`File ${file.name} vượt quá 5MB`);
-        return;
-      }
-    }
-
-    const loadingToast = toast.loading(`Đang upload ${files.length} ảnh chi tiết...`);
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const formDataUpload = new FormData();
-        formDataUpload.append('file', file);
-        const response = await axiosClient.post('/books/upload-image', formDataUpload, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        return response.data.url;
-      });
-
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const currentVariant = formData.variants[variantIndex];
-      const existingImages = currentVariant.imageUrls || [];
-      
-      // Thêm ảnh chi tiết vào sau ảnh bìa
-      const updatedImages = [...existingImages, ...uploadedUrls];
-      
-      updateVariant(variantIndex, 'imageUrls', updatedImages);
-      toast.success(`Đã upload ${files.length} ảnh chi tiết!`, { id: loadingToast });
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error.response?.data?.error || 'Lỗi upload ảnh', { id: loadingToast });
-    }
-  };
-
-  const handleDetailImagesUpload = async (e, variantIndex) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0) {
-      await uploadDetailImages(files, variantIndex);
-    }
-    e.target.value = null;
-  };
-
-  // --- LOGIC PHÂN TRANG (Render số trang) ---
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    const currentTotalPages = hasActiveFilters ? filteredTotalPages : totalPages;
-    let startPage = Math.max(0, page - 2);
-    let endPage = Math.min(currentTotalPages - 1, page + 2);
-
-    if (endPage - startPage < 4) {
-      if (startPage === 0) endPage = Math.min(currentTotalPages - 1, 4);
-      else if (endPage === currentTotalPages - 1) startPage = Math.max(0, currentTotalPages - 5);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(
-        <button key={i} className={`page-btn ${page === i ? 'active' : ''}`} onClick={() => setPage(i)}>{i + 1}</button>
-      );
-    }
-    return pageNumbers;
-  };
-
-  // Logic xử lý nhảy trang
-  const handleJumpPage = () => {
-    const p = parseInt(jumpPage);
-    const maxPages = hasActiveFilters ? filteredTotalPages : totalPages;
-    if (p >= 1 && p <= maxPages) {
-      setPage(p - 1);
-      setJumpPage("");
-    } else {
-      toast.error(`Trang không hợp lệ! (1 - ${maxPages})`);
-    }
-  };
-
-  // Tính toán thống kê Header
+  // --- Pagination Data ---
   const displayedBooks = getFilteredBooks();
-  const totalStock = displayedBooks.reduce((acc, b) => acc + (b.variants?.reduce((vAcc, v) => vAcc + v.quantity, 0) || 0), 0);
-  const lowStockCount = displayedBooks.filter(b => b.variants?.some(v => v.quantity < 5)).length;
+  const PAGE_SIZE = 8;
+  const finalTotalPages = hasActiveFilters ? Math.ceil(displayedBooks.length / PAGE_SIZE) : totalPages;
+  const paginatedBooks = hasActiveFilters ? displayedBooks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) : displayedBooks;
 
-  // Apply filters
-  const applyFilters = () => {
-    setAppliedFilters({...tempFilters});
-    setPage(0); // Reset to first page
+  const renderPageNumbers = () => {
+    let pages = []; 
+    let start = Math.max(0, page - 2); let end = Math.min(finalTotalPages - 1, page + 2);
+    if (end - start < 4) { if (start === 0) end = Math.min(finalTotalPages - 1, 4); else if (end === finalTotalPages - 1) start = Math.max(0, finalTotalPages - 5); }
+    for (let i = start; i <= end; i++) pages.push(<button key={i} className={`page-btn ${page === i ? 'active' : ''}`} onClick={() => setPage(i)}>{i + 1}</button>);
+    return pages;
   };
-
-  // Clear all filters
-  const clearFilters = () => {
-    const emptyFilters = {
-      category: "",
-      minPrice: "",
-      maxPrice: "",
-      publisher: "",
-      status: ""
-    };
-    setTempFilters(emptyFilters);
-    setAppliedFilters(emptyFilters);
-    setPage(0);
-  };
-
-  // Pagination for filtered results (client-side pagination when filter is active)
-  const pageSize = 7;
-  const filteredTotalPages = hasActiveFilters 
-    ? Math.ceil(displayedBooks.length / pageSize) 
-    : totalPages;
-  
-  const paginatedBooks = hasActiveFilters
-    ? displayedBooks.slice(page * pageSize, (page + 1) * pageSize)
-    : displayedBooks;
-
-  // Adjust page if out of bounds after filtering
-  useEffect(() => {
-    if (hasActiveFilters && page >= filteredTotalPages && filteredTotalPages > 0) {
-      setPage(0);
-    }
-  }, [hasActiveFilters, filteredTotalPages, page]);
 
   return (
     <div className="book-admin-page">
       <Toaster position="top-right" />
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="admin-header-card">
         <IoLibrary className="header-bg-decoration" />
         <div className="header-content">
           <h1 className="header-title">Quản Lý Sách Elite</h1>
           <div className="header-stats-row">
-            <div className="stat-item"><IoLibrary color="var(--primary)" /> <span>Đầu sách: <strong>{displayedBooks.length}</strong></span></div>
-            <div className="stat-item"><IoStatsChart color="#10b981" /> <span>Tồn kho: <strong>{totalStock}</strong></span></div>
-            <div className="stat-item"><IoAlertCircle color="#f59e0b" /> <span>Sắp hết: <strong>{lowStockCount}</strong></span></div>
+            <div className="stat-item"><IoLibrary color="var(--primary)" /> <span>Tổng: <strong>{displayedBooks.length}</strong></span></div>
+            <div className="stat-item"><IoStatsChart color="#10b981" /> <span>Tồn kho: <strong>{displayedBooks.reduce((acc, b) => acc + (b.variants?.reduce((s, v) => s + v.quantity, 0) || 0), 0)}</strong></span></div>
           </div>
         </div>
-        <button className="btn-create-glow" onClick={handleCreate}><IoAdd size={24} /> <span>Thêm Sách Mới</span></button>
+        <button className="btn-create-glow" onClick={handleCreate}><IoAdd size={22} /> <span>Thêm Sách</span></button>
       </div>
 
-      {/* Search Bar & Filters */}
+      {/* TOOLBAR */}
       <div className="search-section">
-        <select className="search-select" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-          <option value="title">Tên sách</option>
-          <option value="author">Tác giả</option>
-        </select>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <input className="search-input" placeholder="Tìm kiếm sách, tác giả, ISBN..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchBooks()} />
+        <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: '300px' }}>
+          <select className="search-select" style={{width: '110px'}} value={searchType} onChange={(e) => setSearchType(e.target.value)}>
+            <option value="title">Tên sách</option>
+            <option value="author">Tác giả</option>
+          </select>
+          <input className="search-input" placeholder="Nhập từ khóa tìm kiếm..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchBooks()} />
+          <button className="btn-search" onClick={() => { setPage(0); fetchBooks(); }}><IoSearch size={20} /></button>
         </div>
-        <button className="btn-search" onClick={() => { setPage(0); fetchBooks(); }}><IoSearch size={20} /></button>
-        
-        {/* Sort Controls */}
-        <select 
-          className="sort-select"
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value)}
-          title="Sắp xếp theo"
-        >
-          <option value="id">ID</option>
-          <option value="title">Tên sách</option>
-          <option value="publisherYear">Năm XB</option>
-        </select>
-        <button 
-          className="btn-sort-order"
-          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
-        >
-          <IoSwapVertical size={20} />
-          {sortOrder === 'asc' ? '↑' : '↓'}
-        </button>
-        
-        <button 
-          className={`btn-filter ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-filters' : ''}`} 
-          onClick={() => setShowFilters(!showFilters)}
-          title="Bộ lọc"
-        >
-          <IoFilter size={20} />
-          {hasActiveFilters && <span className="filter-badge">{Object.values(appliedFilters).filter(v => v !== "").length}</span>}
-        </button>
+        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+          <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="id">Mới nhất</option><option value="title">Tên A-Z</option><option value="publisherYear">Năm XB</option></select>
+          <button className="btn-icon" style={{background:'white', border:'1px solid var(--border)'}} onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}><IoSwapVertical size={18} /></button>
+          <button className={`btn-filter-toggle ${showFilters ? 'active' : ''}`} onClick={() => setShowFilters(!showFilters)}><IoFilter size={18} /> Lọc {hasActiveFilters && <span className="filter-badge">!</span>}</button>
+          <div className="view-mode-switch">
+            <button className={`btn-view-mode ${viewMode === 'list' ? 'active' : ''}`} onClick={() => setViewMode('list')}><IoList size={20} /></button>
+            <button className={`btn-view-mode ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}><IoGrid size={18} /></button>
+          </div>
+        </div>
       </div>
 
-      {/* Filter Panel */}
+      {/* FILTER PANEL */}
       {showFilters && (
         <div className="filter-panel">
-          <div className="filter-header">
-            <h3><IoFilter /> Bộ lọc nâng cao</h3>
-            {hasActiveFilters && (
-              <button className="btn-clear-filters" onClick={clearFilters}>
-                <IoClose /> Xóa bộ lọc
-              </button>
-            )}
-          </div>
+          <div className="filter-header"><h3><IoFilter /> Bộ lọc nâng cao</h3>{hasActiveFilters && <button className="btn-clear-filters" onClick={()=>{setTempFilters({ category: "", minPrice: "", maxPrice: "", publisher: "", status: "" }); setAppliedFilters({});}} style={{background:'none', border:'none', color:'var(--red-delete)', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px'}}><IoClose /> Xóa lọc</button>}</div>
           <div className="filter-grid">
-            <div className="filter-item">
-              <label>Danh mục</label>
-              <select value={tempFilters.category} onChange={(e) => setTempFilters({...tempFilters, category: e.target.value})}>
-                <option value="">Tất cả</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-item">
-              <label>Giá từ</label>
-              <input 
-                type="number" 
-                placeholder="0" 
-                value={tempFilters.minPrice}
-                onChange={(e) => setTempFilters({...tempFilters, minPrice: e.target.value})}
-              />
-            </div>
-            <div className="filter-item">
-              <label>Giá đến</label>
-              <input 
-                type="number" 
-                placeholder="1,000,000" 
-                value={tempFilters.maxPrice}
-                onChange={(e) => setTempFilters({...tempFilters, maxPrice: e.target.value})}
-              />
-            </div>
-            <div className="filter-item">
-              <label>Nhà xuất bản</label>
-              <input 
-                type="text" 
-                placeholder="Tìm nhà XB..." 
-                value={tempFilters.publisher}
-                onChange={(e) => setTempFilters({...tempFilters, publisher: e.target.value})}
-              />
-            </div>
-            <div className="filter-item">
-              <label>Trạng thái</label>
-              <select value={tempFilters.status} onChange={(e) => setTempFilters({...tempFilters, status: e.target.value})}>
-                <option value="">Tất cả</option>
-                <option value="AVAILABLE">Sẵn hàng</option>
-                <option value="OUT_OF_STOCK">Hết hàng</option>
-              </select>
-            </div>
+            <div className="filter-item"><label>Danh mục</label><select value={tempFilters.category} onChange={(e) => setTempFilters({...tempFilters, category: e.target.value})}><option value="">Tất cả</option>{categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}</select></div>
+            <div className="filter-item"><label>Giá từ</label><input type="number" placeholder="0" value={tempFilters.minPrice} onChange={(e) => setTempFilters({...tempFilters, minPrice: e.target.value})}/></div>
+            <div className="filter-item"><label>Giá đến</label><input type="number" placeholder="Max" value={tempFilters.maxPrice} onChange={(e) => setTempFilters({...tempFilters, maxPrice: e.target.value})}/></div>
+            <div className="filter-item"><label>Nhà XB</label><input type="text" placeholder="Tìm tên..." value={tempFilters.publisher} onChange={(e) => setTempFilters({...tempFilters, publisher: e.target.value})}/></div>
+            <div className="filter-item"><label>Trạng thái</label><select value={tempFilters.status} onChange={(e) => setTempFilters({...tempFilters, status: e.target.value})}><option value="">Tất cả</option><option value="AVAILABLE">Sẵn hàng</option><option value="OUT_OF_STOCK">Hết hàng</option></select></div>
           </div>
-          
-          {/* Filter Action Buttons */}
-          <div className="filter-actions">
-            <button className="btn-apply-filter" onClick={applyFilters}>
-              <IoCheckmark /> Áp dụng lọc
-            </button>
-            <button className="btn-clear-filter" onClick={clearFilters}>
-              <IoClose /> Xóa bộ lọc
-            </button>
-          </div>
+          <div className="filter-actions"><button className="btn-create-glow" style={{padding:'0.5rem 1rem'}} onClick={()=>{setAppliedFilters({...tempFilters}); setPage(0);}}><IoCheckmark /> Áp dụng</button></div>
         </div>
       )}
 
-      {/* Table */}
-      <div className="books-table-container">
-        {loading ? <div className="loading-container"><div className="spinner"></div><span>Đang tải dữ liệu...</span></div> : paginatedBooks.length > 0 ? (
-          <table className="books-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>#ID</th>
-                <th style={{ width: '40%' }}>Thông tin sách</th>
-                <th>Nhà Xuất Bản</th>
-                <th>Giá & Kho</th>
-                <th>Trạng thái</th>
-                <th style={{ textAlign: 'right' }}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedBooks.map((book) => {
-                const prices = book.variants?.map(v => v.price) || [];
-                const priceDisplay = prices.length ? (Math.min(...prices) === Math.max(...prices) ? formatCurrency(Math.min(...prices)) : `${formatCurrency(Math.min(...prices))} - ${formatCurrency(Math.max(...prices))}`) : '0 đ';
-
-                return (
-                  <tr key={book.id}>
-                    <td style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>#{book.id}</td>
-                    <td className="book-title">
-                      <strong>{book.title}</strong>
-                      <div className="book-meta"><IoBookOutline /> {book.authorNames?.join(", ") || "Chưa có tác giả"}</div>
-                    </td>
-                    <td><div style={{ fontWeight: 600 }}>{book.publisherName}</div><small style={{ color: 'var(--text-secondary)' }}>Năm: {book.publisherYear}</small></td>
-                    <td>
-                      <div style={{ fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 4 }}><IoPricetagsOutline size={14} /> {priceDisplay}</div>
-                      <small style={{ color: 'var(--text-secondary)' }}>{book.variants?.length || 0} phiên bản</small>
-                    </td>
-                    <td>
-                      {book.variants && book.variants.length > 0 ? (
-                        <span className={`status-badge ${book.variants[0].status.toLowerCase()}`}>{book.variants[0].status === 'AVAILABLE' ? 'Sẵn hàng' : 'Hết hàng'}</span>
-                      ) : <span className="status-badge">---</span>}
-                    </td>
-                    <td>
-                      <div className="actions">
-                        <button className="btn-icon btn-edit" onClick={() => handleEdit(book)} title="Sửa"><IoCreate size={20} /></button>
-                        <button className="btn-icon btn-delete" onClick={() => handleDelete(book.id)} title="Xóa"><IoTrash size={20} /></button>
-                      </div>
-                    </td>
+      {/* CONTENT AREA */}
+      <div className="books-content-area" style={{ minHeight: '400px' }}>
+        {loading ? (
+           <div className={viewMode === 'list' ? "skeleton-list" : "books-grid"}>
+             {[...Array(8)].map((_, i) => (
+                <div key={i} className="skeleton" style={{ height: viewMode==='list'?'70px':'350px', marginBottom: '10px' }}></div>
+             ))}
+           </div>
+        ) : paginatedBooks.length > 0 ? (
+          viewMode === 'list' ? (
+            /* --- LIST VIEW --- */
+            <div className="books-table-container">
+              <table className="books-table">
+                <thead>
+                  <tr>
+                    <th style={{width: '40px'}}><input type="checkbox" className="custom-checkbox" checked={selectedIds.size === paginatedBooks.length && paginatedBooks.length > 0} onChange={() => handleSelectAll(paginatedBooks)} /></th>
+                    <th style={{ width: '60px' }}>ID</th>
+                    <th style={{ width: '80px' }}>Ảnh</th>
+                    <th style={{ width: '30%' }}>Thông tin sách</th>
+                    <th>Nhà Xuất Bản</th>
+                    <th>Giá & Kho</th>
+                    <th>Trạng thái</th>
+                    <th style={{ textAlign: 'right' }}>Thao tác</th>
                   </tr>
-                );
+                </thead>
+                <tbody>
+                  {paginatedBooks.map((book) => {
+                    const cover = book.variants?.[0]?.imageUrls?.[0];
+                    const prices = book.variants?.map(v => v.price) || [];
+                    const priceStr = prices.length ? formatCurrency(Math.min(...prices)) : '0 đ';
+                    const isSelected = selectedIds.has(book.id);
+                    return (
+                      <tr key={book.id} className={isSelected ? 'selected' : ''}>
+                        <td><input type="checkbox" className="custom-checkbox" checked={isSelected} onChange={() => handleSelectOne(book.id)} /></td>
+                        <td style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>#{book.id}</td>
+                        <td>
+                           <div style={{width:'48px', height:'64px', borderRadius:'6px', overflow:'hidden', border:'1px solid #e2e8f0', background:'#f8fafc', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                              {cover ? <img src={cover} alt="" style={{width:'100%', height:'100%', objectFit:'cover'}}/> : <IoImage color="#cbd5e1"/>}
+                           </div>
+                        </td>
+                        <td className="book-title">
+                          <strong>{book.title}</strong>
+                          <div className="book-meta"><IoBookOutline /> {book.authorNames?.join(", ")}</div>
+                        </td>
+                        <td><div style={{fontWeight:600}}>{book.publisherName}</div><small style={{color:'var(--text-secondary)'}}>{book.publisherYear}</small></td>
+                        <td><div style={{fontWeight:700, color:'var(--primary)'}}>{priceStr}</div><small>{book.variants?.length} phiên bản</small></td>
+                        <td><span className={`status-badge ${book.variants?.[0]?.status === 'AVAILABLE' ? 'available' : 'out_of_stock'}`}>{book.variants?.[0]?.status === 'AVAILABLE' ? 'Sẵn hàng' : 'Hết hàng'}</span></td>
+                        <td>
+                          <div className="actions" style={{display:'flex', gap:'8px', justifyContent:'flex-end'}}>
+                            <button className="btn-icon btn-view" onClick={() => handleQuickView(book)} title="Xem nhanh"><IoEye size={18} /></button>
+                            <button className="btn-icon btn-edit" onClick={() => handleEdit(book)}><IoCreate size={18} /></button>
+                            <button className="btn-icon btn-delete" onClick={() => handleDelete(book.id)}><IoTrash size={18} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* --- GRID VIEW --- */
+            <div className="books-grid">
+              {paginatedBooks.map((book) => {
+                 const cover = book.variants?.[0]?.imageUrls?.[0];
+                 const prices = book.variants?.map(v => v.price) || [];
+                 const priceStr = prices.length ? formatCurrency(Math.min(...prices)) : '0 đ';
+                 return (
+                  <div key={book.id} className="book-card">
+                    <div className="book-card-img-wrapper">
+                       {cover ? <img src={cover} alt={book.title} /> : <div style={{height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'#cbd5e1'}}><IoImage size={48} /></div>}
+                       <div className="card-actions-overlay">
+                          <button onClick={() => handleQuickView(book)} className="btn-icon btn-view"><IoEye /></button>
+                          <button onClick={() => handleEdit(book)} className="btn-icon btn-edit"><IoCreate /></button>
+                          <button onClick={() => handleDelete(book.id)} className="btn-icon btn-delete"><IoTrash /></button>
+                       </div>
+                    </div>
+                    <div className="book-card-body">
+                      <div style={{fontSize:'0.75rem', color:'var(--text-secondary)', fontWeight:600, textTransform:'uppercase', marginBottom:'4px'}}>{book.categoryNames?.[0] || 'Sách'}</div>
+                      <h4 style={{margin:'0 0 0.5rem 0', fontSize:'1rem', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden', height:'2.6rem'}} title={book.title}>{book.title}</h4>
+                      <div style={{fontSize:'0.85rem', color:'var(--text-secondary)', marginBottom:'1rem'}}>{book.authorNames?.[0]}</div>
+                      <div style={{marginTop:'auto', display:'flex', justifyContent:'space-between', alignItems:'center', borderTop:'1px solid #f1f5f9', paddingTop:'0.8rem'}}>
+                         <div style={{fontWeight:'700', color:'var(--primary)', fontSize:'1.1rem'}}>{priceStr}</div>
+                         <div style={{fontSize:'0.75rem', padding:'2px 8px', borderRadius:'4px', background: book.variants?.[0]?.status==='AVAILABLE'?'#dcfce7':'#f1f5f9', color: book.variants?.[0]?.status==='AVAILABLE'?'#166534':'#64748b', fontWeight:600}}>
+                            {book.variants?.[0]?.status==='AVAILABLE'?'Sẵn':'Hết'}
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                 )
               })}
-            </tbody>
-          </table>
+            </div>
+          )
         ) : (
-          <div className="empty-state"><IoCubeOutline size={64} style={{ color: '#cbd5e1', marginBottom: '1rem' }} /><div>Không tìm thấy dữ liệu</div></div>
+          <div className="empty-state">
+            <div className="empty-icon-bg"><IoCubeOutline /></div>
+            <h3>Không tìm thấy dữ liệu</h3>
+            <p>Vui lòng thử từ khóa khác hoặc xóa bộ lọc.</p>
+          </div>
         )}
       </div>
 
-      {/* --- PAGINATION (Cập nhật 3 cột: Thông tin - Nút - Ô nhập) --- */}
-      {!loading && filteredTotalPages > 0 && (
+      {/* PAGINATION */}
+      {!loading && finalTotalPages > 0 && (
         <div className="pagination-wrapper">
-          {/* CỘT TRÁI: Thông tin trang */}
-          <div className="pagination-info">
-            Trang <strong>{page + 1}</strong> / {filteredTotalPages}
-            {hasActiveFilters && (
-              <span style={{marginLeft: '0.5rem', color: 'var(--primary)', fontSize: '0.85rem'}}>
-                (Đã lọc: {displayedBooks.length} sách)
-              </span>
-            )}
-          </div>
-
-          {/* CỘT GIỮA: Các nút điều hướng */}
+          <div style={{fontSize:'0.9rem', color:'var(--text-secondary)'}}>Trang <strong>{page + 1}</strong> / {finalTotalPages}</div>
           <div className="pagination-controls">
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(0)} title="Trang đầu"><IoPlaySkipBack /></button>
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} title="Trang trước"><IoChevronBack /></button>
-            
+            <button className="page-btn" disabled={page === 0} onClick={() => setPage(0)}><IoPlaySkipBack /></button>
+            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><IoChevronBack /></button>
             {renderPageNumbers()}
-            
-            <button className="page-btn" disabled={page === filteredTotalPages - 1} onClick={() => setPage(p => p + 1)} title="Trang sau"><IoChevronForward /></button>
-            <button className="page-btn" disabled={page === filteredTotalPages - 1} onClick={() => setPage(filteredTotalPages - 1)} title="Trang cuối"><IoPlaySkipForward /></button>
+            <button className="page-btn" disabled={page === finalTotalPages - 1} onClick={() => setPage(p => p + 1)}><IoChevronForward /></button>
+            <button className="page-btn" disabled={page === finalTotalPages - 1} onClick={() => setPage(finalTotalPages - 1)}><IoPlaySkipForward /></button>
           </div>
+          <div style={{display:'flex', alignItems:'center', gap:'8px', fontSize:'0.9rem'}}>
+             Đến: <input type="number" className="search-input" style={{width:'60px', padding:'4px', textAlign:'center', minWidth:'auto'}} value={jumpPage} onChange={e=>setJumpPage(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){const p=parseInt(jumpPage); if(p>=1 && p<=finalTotalPages) setPage(p-1);}}} />
+          </div>
+        </div>
+      )}
+      
+      {/* BULK ACTIONS BAR (New Feature) */}
+      {selectedIds.size > 0 && (
+        <div className="bulk-action-bar">
+          <div className="bulk-count">Đã chọn: {selectedIds.size} cuốn sách</div>
+          <button className="bulk-btn" onClick={handleBulkDelete}><IoTrash /> Xóa {selectedIds.size} sách</button>
+          <button style={{background:'none', border:'none', color:'#94a3b8', cursor:'pointer'}} onClick={()=>setSelectedIds(new Set())}>Hủy</button>
+        </div>
+      )}
 
-          {/* CỘT PHẢI: Ô nhập số trang */}
-          <div className="pagination-jump">
-            <span>Đến trang:</span>
-            <input 
-              className="page-input" 
-              type="number" 
-              min="1" 
-              max={filteredTotalPages}
-              value={jumpPage}
-              onChange={(e) => setJumpPage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleJumpPage()}
-            />
+      {/* QUICK VIEW MODAL (New Feature) */}
+      {showQuickView && quickViewBook && (
+        <div className="modal-overlay" onClick={() => setShowQuickView(false)}>
+          <div className="modal-quickview" onClick={e => e.stopPropagation()}>
+            <div className="quickview-img">
+              {quickViewBook.variants?.[0]?.imageUrls?.[0] 
+                ? <img src={quickViewBook.variants[0].imageUrls[0]} alt="Cover" />
+                : <IoImage size={100} color="#cbd5e1" />}
+            </div>
+            <div className="quickview-content">
+              <div className="quickview-header">
+                <h2 style={{margin:0, fontSize:'1.5rem'}}>{quickViewBook.title}</h2>
+                <button className="btn-icon" onClick={() => setShowQuickView(false)}><IoClose size={24} /></button>
+              </div>
+              <div className="tag-badge" style={{display:'inline-flex', marginBottom:'1rem'}}>{quickViewBook.categoryNames?.[0]}</div>
+              <p style={{color:'var(--text-secondary)'}}>{quickViewBook.description || "Chưa có mô tả..."}</p>
+              
+              <div style={{background:'#f8fafc', padding:'1rem', borderRadius:'8px', marginTop:'1rem'}}>
+                <div style={{display:'flex', justifyContent:'space-between'}}>
+                   <span>Tác giả: <strong>{quickViewBook.authorNames?.join(", ")}</strong></span>
+                   <span>NXB: <strong>{quickViewBook.publisherName}</strong></span>
+                </div>
+              </div>
+              
+              <div className="quickview-price">
+                 {formatCurrency(quickViewBook.variants?.[0]?.price || 0)}
+              </div>
+              <div style={{display:'flex', gap:'1rem', marginTop:'auto'}}>
+                <button className="btn-create-glow" onClick={() => { setShowQuickView(false); handleEdit(quickViewBook); }}>
+                  <IoCreate /> Chỉnh sửa ngay
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Drawer */}
+      {/* DRAWER FORM (Fixed Scroll) */}
       <div className={`drawer-overlay ${showDrawer ? 'open' : ''}`} onClick={() => setShowDrawer(false)}>
         <div className="drawer-panel" onClick={e => e.stopPropagation()}>
           <div className="drawer-header">
-            <h2>{modalMode === 'create' ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}</h2>
-            <button className="btn-icon" onClick={() => setShowDrawer(false)} style={{ width: 36, height: 36, background: '#f1f5f9' }}><IoClose size={20} /></button>
+            <h2 style={{margin:0, fontSize:'1.4rem'}}>{modalMode === 'create' ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}</h2>
+            <button className="btn-icon" onClick={() => setShowDrawer(false)} style={{background: '#f1f5f9'}}><IoClose size={20} /></button>
           </div>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          
+          {/* Form Container (Fixed Height) */}
+          <form onSubmit={handleSubmit} className="drawer-form-container">
             <div className="drawer-body">
               <div className="form-tabs">
                 <button type="button" className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>Thông tin chung</button>
@@ -824,246 +530,62 @@ export default function BookAdmin() {
               </div>
 
               {activeTab === 'general' && (
-                <div className="tab-content fade-in">
-                  <div className="form-group">
-                    <label>Tên sách <span style={{color:'red'}}>*</span></label>
-                    <input 
-                      required 
-                      value={formData.title} 
-                      onChange={e => {
-                        setFormData({ ...formData, title: e.target.value });
-                        if (validationErrors.title) {
-                          const newErrors = { ...validationErrors };
-                          delete newErrors.title;
-                          setValidationErrors(newErrors);
-                        }
-                      }}
-                      className={validationErrors.title ? 'input-error' : ''}
-                    />
-                    {validationErrors.title && (
-                      <div className="error-message">
-                        <IoWarning size={14} /> {validationErrors.title}
-                      </div>
-                    )}
-                  </div>
-                  <div className="form-group"><label>Mô tả ngắn</label><textarea rows="4" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
+                <div className="fade-in">
+                  <div className="form-group"><label>Tên sách <span style={{color:'red'}}>*</span></label><input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className={validationErrors.title ? 'input-error' : ''} />{validationErrors.title && <div className="error-message"><IoWarning /> {validationErrors.title}</div>}</div>
+                  <div className="form-group"><label>Mô tả</label><textarea rows="3" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
                   <div style={{display:'flex', gap:'1rem'}}>
                     <div className="form-group" style={{flex:1}}><label>Năm XB</label><input type="number" value={formData.publisherYear} onChange={e => setFormData({ ...formData, publisherYear: e.target.value })} /></div>
-                    <div className="form-group" style={{flex:1}}>
-                      <label>Nhà XB <span style={{color:'red'}}>*</span></label>
-                      <select 
-                        value={formData.publisherId} 
-                        onChange={e => {
-                          setFormData({ ...formData, publisherId: e.target.value });
-                          if (validationErrors.publisherId) {
-                            const newErrors = { ...validationErrors };
-                            delete newErrors.publisherId;
-                            setValidationErrors(newErrors);
-                          }
-                        }}
-                        className={validationErrors.publisherId ? 'input-error' : ''}
-                      >
-                        <option value="">-- Chọn nhà xuất bản --</option>
-                        {publishers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
-                      {validationErrors.publisherId && (
-                        <div className="error-message">
-                          <IoWarning size={14} /> {validationErrors.publisherId}
-                        </div>
-                      )}
-                    </div>
+                    <div className="form-group" style={{flex:1}}><label>Nhà XB <span style={{color:'red'}}>*</span></label><select value={formData.publisherId} onChange={e => setFormData({ ...formData, publisherId: e.target.value })} className={validationErrors.publisherId ? 'input-error' : ''}><option value="">-- Chọn --</option>{publishers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
                   </div>
-                  {/* Combobox Author */}
-                  <div className="form-group">
-                     <label>Tác giả <span style={{color:'red'}}>*</span></label>
+                  <div className="form-group"><label>Tác giả <span style={{color:'red'}}>*</span></label>
                      <div className="combobox-wrapper">
-                       <div className="combobox-input-wrapper">
-                         <IoSearch className="combobox-icon"/>
-                         <input 
-                           className={`combobox-input ${validationErrors.authorIds ? 'input-error' : ''}`}
-                           placeholder="Tìm tác giả..." 
-                           value={authorSearch} 
-                           onChange={e=>{setAuthorSearch(e.target.value);setShowAuthorDropdown(true)}} 
-                           onFocus={()=>setShowAuthorDropdown(true)}
-                         />
-                       </div>
-                       {showAuthorDropdown && <div className="combobox-dropdown show">
-                          {authors.filter(a=>a.name.toLowerCase().includes(authorSearch.toLowerCase()) && !formData.authorIds.includes(a.id)).map(a=>(
-                            <div key={a.id} className="combobox-item" onClick={()=>{
-                              setFormData({...formData, authorIds:[...formData.authorIds, a.id]});
-                              setAuthorSearch("");
-                              setShowAuthorDropdown(false);
-                              if (validationErrors.authorIds) {
-                                const newErrors = { ...validationErrors };
-                                delete newErrors.authorIds;
-                                setValidationErrors(newErrors);
-                              }
-                            }}>
-                               {a.name}
-                            </div>
-                          ))}
-                       </div>}
+                       <div className="combobox-input-wrapper"><IoSearch className="combobox-icon"/><input className={`combobox-input ${validationErrors.authorIds ? 'input-error' : ''}`} placeholder="Tìm tác giả..." value={authorSearch} onChange={e=>{setAuthorSearch(e.target.value);setShowAuthorDropdown(true)}} onFocus={()=>setShowAuthorDropdown(true)}/></div>
+                       {showAuthorDropdown && <div className="combobox-dropdown show">{authors.filter(a=>a.name.toLowerCase().includes(authorSearch.toLowerCase()) && !formData.authorIds.includes(a.id)).map(a=>(<div key={a.id} className="combobox-item" onClick={()=>{ setFormData({...formData, authorIds:[...formData.authorIds, a.id]}); setAuthorSearch(""); setShowAuthorDropdown(false); }}>{a.name}</div>))}</div>}
                      </div>
-                     {validationErrors.authorIds && (
-                       <div className="error-message">
-                         <IoWarning size={14} /> {validationErrors.authorIds}
-                       </div>
-                     )}
-                     <div className="selected-tags-wrapper">
-                        {formData.authorIds.map(id => {
-                           const a = authors.find(au=>au.id===id);
-                           return a ? <span key={id} className="tag-badge">{a.name} <button type="button" className="tag-remove-btn" onClick={()=>setFormData({...formData, authorIds:formData.authorIds.filter(i=>i!==id)})}><IoClose/></button></span> : null;
-                        })}
-                     </div>
-                     {showAuthorDropdown && <div style={{position:'fixed',inset:0,zIndex:40}} onClick={()=>setShowAuthorDropdown(false)}></div>}
+                     <div className="selected-tags-wrapper">{formData.authorIds.map(id => { const a = authors.find(au=>au.id===id); return a ? <span key={id} className="tag-badge">{a.name} <button type="button" className="tag-remove-btn" onClick={()=>setFormData({...formData, authorIds:formData.authorIds.filter(i=>i!==id)})}><IoClose/></button></span> : null; })}</div>
+                     {showAuthorDropdown && <div style={{position:'fixed', inset:0, zIndex:40}} onClick={()=>setShowAuthorDropdown(false)}></div>}
                   </div>
                 </div>
               )}
 
               {activeTab === 'variants' && (
-                <div className="tab-content fade-in">
+                <div className="fade-in">
                   {formData.variants.map((v, idx) => (
                     <div key={idx} className="variant-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <h4 style={{ margin: 0, color: 'var(--primary)' }}>Phiên bản #{idx + 1}</h4>
-                        {idx > 0 && <button type="button" style={{color:'var(--red-delete)', background:'none', border:'none', cursor:'pointer', fontWeight:600}} onClick={() => {
-                          const nv = [...formData.variants]; nv.splice(idx, 1); setFormData({ ...formData, variants: nv });
-                        }}>Xóa bỏ</button>}
-                      </div>
-                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom:'1rem' }}><h4 style={{margin:0, color:'var(--primary)'}}>Phiên bản #{idx + 1}</h4>{idx > 0 && <button type="button" style={{color:'var(--red-delete)', background:'none', border:'none', cursor:'pointer'}} onClick={() => { const nv = [...formData.variants]; nv.splice(idx, 1); setFormData({ ...formData, variants: nv }); }}>Xóa</button>}</div>
                       <div style={{ display: 'flex', gap: '1rem' }}>
-                        <div className="form-group" style={{ flex: 1 }}>
-                          <label>Giá bán <span style={{color:'red'}}>*</span></label>
-                          <input 
-                            type="number" 
-                            value={v.price} 
-                            onChange={e => updateVariant(idx, 'price', e.target.value)}
-                            className={validationErrors[`variant_${idx}_price`] ? 'input-error' : ''}
-                          />
-                          {validationErrors[`variant_${idx}_price`] && (
-                            <div className="error-message">
-                              <IoWarning size={14} /> {validationErrors[`variant_${idx}_price`]}
-                            </div>
-                          )}
-                        </div>
-                        <div className="form-group" style={{ flex: 1 }}>
-                          <label>Kho <span style={{color:'red'}}>*</span></label>
-                          <input 
-                            type="number" 
-                            value={v.quantity} 
-                            onChange={e => updateVariant(idx, 'quantity', e.target.value)}
-                            className={validationErrors[`variant_${idx}_quantity`] ? 'input-error' : ''}
-                          />
-                          {validationErrors[`variant_${idx}_quantity`] && (
-                            <div className="error-message">
-                              <IoWarning size={14} /> {validationErrors[`variant_${idx}_quantity`]}
-                            </div>
-                          )}
-                        </div>
+                        <div className="form-group" style={{ flex: 1 }}><label>Giá <span style={{color:'red'}}>*</span></label><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} className={validationErrors[`variant_${idx}_price`] ? 'input-error' : ''}/></div>
+                        <div className="form-group" style={{ flex: 1 }}><label>Kho <span style={{color:'red'}}>*</span></label><input type="number" value={v.quantity} onChange={e => updateVariant(idx, 'quantity', e.target.value)} /></div>
                       </div>
-
-                      {/* --- KHU VỰC UPLOAD ẢNH BÌA (with Drag & Drop) --- */}
-                      <div className="variant-images-section" style={{marginTop:'1.5rem', padding:'1rem', background:'#f8f9fa', borderRadius:'8px'}}>
-                        <label style={{fontWeight:600, marginBottom:'0.5rem', display:'flex', alignItems:'center', gap:'0.5rem', color:'var(--primary)'}}>
-                          <IoBookOutline size={18} /> Ảnh bìa (Cover Image) <span style={{color:'red'}}>*</span>
-                        </label>
-                        <p style={{fontSize:'0.85rem', color:'#6c757d', marginBottom:'0.75rem'}}>Ảnh này sẽ hiển thị làm thumbnail trên trang chủ và danh sách sản phẩm</p>
-                        
-                        {v.imageUrls && v.imageUrls.length > 0 ? (
-                          <div className="img-preview-item" style={{width:'150px', position:'relative'}}>
-                            <img src={v.imageUrls[0]} alt="Cover" onError={(e) => e.target.src = "https://placehold.co/150x200?text=Cover"} style={{width:'100%', height:'200px', objectFit:'cover', borderRadius:'8px'}} />
-                            <button type="button" className="btn-remove-img" style={{position:'absolute', top:'5px', right:'5px'}} onClick={() => {
-                              const newUrls = v.imageUrls.slice(1);
-                              updateVariant(idx, 'imageUrls', newUrls);
-                            }}><IoClose size={16} /></button>
-                            <input type="file" id={`cover-upload-${idx}`} accept="image/*" style={{display:'none'}} onChange={(e) => handleCoverUpload(e, idx)} />
-                            <label htmlFor={`cover-upload-${idx}`} style={{display:'block', textAlign:'center', marginTop:'0.5rem', cursor:'pointer', color:'var(--primary)', fontSize:'0.85rem', fontWeight:600}}>Thay đổi ảnh bìa</label>
-                          </div>
-                        ) : (
-                          <div
-                            onDragEnter={(e) => handleDragEnter(e, idx, 'cover')}
-                            onDragLeave={(e) => handleDragLeave(e, idx, 'cover')}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, idx, 'cover')}
-                          >
-                            <input type="file" id={`cover-upload-${idx}`} accept="image/*" style={{display:'none'}} onChange={(e) => handleCoverUpload(e, idx)} />
-                            <label 
-                              htmlFor={`cover-upload-${idx}`} 
-                              className={`upload-zone ${isDragging[`${idx}_cover`] ? 'dragging' : ''} ${validationErrors[`variant_${idx}_images`] ? 'upload-zone-error' : ''}`}
-                              style={{minHeight:'120px'}}
-                            >
-                              <IoCloudUpload size={36} className="upload-icon-large" />
-                              <div>
-                                <div className="upload-text">
-                                  {isDragging[`${idx}_cover`] ? 'Thả ảnh vào đây' : 'Kéo thả hoặc click để tải ảnh bìa'}
-                                </div>
-                                <div className="upload-subtext">JPG, PNG (Tối đa 5MB)</div>
-                              </div>
-                            </label>
-                          </div>
-                        )}
-                        {validationErrors[`variant_${idx}_images`] && (
-                          <div className="error-message" style={{marginTop: '0.5rem'}}>
-                            <IoWarning size={14} /> {validationErrors[`variant_${idx}_images`]}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* --- KHU VỰC UPLOAD ẢNH CHI TIẾT (with Drag & Drop) --- */}
-                      <div 
-                        className="variant-images-section" 
-                        style={{marginTop:'1.5rem', padding:'1rem', background:'#f1f3f5', borderRadius:'8px'}}
-                        onDragEnter={(e) => handleDragEnter(e, idx, 'detail')}
-                        onDragLeave={(e) => handleDragLeave(e, idx, 'detail')}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, idx, 'detail')}
-                      >
-                        <label style={{fontWeight:600, marginBottom:'0.5rem', display:'flex', alignItems:'center', gap:'0.5rem', color:'#495057'}}>
-                          <IoLibrary size={18} /> Ảnh chi tiết (Detail Images)
-                        </label>
-                        <p style={{fontSize:'0.85rem', color:'#6c757d', marginBottom:'0.75rem'}}>Các ảnh này sẽ hiển thị trong trang chi tiết sản phẩm để khách hàng xem kỹ hơn</p>
-                        
-                        <input type="file" id={`detail-upload-${idx}`} multiple accept="image/*" style={{display:'none'}} onChange={(e) => handleDetailImagesUpload(e, idx)} />
-                        <label 
-                          htmlFor={`detail-upload-${idx}`} 
-                          className={`upload-zone ${isDragging[`${idx}_detail`] ? 'dragging' : ''}`}
-                          style={{minHeight:'100px', borderStyle:'dashed'}}
-                        >
-                          <IoCloudUpload size={32} className="upload-icon-large" />
-                          <div>
-                            <div className="upload-text">
-                              {isDragging[`${idx}_detail`] ? 'Thả ảnh vào đây' : 'Kéo thả nhiều ảnh hoặc click để chọn'}
+                      <div style={{marginTop:'1rem'}}>
+                         <label style={{fontSize:'0.9rem', fontWeight:600, marginBottom:'0.5rem', display:'block'}}>Ảnh bìa <span style={{color:'red'}}>*</span></label>
+                         {v.imageUrls && v.imageUrls.length > 0 ? 
+                            <div className="img-preview-item" style={{width:'140px', height:'190px'}}><img src={v.imageUrls[0]} style={{width:'100%', height:'100%', objectFit:'cover'}} alt=""/><button type="button" className="btn-remove-img" onClick={()=>updateVariant(idx, 'imageUrls', v.imageUrls.slice(1))}><IoClose/></button></div> :
+                            <div onDragEnter={(e)=>handleDrag(e,idx,'cover',true)} onDragLeave={(e)=>handleDrag(e,idx,'cover',false)} onDragOver={e=>e.preventDefault()} onDrop={(e)=>onDrop(e,idx,'cover')}>
+                               <input type="file" id={`c-${idx}`} accept="image/*" style={{display:'none'}} onChange={e=>handleUpload(e.target.files, idx, 'cover')} />
+                               <label htmlFor={`c-${idx}`} className={`upload-zone ${isDragging[`${idx}_cover`] ? 'dragging' : ''} ${validationErrors[`variant_${idx}_images`] ? 'input-error' : ''}`}><IoCloudUpload size={28} className="upload-icon-large"/><span style={{fontSize:'0.85rem'}}>Ảnh bìa</span></label>
                             </div>
-                            <div className="upload-subtext">Chọn nhiều ảnh cùng lúc (Tối đa 5MB/ảnh)</div>
-                          </div>
-                        </label>
-                        
-                        {v.imageUrls && v.imageUrls.length > 1 && (
-                          <div className="img-preview-list" style={{marginTop:'1rem'}}>
-                            {v.imageUrls.slice(1).map((url, imgIdx) => (
-                              <div key={imgIdx} className="img-preview-item">
-                                <img src={url} alt={`Detail ${imgIdx + 1}`} onError={(e) => e.target.src = "https://placehold.co/100x130?text=Error"} />
-                                <button type="button" className="btn-remove-img" onClick={() => {
-                                  const newUrls = [v.imageUrls[0], ...v.imageUrls.slice(1).filter((_, i) => i !== imgIdx)];
-                                  updateVariant(idx, 'imageUrls', newUrls);
-                                }}><IoClose size={14} /></button>
-                                <div style={{fontSize:'0.7rem', textAlign:'center', marginTop:'0.25rem', color:'#6c757d'}}>#{imgIdx + 1}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                         }
+                      </div>
+                      <div style={{marginTop:'1rem'}}>
+                         <label style={{fontSize:'0.9rem', fontWeight:600, marginBottom:'0.5rem', display:'block'}}>Ảnh chi tiết</label>
+                         <div onDragEnter={(e)=>handleDrag(e,idx,'detail',true)} onDragLeave={(e)=>handleDrag(e,idx,'detail',false)} onDragOver={e=>e.preventDefault()} onDrop={(e)=>onDrop(e,idx,'detail')}>
+                            <input type="file" id={`d-${idx}`} multiple accept="image/*" style={{display:'none'}} onChange={e=>handleUpload(e.target.files, idx, 'detail')} />
+                            <label htmlFor={`d-${idx}`} className={`upload-zone ${isDragging[`${idx}_detail`] ? 'dragging' : ''}`} style={{minHeight:'60px', padding:'1rem', borderStyle:'dashed'}}><IoCloudUpload size={24} className="upload-icon-large"/><span style={{fontSize:'0.8rem'}}>Thêm ảnh phụ</span></label>
+                         </div>
+                         <div className="img-preview-list">
+                            {v.imageUrls?.slice(1).map((url, i) => (<div key={i} className="img-preview-item"><img src={url} style={{width:'100%', height:'100%', objectFit:'cover'}} alt=""/><button type="button" className="btn-remove-img" onClick={()=>{const n=[v.imageUrls[0], ...v.imageUrls.slice(1).filter((_,k)=>k!==i)]; updateVariant(idx, 'imageUrls', n)}}><IoClose/></button></div>))}
+                         </div>
                       </div>
                     </div>
                   ))}
-                  <button type="button" className="btn-secondary" style={{ width: '100%', borderStyle: 'dashed', borderColor: 'var(--primary)', color: 'var(--primary)' }} onClick={() => {
-                    setFormData({ ...formData, variants: [...formData.variants, { price: 0, quantity: 0, status: 'AVAILABLE', imageUrls: [] }] })
-                  }}><IoAdd size={18} /> Thêm phiên bản khác</button>
+                  <button type="button" className="btn-create-glow" style={{width:'100%', background:'white', color:'var(--primary)', border:'1px dashed var(--primary)', boxShadow:'none'}} onClick={()=>setFormData({...formData, variants:[...formData.variants, {price:0, quantity:0, status:'AVAILABLE', imageUrls:[]}]})}><IoAdd/> Thêm phiên bản</button>
                 </div>
               )}
             </div>
             <div className="drawer-footer">
-              <button type="button" className="btn-secondary" onClick={() => setShowDrawer(false)}>Đóng</button>
-              <button type="submit" className="btn-primary">Lưu thông tin</button>
+               <button type="button" className="btn-icon" style={{width:'auto', padding:'0 1.5rem', borderRadius:'8px', background:'#f1f5f9'}} onClick={() => setShowDrawer(false)}>Đóng</button>
+               <button type="submit" className="btn-create-glow">Lưu Lại</button>
             </div>
           </form>
         </div>
