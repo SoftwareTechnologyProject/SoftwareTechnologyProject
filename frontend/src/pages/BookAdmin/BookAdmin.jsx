@@ -81,14 +81,12 @@ export default function BookAdmin() {
     try {
       setLoading(true);
       let url = `/books?page=${page}&size=7&sortBy=${sortBy}&sortOrder=${sortOrder}`;
-      console.log('Fetching books with:', { page, sortBy, sortOrder, url });
       if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=7`;
 
       const response = await axiosClient.get(url);
       if (response.data.content) {
         setBooks(response.data.content);
         setTotalPages(response.data.totalPages || 1);
-        console.log('Fetched books:', response.data.content.slice(0, 3).map(b => b.id));
       } else {
         setBooks([]); setTotalPages(0);
       }
@@ -333,8 +331,6 @@ export default function BookAdmin() {
       return;
     }
     
-    console.log('Submitting formData:', JSON.stringify(formData, null, 2));
-    
     try {
       if (modalMode === "create") {
         await axiosClient.post("/books", formData);
@@ -375,7 +371,6 @@ export default function BookAdmin() {
   const updateVariant = (idx, field, val) => {
     const newVars = [...formData.variants];
     newVars[idx][field] = val;
-    console.log(`updateVariant[${idx}].${field}:`, val);
     setFormData({ ...formData, variants: newVars });
     
     // Clear validation error for this field
