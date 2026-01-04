@@ -39,6 +39,8 @@ import CategoryPage from './pages/Category/CategoryPage';
 import SearchResult from './pages/SearchResult/SearchResult.jsx';
 import AdminChatBox from "./components/Chatbox/admin/AdminChatBox.jsx";
 import TrendPage from "./pages/TrendPage/TrendPage.jsx";
+import MyReviews from './pages/Review/MyReviews.jsx';
+import ReviewAdmin from './pages/Review/ReviewAdmin.jsx';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -156,6 +158,8 @@ createRoot(document.getElementById("root")).render(
           <Route path="voucher-wallet" element={<VoucherWallet />} />
           <Route path="order" element={<Order />} />
           <Route path="order/:id" element={<OrderDetail />} />
+          {/* Phương thêm zô để làm cái review của mình */}
+          <Route path="review" element={<MyReviews />} />
         </Route>
 
         {/* Cart and Checkout */}
@@ -255,6 +259,11 @@ createRoot(document.getElementById("root")).render(
           <Route path="statistics" element={
             <PrivateRoute requiredRole="ADMIN">
               <RevenueStatistics />
+            </PrivateRoute>
+          } />
+          <Route path="reviews" element={
+            <PrivateRoute requiredRoles={["ADMIN", "STAFF"]}>
+              <ReviewAdmin />
             </PrivateRoute>
           } />
           <Route path="chat" element={

@@ -1,0 +1,254 @@
+.review-admin-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.review-admin-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 24px;
+}
+
+.filter-section {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-section label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.filter-select {
+  padding: 8px 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  border-color: #0d6efd;
+}
+
+.review-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.no-reviews-text {
+  text-align: center;
+  font-size: 16px;
+  color: #6c757d;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+}
+
+.reviews-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reviews-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.reviews-table thead {
+  background-color: #f1f3f5;
+}
+
+.reviews-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+}
+
+.reviews-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.reviews-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-info strong {
+  color: #212529;
+}
+
+.user-info small {
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.book-link {
+  color: #0d6efd;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.book-link:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+.rating-stars {
+  font-size: 16px;
+  color: #ffc107;
+}
+
+.review-comment {
+  max-width: 300px;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-approved {
+  background-color: #d1e7dd;
+  color: #0a3622;
+}
+
+.badge-rejected {
+  background-color: #f8d7da;
+  color: #58151c;
+}
+
+.badge-pending {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-approve {
+  background-color: #198754;
+  color: white;
+}
+
+.btn-approve:hover {
+  background-color: #157347;
+  transform: scale(1.05);
+}
+
+.btn-reject {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-reject:hover {
+  background-color: #bb2d3b;
+  transform: scale(1.05);
+}
+
+.btn-delete {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #5c636a;
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .review-admin-container {
+    padding: 16px;
+  }
+
+  .review-admin-title {
+    font-size: 24px;
+  }
+
+  .reviews-table {
+    font-size: 12px;
+  }
+
+  .reviews-table th,
+  .reviews-table td {
+    padding: 8px;
+  }
+
+  .review-comment {
+    max-width: 200px;
+  }
+}

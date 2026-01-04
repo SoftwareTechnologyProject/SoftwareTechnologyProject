@@ -80,7 +80,7 @@ const AccountLayout = () => {
                             </NavLink>
 
                             <NavLink
-                                to="/review"
+                                to="/account/review"
                                 className={({ isActive }) =>
                                     `nav-link ${isActive ? "active" : ""}`
                                 }

@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -41,15 +39,57 @@ public class PaymentController {
                 return new RedirectView("http://localhost:5173/payment/result?error=missing_payment_key");
             }
 
-            System.out.println("   Received VNPay callback: " + paymentKey);
+            System.out.println("Received VNPay callback: " + paymentKey);
             System.out.println("   - Response Code: " + responseCode);
             System.out.println("   - Transaction Date: " + transactionDate);
             System.out.println("   - Transaction No: " + transactionNo);
 
+            // Lấy orderId từ paymentKey
+            Long orderId = paymentService.getOrderIdByPaymentKey(paymentKey);
+            if (orderId == null) {
+                System.out.println("Order not found for paymentKey: " + paymentKey);
+                return new RedirectView("http://localhost:5173/payment/result?error=order_not_found");
+            }
+
+            // Kiểm tra xem payment đã được xử lý chưa
+            String existingStatus = paymentService.getPaymentStatus(paymentKey);
+            if (existingStatus != null) {
+                System.out.println("Payment already processed with status: " + existingStatus);
+                return new RedirectView("http://localhost:5173/payment/result?orderId=" + orderId);
+            }
+
+            // Verify với VNPay và đánh dấu thanh toán
+            try {
+                System.out.println("Verifying payment with VNPay: " + paymentKey);
+                
+                com.google.gson.JsonObject vnpayResponse = vnPayService.queryTransaction(paymentKey, transactionDate);
+                
+                String vnpResponseCode = vnpayResponse.has("vnp_ResponseCode") 
+                    ? vnpayResponse.get("vnp_ResponseCode").getAsString() : "99";
+                String vnpTransactionStatus = vnpayResponse.has("vnp_TransactionStatus")
+                    ? vnpayResponse.get("vnp_TransactionStatus").getAsString() : "99";
+                String vnpTransactionNo = vnpayResponse.has("vnp_TransactionNo")
+                    ? vnpayResponse.get("vnp_TransactionNo").getAsString() : transactionNo;
+
+                System.out.println("   VNPay Response Code: " + vnpResponseCode);
+                System.out.println("   Transaction Status: " + vnpTransactionStatus);
+
+                if ("00".equals(vnpResponseCode) && "00".equals(vnpTransactionStatus)) {
+                    System.out.println("Payment VERIFIED and CONFIRMED as SUCCESS");
+                    paymentService.markPaymentSuccess(paymentKey, vnpTransactionNo, transactionDate);
+                } else {
+                    System.out.println("Payment FAILED or NOT FOUND");
+                    paymentService.markPaymentFailed(paymentKey);
+                }
+            } catch (Exception e) {
+                System.out.println("Error during verification: " + e.getMessage());
+                // Nếu có lỗi trong quá trình verify, vẫn redirect nhưng không đánh dấu
+                e.printStackTrace();
+            }
+
             String redirectUrl = String.format(
-                "http://localhost:5173/payment/result?paymentKey=%s&transactionDate=%s",
-                paymentKey,
-                transactionDate != null ? transactionDate : ""
+                "http://localhost:5173/payment/result?orderId=%d",
+                orderId
             );
             
             return new RedirectView(redirectUrl);
@@ -60,90 +100,14 @@ public class PaymentController {
         }
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<Map<String, Object>> verifyPayment(
-            @RequestParam("paymentKey") String paymentKey,
-            @RequestParam("transactionDate") String transactionDate) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            System.out.println("🔍 Verifying payment with VNPay: " + paymentKey);
-            System.out.println("   Transaction Date: " + transactionDate);
-            
-            // Kiểm tra xem payment đã được xử lý chưa (tránh duplicate requests)
-            String existingStatus = paymentService.getPaymentStatus(paymentKey);
-            if (existingStatus != null) {
-                System.out.println("⚠️ Payment already processed with status: " + existingStatus);
-                response.put("code", "00");
-                response.put("message", "Payment already processed");
-                response.put("paymentStatus", existingStatus);
-                return ResponseEntity.ok(response);
-            }
-
-            com.google.gson.JsonObject vnpayResponse = vnPayService.queryTransaction(paymentKey, transactionDate);
-
-            String vnpResponseCode = vnpayResponse.has("vnp_ResponseCode") 
-                ? vnpayResponse.get("vnp_ResponseCode").getAsString() : "99";
-            String vnpTransactionStatus = vnpayResponse.has("vnp_TransactionStatus")
-                ? vnpayResponse.get("vnp_TransactionStatus").getAsString() : "99";
-            String transactionNo = vnpayResponse.has("vnp_TransactionNo")
-                ? vnpayResponse.get("vnp_TransactionNo").getAsString() : "";
-
-            System.out.println("   VNPay Response Code: " + vnpResponseCode);
-            System.out.println("   Transaction Status: " + vnpTransactionStatus);
-
-            if ("00".equals(vnpResponseCode) && "00".equals(vnpTransactionStatus)) {
-                System.out.println("Payment VERIFIED and CONFIRMED as SUCCESS");
-                
-                try {
-                    paymentService.markPaymentSuccess(paymentKey, transactionNo, transactionDate);
-                } catch (Exception e) {
-                    System.out.println("Payment already processed or expired: " + e.getMessage());
-                }
-                
-                response.put("code", "00");
-                response.put("message", "Payment verified successfully");
-                response.put("paymentStatus", "SUCCESS");
-                response.put("transactionNo", transactionNo);
-            } else {
-                System.out.println(" Payment FAILED or NOT FOUND");
-                System.out.println("   Response Code: " + vnpResponseCode + ", Transaction Status: " + vnpTransactionStatus);
-                
-                try {
-                    paymentService.markPaymentFailed(paymentKey);
-                } catch (Exception e) {
-                    System.out.println("Payment already processed or expired: " + e.getMessage());
-                }
-                
-                response.put("code", "01");
-                response.put("message", "Payment verification failed");
-                response.put("paymentStatus", "FAILED");
-                response.put("vnpResponseCode", vnpResponseCode);
-                response.put("vnpTransactionStatus", vnpTransactionStatus);
-            }
-
-            response.put("vnpayData", vnpayResponse.toString());
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put("code", "99");
-            response.put("message", "Error: " + e.getMessage());
-            response.put("paymentStatus", "ERROR");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
     @GetMapping("/result")
-    public ResponseEntity<OrdersDTO> getPaymentResult(@RequestParam("paymentKey") String paymentKey) {
+    public ResponseEntity<OrdersDTO> getPaymentResult(@RequestParam("orderId") Long orderId) {
         try {
-            Long orderId = paymentService.getOrderIdByPaymentKey(paymentKey);
-            if (orderId == null) {
+            OrdersDTO orderDTO = ordersService.getOrderById(orderId);
+            if (orderDTO == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
-            OrdersDTO orderDTO = ordersService.getOrderById(orderId);
             return ResponseEntity.ok(orderDTO);
 
         } catch (Exception e) {
