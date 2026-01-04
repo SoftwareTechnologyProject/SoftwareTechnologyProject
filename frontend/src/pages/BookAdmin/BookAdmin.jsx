@@ -12,7 +12,7 @@ import {
   IoCubeOutline, IoPricetagsOutline,
   IoLibrary, IoStatsChart, IoAlertCircle,
   IoArrowForward, IoFilter, IoSwapVertical,
-  IoCheckmarkCircle, IoWarning // Icons cho filter, sort, validation
+  IoCheckmarkCircle, IoWarning, IoCheckmark // Icons cho filter, sort, validation
 } from "react-icons/io5";
 
 import "./BookAdmin.css";
@@ -34,7 +34,14 @@ export default function BookAdmin() {
 
   // State Filter & Sort
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
+  const [tempFilters, setTempFilters] = useState({
+    category: "",
+    minPrice: "",
+    maxPrice: "",
+    publisher: "",
+    status: ""
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
     category: "",
     minPrice: "",
     maxPrice: "",
@@ -42,7 +49,7 @@ export default function BookAdmin() {
     status: ""
   });
   const [sortBy, setSortBy] = useState("id");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const [showDrawer, setShowDrawer] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
@@ -74,12 +81,14 @@ export default function BookAdmin() {
     try {
       setLoading(true);
       let url = `/books?page=${page}&size=7&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+      console.log('Fetching books with:', { page, sortBy, sortOrder, url });
       if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=7`;
 
       const response = await axiosClient.get(url);
       if (response.data.content) {
         setBooks(response.data.content);
         setTotalPages(response.data.totalPages || 1);
+        console.log('Fetched books:', response.data.content.slice(0, 3).map(b => b.id));
       } else {
         setBooks([]); setTotalPages(0);
       }
@@ -150,7 +159,7 @@ export default function BookAdmin() {
   };
 
   // Check if any filter is active
-  const hasActiveFilters = Object.values(filters).some(val => val !== "");
+  const hasActiveFilters = Object.values(appliedFilters).some(val => val !== "");
 
   useEffect(() => { 
     // When filter is active, fetch all books for client-side filtering
@@ -168,8 +177,8 @@ export default function BookAdmin() {
     let filtered = [...books];
     
     // Filter by category
-    if (filters.category) {
-      const categoryIdToFind = parseInt(filters.category);
+    if (appliedFilters.category) {
+      const categoryIdToFind = parseInt(appliedFilters.category);
       filtered = filtered.filter(book => {
         if (!book.categoryIds || book.categoryIds.length === 0) return false;
         
@@ -184,7 +193,7 @@ export default function BookAdmin() {
     }
     
     // Filter by price range
-    if (filters.minPrice || filters.maxPrice) {
+    if (appliedFilters.minPrice || appliedFilters.maxPrice) {
       filtered = filtered.filter(book => {
         if (!book.variants || book.variants.length === 0) return false;
         
@@ -192,29 +201,59 @@ export default function BookAdmin() {
         const minBookPrice = Math.min(...prices);
         const maxBookPrice = Math.max(...prices);
         
-        const minFilter = filters.minPrice ? parseFloat(filters.minPrice) : 0;
-        const maxFilter = filters.maxPrice ? parseFloat(filters.maxPrice) : Infinity;
+        const minFilter = appliedFilters.minPrice ? parseFloat(appliedFilters.minPrice) : 0;
+        const maxFilter = appliedFilters.maxPrice ? parseFloat(appliedFilters.maxPrice) : Infinity;
         
         return minBookPrice >= minFilter && maxBookPrice <= maxFilter;
       });
     }
     
     // Filter by publisher
-    if (filters.publisher) {
+    if (appliedFilters.publisher) {
       filtered = filtered.filter(book => 
-        book.publisherName?.toLowerCase().includes(filters.publisher.toLowerCase())
+        book.publisherName?.toLowerCase().includes(appliedFilters.publisher.toLowerCase())
       );
     }
     
     // Filter by status
-    if (filters.status) {
+    if (appliedFilters.status) {
       filtered = filtered.filter(book => 
-        book.variants?.some(v => v.status === filters.status)
+        book.variants?.some(v => v.status === appliedFilters.status)
       );
     }
     
+    // Apply sorting (client-side when filtering)
+    if (hasActiveFilters) {
+      filtered.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(sortBy) {
+          case 'id':
+            aVal = a.id;
+            bVal = b.id;
+            break;
+          case 'title':
+            aVal = a.title?.toLowerCase() || '';
+            bVal = b.title?.toLowerCase() || '';
+            break;
+          case 'publisherYear':
+            aVal = a.publisherYear || 0;
+            bVal = b.publisherYear || 0;
+            break;
+          default:
+            aVal = a.id;
+            bVal = b.id;
+        }
+        
+        // Compare values
+        if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    
     return filtered;
-  }, [books, filters]);
+  }, [books, appliedFilters, hasActiveFilters, sortBy, sortOrder]);
 
   // Form validation
   const validateForm = () => {
@@ -294,6 +333,8 @@ export default function BookAdmin() {
       return;
     }
     
+    console.log('Submitting formData:', JSON.stringify(formData, null, 2));
+    
     try {
       if (modalMode === "create") {
         await axiosClient.post("/books", formData);
@@ -334,6 +375,7 @@ export default function BookAdmin() {
   const updateVariant = (idx, field, val) => {
     const newVars = [...formData.variants];
     newVars[idx][field] = val;
+    console.log(`updateVariant[${idx}].${field}:`, val);
     setFormData({ ...formData, variants: newVars });
     
     // Clear validation error for this field
@@ -514,15 +556,24 @@ export default function BookAdmin() {
   const totalStock = displayedBooks.reduce((acc, b) => acc + (b.variants?.reduce((vAcc, v) => vAcc + v.quantity, 0) || 0), 0);
   const lowStockCount = displayedBooks.filter(b => b.variants?.some(v => v.quantity < 5)).length;
 
+  // Apply filters
+  const applyFilters = () => {
+    setAppliedFilters({...tempFilters});
+    setPage(0); // Reset to first page
+  };
+
   // Clear all filters
   const clearFilters = () => {
-    setFilters({
+    const emptyFilters = {
       category: "",
       minPrice: "",
       maxPrice: "",
       publisher: "",
       status: ""
-    });
+    };
+    setTempFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPage(0);
   };
 
   // Pagination for filtered results (client-side pagination when filter is active)
@@ -570,13 +621,34 @@ export default function BookAdmin() {
           <input className="search-input" placeholder="Tìm kiếm sách, tác giả, ISBN..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchBooks()} />
         </div>
         <button className="btn-search" onClick={() => { setPage(0); fetchBooks(); }}><IoSearch size={20} /></button>
+        
+        {/* Sort Controls */}
+        <select 
+          className="sort-select"
+          value={sortBy} 
+          onChange={(e) => setSortBy(e.target.value)}
+          title="Sắp xếp theo"
+        >
+          <option value="id">ID</option>
+          <option value="title">Tên sách</option>
+          <option value="publisherYear">Năm XB</option>
+        </select>
+        <button 
+          className="btn-sort-order"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+        >
+          <IoSwapVertical size={20} />
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </button>
+        
         <button 
           className={`btn-filter ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-filters' : ''}`} 
           onClick={() => setShowFilters(!showFilters)}
           title="Bộ lọc"
         >
           <IoFilter size={20} />
-          {hasActiveFilters && <span className="filter-badge">{Object.values(filters).filter(v => v !== "").length}</span>}
+          {hasActiveFilters && <span className="filter-badge">{Object.values(appliedFilters).filter(v => v !== "").length}</span>}
         </button>
       </div>
 
@@ -594,7 +666,7 @@ export default function BookAdmin() {
           <div className="filter-grid">
             <div className="filter-item">
               <label>Danh mục</label>
-              <select value={filters.category} onChange={(e) => setFilters({...filters, category: e.target.value})}>
+              <select value={tempFilters.category} onChange={(e) => setTempFilters({...tempFilters, category: e.target.value})}>
                 <option value="">Tất cả</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -606,8 +678,8 @@ export default function BookAdmin() {
               <input 
                 type="number" 
                 placeholder="0" 
-                value={filters.minPrice}
-                onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
+                value={tempFilters.minPrice}
+                onChange={(e) => setTempFilters({...tempFilters, minPrice: e.target.value})}
               />
             </div>
             <div className="filter-item">
@@ -615,8 +687,8 @@ export default function BookAdmin() {
               <input 
                 type="number" 
                 placeholder="1,000,000" 
-                value={filters.maxPrice}
-                onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
+                value={tempFilters.maxPrice}
+                onChange={(e) => setTempFilters({...tempFilters, maxPrice: e.target.value})}
               />
             </div>
             <div className="filter-item">
@@ -624,40 +696,28 @@ export default function BookAdmin() {
               <input 
                 type="text" 
                 placeholder="Tìm nhà XB..." 
-                value={filters.publisher}
-                onChange={(e) => setFilters({...filters, publisher: e.target.value})}
+                value={tempFilters.publisher}
+                onChange={(e) => setTempFilters({...tempFilters, publisher: e.target.value})}
               />
             </div>
             <div className="filter-item">
               <label>Trạng thái</label>
-              <select value={filters.status} onChange={(e) => setFilters({...filters, status: e.target.value})}>
+              <select value={tempFilters.status} onChange={(e) => setTempFilters({...tempFilters, status: e.target.value})}>
                 <option value="">Tất cả</option>
                 <option value="AVAILABLE">Sẵn hàng</option>
                 <option value="OUT_OF_STOCK">Hết hàng</option>
               </select>
             </div>
-            <div className="filter-item">
-              <label>Sắp xếp theo</label>
-              <div style={{display: 'flex', gap: '0.5rem'}}>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{flex: 1}}
-                >
-                  <option value="id">ID</option>
-                  <option value="title">Tên sách</option>
-                  <option value="publisherYear">Năm XB</option>
-                </select>
-                <button 
-                  className="btn-sort-order"
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
-                >
-                  <IoSwapVertical size={20} />
-                  {sortOrder === 'asc' ? '↑' : '↓'}
-                </button>
-              </div>
-            </div>
+          </div>
+          
+          {/* Filter Action Buttons */}
+          <div className="filter-actions">
+            <button className="btn-apply-filter" onClick={applyFilters}>
+              <IoCheckmark /> Áp dụng lọc
+            </button>
+            <button className="btn-clear-filter" onClick={clearFilters}>
+              <IoClose /> Xóa bộ lọc
+            </button>
           </div>
         </div>
       )}

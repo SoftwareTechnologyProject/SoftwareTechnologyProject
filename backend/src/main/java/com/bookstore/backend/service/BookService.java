@@ -237,7 +237,19 @@ public class BookService {
                 
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book);
-                // TODO: map image URLs nếu cần
+                
+                // Map image URLs
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    List<BookImages> imageEntities = new ArrayList<>();
+                    for (String url : vdto.getImageUrls()) {
+                        BookImages image = new BookImages();
+                        image.setImageUrl(url);
+                        image.setBookVariant(variant);
+                        imageEntities.add(image);
+                    }
+                    variant.setImages(imageEntities);
+                }
+                
                 book.getVariants().add(variant);
             }
         }
@@ -387,6 +399,19 @@ public class BookService {
                 
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book); // gắn variant với book
+                
+                // Map image URLs
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    List<BookImages> imageEntities = new ArrayList<>();
+                    for (String url : vdto.getImageUrls()) {
+                        BookImages image = new BookImages();
+                        image.setImageUrl(url);
+                        image.setBookVariant(variant);
+                        imageEntities.add(image);
+                    }
+                    variant.setImages(imageEntities);
+                }
+                
                 book.getVariants().add(variant);
             }
         }
