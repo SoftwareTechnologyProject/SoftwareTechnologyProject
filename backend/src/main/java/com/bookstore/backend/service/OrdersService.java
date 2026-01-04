@@ -154,8 +154,8 @@ public class OrdersService {
             System.out.println(currentUser.getRole());
             // Kiểm tra quyền
             if (!order.getUsers().getId().equals(currentUser.getId())
-                    && currentUser.getRole() != UserRole.ADMIN) {
-                System.out.println("Nguyễn Hữu Tâm");
+                    && (currentUser.getRole() != UserRole.ADMIN || currentUser.getRole() != UserRole.STAFF) ) {
+
                 throw new AccessDeniedException("Bạn không có quyền xem đơn hàng này");
             }
         }
