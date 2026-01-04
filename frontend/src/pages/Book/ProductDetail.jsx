@@ -243,11 +243,11 @@ export default function BookDetail() {
           <button className="buy-now-btn" onClick={handleBuyNow}>Mua ngay</button>
         </div>
 
-        <div className="policies-box">
+        {/* <div className="policies-box">
           <div className="policy-item">📦 Giao hàng nhanh & uy tín</div>
           <div className="policy-item">🔄 Đổi trả miễn phí toàn quốc</div>
           <div className="policy-item">🎁 Ưu đãi cho khách mua sỉ</div>
-        </div>
+        </div> */}
       </div>
 
       {/* RIGHT: Product Summary */}

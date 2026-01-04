@@ -1,8 +1,9 @@
 .my-reviews-container {
   padding: 20px;
-  background-color: #fff;
+  margin-left: 10px;
+  background-color: #fffdfd;
   border-radius: 8px;
-  min-height: 400px;
+  height: 100%;
 }
 
 .my-reviews-title {

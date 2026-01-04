@@ -9,6 +9,7 @@ import { HiOutlineNewspaper } from "react-icons/hi";
 import { BiLogOut } from "react-icons/bi";
 import { MdRateReview } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
+import { IoLogoWechat } from "react-icons/io5";
 import "./HeaderAdmin.css";
 
 const HeaderAdmin = () => {
@@ -183,7 +184,7 @@ const HeaderAdmin = () => {
                                 `nav-item ${isActive ? "active" : ""}`
                             }
                         >
-                            <IoStatsChartOutline className="nav-icon" />
+                            <IoLogoWechat className="nav-icon" />
                             <span>Chat Hỗ Trợ</span>
                         </NavLink>
 

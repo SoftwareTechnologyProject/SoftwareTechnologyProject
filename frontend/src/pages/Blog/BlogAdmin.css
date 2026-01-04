@@ -160,7 +160,7 @@
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    transition: background 0.3s;
+    transition: 0.3s;
     white-space: nowrap;
 }
 

@@ -25,6 +25,18 @@ public class UserService {
         this.accountRepository = accountRepository;
     }
 
+    public UserDTO getUser (String email) {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDTO(
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getAddress(),
+                user.getDateOfBirth()
+        );
+    }
+
     public UserDTO updateUser(String email, UserDTO dto) {
 
         Users user = userRepository.findByEmail(email)
@@ -54,9 +66,7 @@ public class UserService {
     }
 
     public void changePass (ChangePassRequest request, String email){
-        Users currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Account currentAccount = accountRepository.findAccountByUserId(currentUser.getAccount().getId())
+        Account currentAccount = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(request.getCurrentPass(), currentAccount.getPassword())) {
