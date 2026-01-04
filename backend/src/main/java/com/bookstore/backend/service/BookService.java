@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.hibernate.Hibernate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -227,10 +228,28 @@ public class BookService {
                 variant.setPrice(vdto.getPrice());
                 variant.setQuantity(vdto.getQuantity());
                 variant.setSold(vdto.getSold());
-                variant.setStatus(vdto.getStatus());
+                
+                // Tự động set status dựa trên quantity
+                String autoStatus = (vdto.getQuantity() != null && vdto.getQuantity() > 0) 
+                    ? "AVAILABLE" 
+                    : "OUT_OF_STOCK";
+                variant.setStatus(autoStatus);
+                
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book);
-                // TODO: map image URLs nếu cần
+                
+                // Map image URLs
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    List<BookImages> imageEntities = new ArrayList<>();
+                    for (String url : vdto.getImageUrls()) {
+                        BookImages image = new BookImages();
+                        image.setImageUrl(url);
+                        image.setBookVariant(variant);
+                        imageEntities.add(image);
+                    }
+                    variant.setImages(imageEntities);
+                }
+                
                 book.getVariants().add(variant);
             }
         }
@@ -266,6 +285,16 @@ public class BookService {
 
     // Chuyển entity -> DTO (để trả về client)
     public BookDTO convertToDTO(Book book) {
+        // Force-initialize lazy collections
+        Hibernate.initialize(book.getCategories());
+        Hibernate.initialize(book.getAuthors());
+        Hibernate.initialize(book.getVariants());
+        if (book.getVariants() != null) {
+            book.getVariants().forEach(variant -> {
+                Hibernate.initialize(variant.getImages());
+            });
+        }
+        
         BookDTO dto = new BookDTO();
         dto.setId(book.getId());
         dto.setTitle(book.getTitle());
@@ -361,9 +390,28 @@ public class BookService {
                 variant.setPrice(vdto.getPrice());
                 variant.setQuantity(vdto.getQuantity());
                 variant.setSold(vdto.getSold());
-                variant.setStatus(vdto.getStatus());
+                
+                // Tự động set status dựa trên quantity
+                String autoStatus = (vdto.getQuantity() != null && vdto.getQuantity() > 0) 
+                    ? "AVAILABLE" 
+                    : "OUT_OF_STOCK";
+                variant.setStatus(autoStatus);
+                
                 variant.setIsbn(vdto.getIsbn());
                 variant.setBook(book); // gắn variant với book
+                
+                // Map image URLs
+                if (vdto.getImageUrls() != null && !vdto.getImageUrls().isEmpty()) {
+                    List<BookImages> imageEntities = new ArrayList<>();
+                    for (String url : vdto.getImageUrls()) {
+                        BookImages image = new BookImages();
+                        image.setImageUrl(url);
+                        image.setBookVariant(variant);
+                        imageEntities.add(image);
+                    }
+                    variant.setImages(imageEntities);
+                }
+                
                 book.getVariants().add(variant);
             }
         }
@@ -397,7 +445,7 @@ public class BookService {
 
     // Upload hình ảnh sách lên S3
     public String uploadBookImage(org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
-        return s3Service.uploadFile(file);
+        return s3Service.uploadBookImage(file);
     }
 
 }
