@@ -64,6 +64,8 @@ export default function BookAdmin() {
   const [isDragging, setIsDragging] = useState({});
   const [authorSearch, setAuthorSearch] = useState("");
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   // Metadata
   const [publishers, setPublishers] = useState([]);
@@ -75,7 +77,20 @@ export default function BookAdmin() {
     try {
       setLoading(true);
       let url = `/books?page=${page}&size=8&sortBy=${sortBy}&sortOrder=${sortOrder}`;
-      if (searchTerm) url = `/books/search?${searchType}=${searchTerm}&page=${page}&size=8`;
+      
+      // Nếu có tìm kiếm hoặc filter giá, dùng endpoint /searchKey mới
+      if (searchTerm || appliedFilters.minPrice || appliedFilters.maxPrice) {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('keyWord', searchTerm);
+        if (appliedFilters.minPrice) params.append('minPrice', appliedFilters.minPrice);
+        if (appliedFilters.maxPrice) params.append('maxPrice', appliedFilters.maxPrice);
+        params.append('page', page);
+        params.append('size', 8);
+        params.append('sortBy', sortBy);
+        params.append('sortOrder', sortOrder);
+        url = `/books/searchKey?${params.toString()}`;
+      }
+      
       const response = await axiosClient.get(url);
       if (response.data.content) {
         setBooks(response.data.content);
@@ -116,8 +131,14 @@ export default function BookAdmin() {
   const hasActiveFilters = Object.values(appliedFilters).some(val => val !== "");
 
   useEffect(() => {
-    if (hasActiveFilters) fetchAllBooksForFilter(); else fetchBooks();
-  }, [page, sortBy, sortOrder, hasActiveFilters]);
+    // Nếu có BẤT KỲ filter nào, load hết về client để filter + paginate ở client
+    // Đảm bảo mỗi trang đều đủ số lượng sách
+    if (hasActiveFilters) {
+      fetchAllBooksForFilter(); // Load tất cả sách, filter ở client
+    } else {
+      fetchBooks(); // Load bình thường với server-side pagination
+    }
+  }, [sortBy, sortOrder, hasActiveFilters]);
 
   useEffect(() => { fetchMetadata(); }, []);
 
@@ -157,13 +178,13 @@ export default function BookAdmin() {
 
   // --- Handlers ---
   const handleCreate = () => {
-    setModalMode("create"); setActiveTab("general"); setAuthorSearch(""); setValidationErrors({});
+    setModalMode("create"); setActiveTab("general"); setAuthorSearch(""); setCategorySearch(""); setValidationErrors({});
     setFormData({ title: "", description: "", publisherYear: new Date().getFullYear(), publisherId: "", authorIds: [], categoryIds: [], variants: [{ price: 0, quantity: 0, status: "AVAILABLE", imageUrls: [] }] });
     setShowDrawer(true);
   };
 
   const handleEdit = (book) => {
-    setModalMode("edit"); setActiveTab("general"); setSelectedBook(book); setAuthorSearch(""); setValidationErrors({});
+    setModalMode("edit"); setActiveTab("general"); setSelectedBook(book); setAuthorSearch(""); setCategorySearch(""); setValidationErrors({});
     const mappedVariants = (book.variants || []).map(v => ({
       id: v.id, price: v.price || 0, quantity: v.quantity || 0, status: v.status || "AVAILABLE", imageUrls: v.imageUrls || []
     }));
@@ -284,6 +305,8 @@ export default function BookAdmin() {
   // --- Pagination Data ---
   const displayedBooks = getFilteredBooks();
   const PAGE_SIZE = 8;
+  // Khi có filter: dùng client-side pagination (đảm bảo mỗi trang đủ số lượng)
+  // Không có filter: dùng server-side pagination
   const finalTotalPages = hasActiveFilters ? Math.ceil(displayedBooks.length / PAGE_SIZE) : totalPages;
   const paginatedBooks = hasActiveFilters ? displayedBooks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) : displayedBooks;
 
@@ -490,7 +513,15 @@ export default function BookAdmin() {
                 <h2 style={{margin:0, fontSize:'1.5rem'}}>{quickViewBook.title}</h2>
                 <button className="btn-icon" onClick={() => setShowQuickView(false)}><IoClose size={24} /></button>
               </div>
-              <div className="tag-badge" style={{display:'inline-flex', marginBottom:'1rem'}}>{quickViewBook.categoryNames?.[0]}</div>
+              <div style={{display:'flex', gap:'0.5rem', flexWrap:'wrap', marginBottom:'1rem'}}>
+                {quickViewBook.categoryNames?.length > 0 ? (
+                  quickViewBook.categoryNames.map((cat, idx) => (
+                    <span key={idx} className="tag-badge">{cat}</span>
+                  ))
+                ) : (
+                  <span className="tag-badge" style={{background:'#f1f5f9', color:'#64748b'}}>Chưa phân loại</span>
+                )}
+              </div>
               <p style={{color:'var(--text-secondary)'}}>{quickViewBook.description || "Chưa có mô tả..."}</p>
               
               <div style={{background:'#f8fafc', padding:'1rem', borderRadius:'8px', marginTop:'1rem'}}>
@@ -544,6 +575,14 @@ export default function BookAdmin() {
                      </div>
                      <div className="selected-tags-wrapper">{formData.authorIds.map(id => { const a = authors.find(au=>au.id===id); return a ? <span key={id} className="tag-badge">{a.name} <button type="button" className="tag-remove-btn" onClick={()=>setFormData({...formData, authorIds:formData.authorIds.filter(i=>i!==id)})}><IoClose/></button></span> : null; })}</div>
                      {showAuthorDropdown && <div style={{position:'fixed', inset:0, zIndex:40}} onClick={()=>setShowAuthorDropdown(false)}></div>}
+                  </div>
+                  <div className="form-group"><label>Thể loại</label>
+                     <div className="combobox-wrapper">
+                       <div className="combobox-input-wrapper"><IoSearch className="combobox-icon"/><input className="combobox-input" placeholder="Tìm thể loại..." value={categorySearch} onChange={e=>{setCategorySearch(e.target.value);setShowCategoryDropdown(true)}} onFocus={()=>setShowCategoryDropdown(true)}/></div>
+                       {showCategoryDropdown && <div className="combobox-dropdown show">{categories.filter(c=>c.name.toLowerCase().includes(categorySearch.toLowerCase()) && !formData.categoryIds.includes(c.id)).map(c=>(<div key={c.id} className="combobox-item" onClick={()=>{ setFormData({...formData, categoryIds:[...formData.categoryIds, c.id]}); setCategorySearch(""); setShowCategoryDropdown(false); }}>{c.name}</div>))}</div>}
+                     </div>
+                     <div className="selected-tags-wrapper">{formData.categoryIds.map(id => { const c = categories.find(cat=>cat.id===id); return c ? <span key={id} className="tag-badge">{c.name} <button type="button" className="tag-remove-btn" onClick={()=>setFormData({...formData, categoryIds:formData.categoryIds.filter(i=>i!==id)})}><IoClose/></button></span> : null; })}</div>
+                     {showCategoryDropdown && <div style={{position:'fixed', inset:0, zIndex:40}} onClick={()=>setShowCategoryDropdown(false)}></div>}
                   </div>
                 </div>
               )}
