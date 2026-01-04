@@ -134,10 +134,15 @@ export default function BookAdmin() {
     // Nếu có BẤT KỲ filter nào, load hết về client để filter + paginate ở client
     // Đảm bảo mỗi trang đều đủ số lượng sách
     if (hasActiveFilters) {
-      fetchAllBooksForFilter(); // Load tất cả sách, filter ở client
+      fetchAllBooksForFilter(); // Load tất cả sách, filter ở client (không cần page)
     } else {
-      fetchBooks(); // Load bình thường với server-side pagination
+      fetchBooks(); // Load bình thường với server-side pagination (cần page)
     }
+  }, [page, sortBy, sortOrder, hasActiveFilters]); // Thêm page để chuyển trang hoạt động
+
+  // Reset page về 0 khi thay đổi sort hoặc filter
+  useEffect(() => {
+    setPage(0);
   }, [sortBy, sortOrder, hasActiveFilters]);
 
   useEffect(() => { fetchMetadata(); }, []);
