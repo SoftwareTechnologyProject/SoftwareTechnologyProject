@@ -11,31 +11,26 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    // Lấy toàn bộ sachs sắp xếp theo sold
+    // Lấy toàn bộ sách sắp xếp theo id
     @Query(
             value = """
             SELECT b
             FROM Book b
-            JOIN b.variants v
-            GROUP BY b
-            ORDER BY SUM(v.sold) DESC
           """,
             countQuery = """
-            SELECT COUNT(DISTINCT b)
+            SELECT COUNT(b)
             FROM Book b
           """
     )
     Page<Book> findAllBooks(Pageable pageable);
+    
     // Tìm sách theo tên category (có phân trang)
     @Query(
             value = """
-            SELECT b
+            SELECT DISTINCT b
             FROM Book b
             JOIN b.categories c
-            JOIN b.variants v
             WHERE c.name = :categoryName
-            GROUP BY b
-            ORDER BY SUM(v.sold) DESC
           """,
             countQuery = """
             SELECT COUNT(DISTINCT b)

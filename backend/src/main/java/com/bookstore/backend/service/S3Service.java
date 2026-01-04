@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class S3Service {
     private String region;
 
     /**
-     * Upload file to S3 and return public URL
+     * Upload file to S3 and return public URL (for blog images)
      */
     public String uploadFile(MultipartFile file) throws IOException {
         // Generate unique filename
@@ -50,6 +49,30 @@ public class S3Service {
 
         // Return public URL
         return String.format("https://%s.s3.%s.amazonaws.com/%s", blogBucketName, region, fileName);
+    }
+
+    /**
+     * Upload book image to S3 and return public URL
+     */
+    public String uploadBookImage(MultipartFile file) throws IOException {
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".") 
+            ? originalFilename.substring(originalFilename.lastIndexOf("."))
+            : "";
+        String fileName = "books/" + UUID.randomUUID().toString() + extension;
+
+        // Upload to S3 - use bucketName for book images
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .contentType(file.getContentType())
+                .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+        // Return public URL
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
     }
 
     /**
