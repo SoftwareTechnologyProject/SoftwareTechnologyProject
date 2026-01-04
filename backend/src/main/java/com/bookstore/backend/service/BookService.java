@@ -90,6 +90,12 @@ public class BookService {
         return bookRepository.findByKey(keyword, pageable).map(this::convertToDTO);
     }
 
+    // Tìm sách theo keyword và lọc theo khoảng giá (hỗ trợ filter từ backend)
+    public Page<BookDTO> getBooksByKeywordAndPrice(String keyword, Double minPrice, Double maxPrice, Pageable pageable) {
+        return bookRepository.findByKeywordAndPrice(keyword, minPrice, maxPrice, pageable)
+                .map(this::convertToDTO);
+    }
+
     public List<BookDTO> getRandomBooks(){
         return bookRepository.findRandomBooks().stream().map(this::convertToDTO).toList();
     }
