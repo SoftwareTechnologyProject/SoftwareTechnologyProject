@@ -19,23 +19,23 @@ const CategoryPage = () => {
   const [selectedPublishers, setSelectedPublishers] = useState([]);
 
   const categoryMap = {
-    "agriculture": "Sách Nông - Lâm - Ngư Nghiệp",           
-    "manga": "Truyện Tranh, Manga, Comic",                   
-    "magazines": "Tạp Chí - Catalogue",                       
-    "cooking": "Ingredients, Methods & Appliances",          
-    "desserts": "Baking - Desserts",                         
-    "magazines-alt": "Magazines",                             
-    "beverages-wine": "Beverages & Wine",                 
-    "drinks": "Drinks & Beverages",                        
-    "travel": "Discovery & Exploration",                  
-    "vietnam": "Vietnam",                                 
-    "vegetarian": "Vegetarian & Vegan",                      
-    "anthropology": "Anthropology",                          
-    "europe": "Europe",                                     
-    "guidebook": "Guidebook series",                         
-    "diet": "Diets - Weight Loss - Nutrition",               
-    "cooking-education": "Cooking Education & Reference",     
-    "asia": "Asia"                                           
+    "agriculture": "Sách Nông - Lâm - Ngư Nghiệp",
+    "manga": "Truyện Tranh, Manga, Comic",
+    "magazines": "Tạp Chí - Catalogue",
+    "cooking": "Ingredients, Methods & Appliances",
+    "desserts": "Baking - Desserts",
+    "magazines-alt": "Magazines",
+    "beverages-wine": "Beverages & Wine",
+    "drinks": "Drinks & Beverages",
+    "travel": "Discovery & Exploration",
+    "vietnam": "Vietnam",
+    "vegetarian": "Vegetarian & Vegan",
+    "anthropology": "Anthropology",
+    "europe": "Europe",
+    "guidebook": "Guidebook series",
+    "diet": "Diets - Weight Loss - Nutrition",
+    "cooking-education": "Cooking Education & Reference",
+    "asia": "Asia"
   };
 
   const categoryName = categoryMap[normalizedSlug] || "Sản Phẩm";
@@ -124,6 +124,14 @@ const CategoryPage = () => {
     setFilteredBooks(result);
     setCurrentPage(0);
   }, [books, priceRange, selectedPublishers, sortBy]);
+  
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentPage]);
+
 
   if (loading) return <div className="category-page"><p>Đang tải...</p></div>;
   if (error) return <div className="category-page"><p className="error">{error}</p></div>;

@@ -38,17 +38,76 @@ const AdminChatBox = () => {
   const messagesEndRef = useRef(null);
 
   // --- NEW STATE: UI CONTROL & NOTES ---
-  const [showInfo, setShowInfo] = useState(false); // Điều khiển Panel bên phải
-  const [newNote, setNewNote] = useState("");      // Nội dung note đang nhập
-  const [noteHistory, setNoteHistory] = useState([]); // Danh sách lịch sử note
+  const [showInfo, setShowInfo] = useState(false);
+  const [newNote, setNewNote] = useState("");
+  const [noteHistory, setNoteHistory] = useState([]);
+  
+  // --- POLLING STATE (DỰ PHÒNG KHI WEBSOCKET KHÔNG HOẠT ĐỘNG) ---
+  const pollingIntervalRef = useRef(null);
+  const lastMessageIdRef = useRef({});
 
-  // --- SOCKET CONNECTION ---
+  // --- SOCKET CONNECTION (CẬP NHẬT ĐỂ NHẬN TẤT CẢ TIN NHẮN) ---
   const { sendChatMessage } = useUserNotifications(null, (msg) => {
-    setMessages((prev) => [...prev, msg]);
-    if (activeBox && msg.conversationId === activeBox.conversationId && !msg.mine) {
+    console.log("📨 Nhận tin nhắn mới:", msg);
+    console.log("   conversationId:", msg.conversationId);
+    console.log("   mine:", msg.mine);
+    console.log("   activeBox:", activeBox?.conversationId);
+    
+    // 1. LUÔN cập nhật boxChats trước (cho cả tin gửi và nhận)
+    setBoxChats((prevBoxes) => {
+      const boxIndex = prevBoxes.findIndex(box => box.conversationId === msg.conversationId);
+      
+      if (boxIndex !== -1) {
+        const updatedBoxes = [...prevBoxes];
+        const currentBox = updatedBoxes[boxIndex];
+        
+        // Kiểm tra tin nhắn đã tồn tại chưa
+        const existingMessages = currentBox.boxContent?.content || [];
+        const messageExists = existingMessages.some(m => m.id === msg.id);
+        
+        if (!messageExists) {
+          updatedBoxes[boxIndex] = {
+            ...currentBox,
+            boxContent: {
+              ...currentBox.boxContent,
+              content: [...existingMessages, msg]
+            }
+          };
+          
+          // Đưa box lên đầu (cả tin gửi lẫn nhận)
+          if (boxIndex > 0) {
+            const [movedBox] = updatedBoxes.splice(boxIndex, 1);
+            return [movedBox, ...updatedBoxes];
+          }
+        }
+        
+        return updatedBoxes;
+      }
+      
+      console.warn("⚠️ Nhận tin từ conversation không tồn tại:", msg.conversationId);
+      return prevBoxes;
+    });
+
+    // 2. Nếu đang xem box này, thêm vào messages
+    if (activeBox && msg.conversationId === activeBox.conversationId) {
+      setMessages((prev) => {
+        // Tránh duplicate
+        if (prev.some(m => m.id === msg.id)) {
+          console.log("   ⚠️ Tin nhắn đã tồn tại, bỏ qua");
+          return prev;
+        }
+        console.log("   ✅ Thêm tin vào messages");
+        return [...prev, msg];
+      });
+      
+      // Đánh dấu đã đọc nếu là tin từ user (không phải admin gửi)
+      if (!msg.mine) {
+        console.log("   📖 Đánh dấu đã đọc");
         markRead([msg.id]);
+      }
     } else {
-        fetchUnread();
+      console.log("   📬 Tin từ box khác, cập nhật unread");
+      fetchUnread();
     }
   });
 
@@ -57,6 +116,14 @@ const AdminChatBox = () => {
     try {
       const res = await axiosClient.get("/admin/chat", { params: { page: 0, size: 50 } });
       setBoxChats(res.data);
+      
+      // Cập nhật lastMessageId cho mỗi box
+      res.data.forEach(box => {
+        const lastMsg = box.boxContent?.content?.slice(-1)[0];
+        if (lastMsg) {
+          lastMessageIdRef.current[box.conversationId] = lastMsg.id;
+        }
+      });
     } catch (err) { console.error(err); }
   };
 
@@ -66,28 +133,116 @@ const AdminChatBox = () => {
       setUnreadMap(res.data);
     } catch (err) { console.error(err); }
   };
-
-  const selectBox = async (box) => {
-    setActiveBox(box);
-    setMessages(box.boxContent?.content || []);
-    
-    // Giả lập load Note từ DB (Thực tế bạn sẽ gọi API getNotes ở đây)
-    setNoteHistory([
-        { id: 1, author: "System", time: new Date().toLocaleString(), content: "Bắt đầu phiên hỗ trợ." }
-    ]);
-    
-    const unreadIds = box.boxContent?.content?.filter((m) => !m.mine && !m.isRead).map((m) => m.id);
-    if (unreadIds?.length) await markRead(unreadIds);
+  
+  // --- POLLING TIN NHẮN MỚI (DỰ PHÒNG) ---
+  const checkNewMessages = async () => {
+    try {
+      const res = await axiosClient.get("/admin/chat", { params: { page: 0, size: 50 } });
+      const newBoxChats = res.data;
+      
+      let hasNewMessage = false;
+      let updatedActiveBox = null;
+      
+      newBoxChats.forEach(newBox => {
+        const lastMsg = newBox.boxContent?.content?.slice(-1)[0];
+        if (lastMsg) {
+          const oldLastId = lastMessageIdRef.current[newBox.conversationId];
+          
+          // Nếu có tin mới
+          if (oldLastId !== lastMsg.id) {
+            console.log("🔄 Phát hiện tin mới qua polling:", newBox.conversationId);
+            hasNewMessage = true;
+            lastMessageIdRef.current[newBox.conversationId] = lastMsg.id;
+            
+            // Lưu lại nếu là box đang active
+            if (activeBox?.conversationId === newBox.conversationId) {
+              updatedActiveBox = newBox;
+            }
+            
+            // Cập nhật box
+            setBoxChats(prev => {
+              const boxIndex = prev.findIndex(b => b.conversationId === newBox.conversationId);
+              if (boxIndex !== -1) {
+                const updated = [...prev];
+                updated[boxIndex] = newBox;
+                
+                // Đưa lên đầu
+                if (boxIndex > 0) {
+                  const [movedBox] = updated.splice(boxIndex, 1);
+                  return [movedBox, ...updated];
+                }
+                return updated;
+              }
+              return prev;
+            });
+          }
+        }
+      });
+      
+      // Cập nhật activeBox nếu có tin mới
+      if (updatedActiveBox) {
+        console.log("🔄 Cập nhật activeBox với dữ liệu mới");
+        setActiveBox(updatedActiveBox);
+        
+        const newMessages = updatedActiveBox.boxContent?.content || [];
+        setMessages(prev => {
+          // Lấy tất cả ID đã có
+          const existingIds = new Set(prev.map(m => m.id));
+          
+          // Chỉ thêm tin mới chưa có
+          const toAdd = newMessages.filter(m => !existingIds.has(m.id));
+          
+          if (toAdd.length > 0) {
+            console.log(`   ➕ Thêm ${toAdd.length} tin mới vào messages`);
+            return [...prev, ...toAdd];
+          }
+          
+          return prev;
+        });
+      }
+      
+      if (hasNewMessage) {
+        fetchUnread();
+      }
+    } catch (err) {
+      console.error("Polling error:", err);
+    }
   };
 
+  const selectBox = async (box) => {
+    // Nếu click lại cùng box → không làm gì
+    // if (activeBox?.conversationId === box.conversationId) return;
+
+    setActiveBox(box);
+
+    // Load messages từ DB
+    const dbMessages = box.boxContent?.content || [];
+    setMessages(dbMessages);
+
+    const unreadIds = dbMessages
+      .filter((m) => !m.mine && !m.isRead)
+      .map((m) => m.id);
+
+    if (unreadIds.length) await markRead(unreadIds);
+  };  
+
   const markRead = async (ids) => {
-    try { await axiosClient.put("/admin/chat/mark-read", ids); fetchUnread(); } catch (err) { }
+    try { 
+      await axiosClient.put("/admin/chat/mark-read", ids); 
+      fetchUnread(); 
+    } catch (err) { 
+      console.error("Mark read error:", err);
+    }
   };
 
   const handleSend = () => {
     if (!input.trim() || !activeBox) return;
+    
+    // GỬI TRỰC TIẾP QUA WEBSOCKET - KHÔNG TẠO TIN NHẮN TẠM
     sendChatMessage({ receiveEmail: activeBox.receiverEmail, content: input });
     setInput("");
+    
+    // Tin nhắn sẽ được cập nhật qua WebSocket callback hoặc polling
   };
 
   // --- LOGIC ADD NOTE (TIMELINE) ---
@@ -104,7 +259,23 @@ const AdminChatBox = () => {
   };
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-  useEffect(() => { loadBoxChats(); fetchUnread(); }, []);
+  
+  useEffect(() => { 
+    loadBoxChats(); 
+    fetchUnread(); 
+    
+    // BẬT POLLING MỖI 3 GIÂY
+    pollingIntervalRef.current = setInterval(() => {
+      checkNewMessages();
+    }, 3000);
+    
+    // Cleanup
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [activeBox]); // Thêm dependency activeBox
 
   // --- RENDER MESSAGE ---
   const renderMessages = () => {
@@ -147,6 +318,7 @@ const AdminChatBox = () => {
         {boxChats.map((box) => {
            const unreadCount = unreadMap[box.conversationId] || 0;
            const isActive = activeBox?.conversationId === box.conversationId;
+           const lastMessage = box.boxContent?.content?.slice(-1)[0];
            
            return (
              <div 
@@ -161,7 +333,7 @@ const AdminChatBox = () => {
                       {unreadCount > 0 && <span className="unread-badge">{unreadCount}</span>}
                    </div>
                    <div className="chat-last-msg">
-                      {box.boxContent?.content?.slice(-1)[0]?.content || "..."}
+                      {lastMessage?.content || "..."}
                    </div>
                 </div>
              </div>
@@ -173,7 +345,6 @@ const AdminChatBox = () => {
       <div className="chat-main-area">
         {activeBox ? (
           <>
-            {/* --- UPDATE: HEADER MỚI (CĂN GIỮA, ĐẸP HƠN) --- */}
             <div className="chat-header">
               <div className="header-info-wrapper">
                  <div className="header-name-row">
@@ -237,7 +408,6 @@ const AdminChatBox = () => {
               </div>
            </div>
 
-           {/* --- TIMELINE NOTE SYSTEM --- */}
            <div className="note-section-title">Ghi chú nội bộ (Staff Only)</div>
            
            <div className="note-input-box">

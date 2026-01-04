@@ -266,7 +266,7 @@ const BlogAdmin = () => {
                         <h2>{editingPost ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}</h2>
                         <form className="post-form" onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label>Tiêu đề *</label>
+                                <label>Tiêu đề</label>
                                 <input
                                     type="text"
                                     value={formData.title}
@@ -277,18 +277,18 @@ const BlogAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Mô tả ngắn (1-2 câu) *</label>
+                                <label>Mô tả ngắn (1-2 câu)</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                    maxLength={500}
+                                    // maxLength={500}
                                     rows={3}
                                     required
                                 ></textarea>
                             </div>
 
                             <div className="form-group">
-                                <label>Nội dung *</label>
+                                <label>Nội dung</label>
                                 <textarea
                                     value={formData.content}
                                     onChange={(e) => setFormData({...formData, content: e.target.value})}
@@ -299,7 +299,7 @@ const BlogAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Ảnh bìa *</label>
+                                <label>Ảnh bìa</label>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -313,7 +313,7 @@ const BlogAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Tác giả *</label>
+                                <label>Tác giả</label>
                                 <input
                                     type="text"
                                     value={formData.author}
@@ -425,7 +425,6 @@ const BlogAdmin = () => {
                     )}
                 </div>
             </div>
-            <Footer />
         </div>
     );
 };

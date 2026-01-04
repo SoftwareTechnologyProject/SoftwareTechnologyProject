@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import axios from "axios";
 
@@ -18,6 +18,7 @@ const Recommend = () => {
     const [allBooks, setAllBooks] = useState([]);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
+    const topRef = useRef(null);
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -36,6 +37,11 @@ const Recommend = () => {
         fetchBooks();
     }, []);
 
+    useEffect(() => {
+        topRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [page]);
+
+
     // 👉 SÁCH THEO TRANG
     const pagedBooks = allBooks.slice(
         page * PAGE_SIZE,
@@ -46,7 +52,7 @@ const Recommend = () => {
 
     return (
         <main>
-            <div className="recommend">
+            <div className="recommend" ref={topRef}>
                 <img src={recommendBanner} alt="recommend banner" />
 
                 <div className="recommend-detail">

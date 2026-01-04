@@ -70,6 +70,13 @@ const SearchResult = () => {
     setCurrentPage(0);
   }, [books, priceRange, sortBy]);
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentPage]);
+
   if (loading) {
     return <div className="category-page"><p>Đang tải...</p></div>;
   }

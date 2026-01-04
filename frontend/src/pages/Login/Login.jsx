@@ -19,7 +19,7 @@ const Login = () => {
     const [verificationMode, setVerificationMode] = useState(false);
     const [resetPasswordMode, setResetPasswordMode] = useState(false);
     const [resetStep, setResetStep] = useState(1); // 1: enter email, 2: enter OTP and new password
-    
+
     const [otp, setOtp] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -29,7 +29,7 @@ const Login = () => {
     const [dateOfBirth, setDateOfBirth] = useState("");
     const [loading, setLoading] = useState(false);
     const [showCurrentPass, setShowCurrentPass] = useState(false);
-    
+
     // Reset password states
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -152,7 +152,7 @@ const Login = () => {
                 email: email,
                 password: password
             };
-            const response = await axios.post(`${backendURL}/register`, payload);
+            const response = await axios.post(`${backendURL}/auth/send-otp`, payload);
             if (response.status === 200) {
                 toast.success("OTP đã được gửi lại đến email của bạn.");
                 showSuccess("OTP đã được gửi lại. Hãy kiểm tra email!");
@@ -273,8 +273,8 @@ const Login = () => {
                     <Link to="/" className="logo-link">
                         <img src={logoImage} alt="logo" className="logo" />
                         <h1>
-                            {resetPasswordMode 
-                                ? "ĐẶT LẠI MẬT KHẨU" 
+                            {resetPasswordMode
+                                ? "ĐẶT LẠI MẬT KHẨU"
                                 : (!isCreateAccount ? "CHÀO MỪNG BẠN ĐẾN VỚI ELITEBOOKS" : "TẠO TÀI KHOẢN CỦA BẠN")
                             }
                         </h1>
@@ -471,13 +471,19 @@ const Login = () => {
                                                     Số điện thoại
                                                 </label>
                                                 <input
-                                                    type="tel"
+                                                    type="text"
                                                     id="phoneNumber"
                                                     className="form-input"
-                                                    placeholder="+84 123 456 789"
-                                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                                    placeholder="0123456789"
                                                     value={phoneNumber}
+                                                    onChange={(e) => {
+                                                        const onlyNumber = e.target.value.replace(/\D/g, "");
+                                                        setPhoneNumber(onlyNumber);
+                                                    }}
+                                                    required
                                                 />
+
+
                                             </div>
 
                                             <div className="form-col">
