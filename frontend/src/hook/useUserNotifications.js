@@ -36,8 +36,8 @@ const useUserNotifications = (onNotification, onChatMessage) => {
           safeNotify(msg.body, callbacksRef.current.onChatMessage);
         });
 
-        stompClient.subscribe("/topic/chat", (msg) => {
-          console.log(`📩 Chat from /topic/chat:`, msg.body);
+        stompClient.subscribe("/topic/notifications", (msg) => {
+          console.log(`📩 Chat from /topic/notifications:`, msg.body);
           safeNotify(msg.body, callbacksRef.current.onChatMessage);
         });
 

@@ -92,7 +92,7 @@ const ReviewAdmin = () => {
     <div className="review-admin-container">
       <h1 className="review-admin-title">Quản lý đánh giá</h1>
 
-      <div className="filter-section">
+      <div className="filter-section-admin">
         <label>Lọc theo trạng thái:</label>
         <select
           value={filterStatus}
