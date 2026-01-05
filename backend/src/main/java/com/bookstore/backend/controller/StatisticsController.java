@@ -18,4 +18,9 @@ public class StatisticsController {
     public ResponseEntity<Map<String, Object>> getRevenueLast6Months() {
         return ResponseEntity.ok(statisticsService.getRevenueLast6Months());
     }
+
+    @GetMapping("/revenue/current-year")
+    public ResponseEntity<Map<String, Object>> getRevenueCurrentYear() {
+        return ResponseEntity.ok(statisticsService.getRevenueCurrentYear());
+    }
 }

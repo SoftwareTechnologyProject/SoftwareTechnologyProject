@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../../config/axiosConfig';
 import { FaBook, FaMoneyBillWave, FaChartLine, FaSync } from 'react-icons/fa';
 import './RevenueStatistics.css';
+import RevenueCharts from './RevenueCharts';
 
 const RevenueStatistics = () => {
     const navigate = useNavigate();
@@ -124,9 +125,9 @@ const RevenueStatistics = () => {
                 <table className="statistics-table">
                     <thead>
                         <tr>
-                            <th>Tháng</th>
-                            <th>Số Lượng Sách Đã Bán</th>
-                            <th>Doanh Thu</th>
+                            <th className="month-header">Tháng</th>
+                            <th className="books-header">Số Lượng Sách Đã Bán</th>
+                            <th className="revenue-header">Doanh Thu</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,6 +165,9 @@ const RevenueStatistics = () => {
                     </tfoot>
                 </table>
             </div>
+
+            {/* Biểu đồ doanh thu */}
+            <RevenueCharts />
         </div>
     );
 };
