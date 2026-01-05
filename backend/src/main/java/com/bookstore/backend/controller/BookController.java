@@ -42,8 +42,10 @@ public class BookController {
     public ResponseEntity<Page<BookDTO>> getAllBooks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder) {
+        Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<BookDTO> bookPage = bookService.getAllBooks(pageable);
         return ResponseEntity.ok(bookPage);
     }
@@ -110,17 +112,24 @@ public class BookController {
     }
 
     // GET /books/searchKey -> tìm kiếm sách theo keyword tổng hợp (title, category,
-    // author, publisher)
+    // GET /books/searchKey -> tìm kiếm sách theo keyword tổng hợp và lọc theo giá
     @GetMapping("/searchKey")
     public ResponseEntity<Page<BookDTO>> searchBooks(
             @RequestParam(required = false) String keyWord,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder) {
+        
+        Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<BookDTO> bookPage;
 
-        if (keyWord != null) {
-            bookPage = bookService.getBookByKey(keyWord, pageable);
+        // Nếu có filter theo giá hoặc keyword, dùng query mới
+        if (minPrice != null || maxPrice != null || keyWord != null) {
+            bookPage = bookService.getBooksByKeywordAndPrice(keyWord, minPrice, maxPrice, pageable);
         } else {
             bookPage = bookService.getAllBooks(pageable);
         }

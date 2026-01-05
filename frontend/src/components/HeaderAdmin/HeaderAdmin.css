@@ -47,7 +47,7 @@ nav {
 
 /* Logout Button */
 .logout-btn {
-    @apply mt-auto text-red-600;
+    @apply text-red-600;
 }
 
 .logout-btn:hover {

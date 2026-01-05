@@ -82,7 +82,7 @@ public class AuthController {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new AuthResponse(request.getEmail(), jwtToken));
+                    .body(new AuthResponse(request.getEmail(), jwtToken, userDetails.getAuthorities()));
 
         } catch (BadCredentialsException ex) {
             System.out.println("BadCredentialsException: " + ex.getMessage());

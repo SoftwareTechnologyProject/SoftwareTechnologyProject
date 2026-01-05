@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../api/axiosClient.js";
 import "./OrderAdmin.css";
-import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const API_URL = "http://localhost:8080/api/orders";
 
@@ -15,6 +12,10 @@ export default function OrderAdmin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
   const token = localStorage.getItem("accessToken");
 
   const tabs = [
@@ -25,7 +26,7 @@ export default function OrderAdmin() {
     { key: "CANCELLED", label: "Bị hủy" },
   ];
 
-  // check token
+  // check login
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -40,7 +41,7 @@ export default function OrderAdmin() {
     setError("");
 
     try {
-      const res = await fetch(`${API_URL}`, {
+      const res = await fetch(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -56,16 +57,29 @@ export default function OrderAdmin() {
     }
   };
 
-  // filter orders by tab
+  // filter by tab
   const filteredOrders =
     activeTab === "ALL"
       ? orders
       : orders.filter((o) => o.status?.toUpperCase() === activeTab);
 
-  const calcTotal = (details) =>
-    details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+  // pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
 
-  // update status general function
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // reset page when change tab
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+//   const calcTotal = (details) =>
+//     details?.reduce((sum, d) => sum + d.pricePurchased * d.quantity, 0) || 0;
+
+  // update order status
   const updateStatus = async (orderId, newStatus) => {
     try {
       const res = await fetch(`${API_URL}/${orderId}/status`, {
@@ -77,26 +91,27 @@ export default function OrderAdmin() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!res.ok) throw new Error("Không thể cập nhật trạng thái đơn do thiếu hàng.");
+      if (!res.ok) {
+        throw new Error("Không thể cập nhật trạng thái đơn.");
+      }
 
       fetchOrders();
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      alert(err.message);
     }
   };
 
-  // Cancel order
   const handleCancel = (orderId) => {
-    if (window.confirm("Bạn muốn hủy đơn?"))
+    if (window.confirm("Bạn muốn hủy đơn?")) {
       updateStatus(orderId, "CANCELLED");
+    }
   };
 
-  // Accept order
   const handleAccept = (orderId) => {
     updateStatus(orderId, "DELIVERY");
   };
 
-  // Finish order
   const handleFinish = (orderId) => {
     updateStatus(orderId, "SUCCESS");
   };
@@ -111,9 +126,11 @@ export default function OrderAdmin() {
             className={`tab ${activeTab === t.key ? "active" : ""}`}
             onClick={() => setActiveTab(t.key)}
           >
-            {orders.filter(
-              (o) => t.key === "ALL" || o.status?.toUpperCase() === t.key
-            ).length}{" "}
+            {
+              orders.filter(
+                (o) => t.key === "ALL" || o.status?.toUpperCase() === t.key
+              ).length
+            }{" "}
             {t.label}
           </div>
         ))}
@@ -128,10 +145,10 @@ export default function OrderAdmin() {
 
       {!loading &&
         !error &&
-        filteredOrders.map((order) => {
+        paginatedOrders.map((order) => {
           const firstItem = order.orderDetails?.[0];
           const qty = order.orderDetails?.length || 0;
-          const total = calcTotal(order.orderDetails);
+          const total = Number(order?.totalAmount || 0)+ 32000;
 
           return (
             <div key={order.id} className="order-card">
@@ -143,7 +160,10 @@ export default function OrderAdmin() {
               <div className="order-body">
                 <div className="info">
                   <div>
-                    <h4 onClick={() => navigate(`/admin/order/${order.id}`)}>
+                    <h4
+                      className="order-title"
+                      onClick={() => navigate(`/admin/order/${order.id}`)}
+                    >
                       {firstItem?.bookTitle || "Sản phẩm"}
                     </h4>
                     <span>{qty} sản phẩm</span>
@@ -155,18 +175,27 @@ export default function OrderAdmin() {
 
                   {order.status === "PENDING" && (
                     <>
-                      <button className="button-actions" onClick={() => handleCancel(order.id)}>
+                      <button
+                        className="button-actions"
+                        onClick={() => handleCancel(order.id)}
+                      >
                         Hủy đơn
                       </button>
 
-                      <button className="button-actions" onClick={() => handleAccept(order.id)}>
+                      <button
+                        className="button-actions"
+                        onClick={() => handleAccept(order.id)}
+                      >
                         Tiếp nhận
                       </button>
                     </>
                   )}
 
                   {order.status === "DELIVERY" && (
-                    <button className="button-actions" onClick={() => handleFinish(order.id)}>
+                    <button
+                      className="button-actions"
+                      onClick={() => handleFinish(order.id)}
+                    >
                       Hoàn thành
                     </button>
                   )}
@@ -175,6 +204,35 @@ export default function OrderAdmin() {
             </div>
           );
         })}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            ◀
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              className={currentPage === i + 1 ? "active" : ""}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            ▶
+          </button>
+        </div>
+      )}
     </div>
   );
 }

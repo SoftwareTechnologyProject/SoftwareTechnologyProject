@@ -23,8 +23,8 @@ const VoucherWallet = () => {
     const fetchVouchers = async () => {
         try {
             setLoading(true);
-            // Fetch all vouchers instead of only active ones
-            const response = await fetch(API_URL);
+            // Fetch only active vouchers
+            const response = await fetch(`${API_URL}/active`);
             if (!response.ok) {
                 throw new Error('Không thể tải danh sách voucher');
             }
@@ -66,7 +66,10 @@ const VoucherWallet = () => {
     };
 
     const isVoucherAvailable = (voucher) => {
-        return voucher.quantity > voucher.usedCount && !isVoucherExpired(voucher.endDate);
+        // Check status, quantity, and expiration date
+        return voucher.status === 'ACTIVE' && 
+               voucher.quantity > voucher.usedCount && 
+               !isVoucherExpired(voucher.endDate);
     };
 
     const filteredVouchers = vouchers.filter(voucher => {
@@ -131,7 +134,6 @@ const VoucherWallet = () => {
                         {filteredVouchers.length === 0 ? (
                             <div className="empty-state">
                                 <IoTicketSharp className="empty-icon" />
-                                <h3>Không có voucher nào</h3>
                                 <p>Hiện tại chưa có voucher khả dụng</p>
                                 <Link to="/" className="browse-btn">
                                     Khám phá sản phẩm

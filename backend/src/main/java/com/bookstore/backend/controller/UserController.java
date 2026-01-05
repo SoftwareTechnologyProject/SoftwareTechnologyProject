@@ -50,17 +50,7 @@ public class UserController {
 
         String email = userDetails.getUsername();  // email từ JWT
 
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        UserDTO response = new UserDTO(
-                user.getFullName(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getAddress(),
-                user.getDateOfBirth()
-
-        );
+        UserDTO response = userService.getUser(email);
 
         return ResponseEntity.ok(response);
     }

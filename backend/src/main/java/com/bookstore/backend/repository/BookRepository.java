@@ -11,31 +11,26 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    // Lấy toàn bộ sachs sắp xếp theo sold
+    // Lấy toàn bộ sách sắp xếp theo id
     @Query(
             value = """
             SELECT b
             FROM Book b
-            JOIN b.variants v
-            GROUP BY b
-            ORDER BY SUM(v.sold) DESC
           """,
             countQuery = """
-            SELECT COUNT(DISTINCT b)
+            SELECT COUNT(b)
             FROM Book b
           """
     )
     Page<Book> findAllBooks(Pageable pageable);
+    
     // Tìm sách theo tên category (có phân trang)
     @Query(
             value = """
-            SELECT b
+            SELECT DISTINCT b
             FROM Book b
             JOIN b.categories c
-            JOIN b.variants v
             WHERE c.name = :categoryName
-            GROUP BY b
-            ORDER BY SUM(v.sold) DESC
           """,
             countQuery = """
             SELECT COUNT(DISTINCT b)
@@ -90,4 +85,27 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         WHERE v.isbn = :isbn
     """)
     List<Book> findByIsbn(@Param("isbn") String isbn);
+
+    // Tìm sách theo keyword và lọc theo khoảng giá (hỗ trợ backend filtering)
+    @Query("""
+        SELECT DISTINCT b
+        FROM Book b
+        LEFT JOIN b.categories c
+        LEFT JOIN b.authors a
+        LEFT JOIN b.publisher p
+        JOIN b.variants v
+        WHERE (:keyword IS NULL OR 
+               LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+               LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+               LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+               LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND (:minPrice IS NULL OR v.price >= :minPrice)
+          AND (:maxPrice IS NULL OR v.price <= :maxPrice)
+    """)
+    Page<Book> findByKeywordAndPrice(
+        @Param("keyword") String keyword,
+        @Param("minPrice") Double minPrice,
+        @Param("maxPrice") Double maxPrice,
+        Pageable pageable
+    );
 }

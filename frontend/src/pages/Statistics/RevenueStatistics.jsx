@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../config/axiosConfig';
+import axios from 'axios';
 import { FaBook, FaMoneyBillWave, FaChartLine, FaSync } from 'react-icons/fa';
 import './RevenueStatistics.css';
 import RevenueCharts from './RevenueCharts';

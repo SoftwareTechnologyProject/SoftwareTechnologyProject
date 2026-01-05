@@ -103,6 +103,7 @@ function Checkout() {
     const [useFPoint, setUseFPoint] = useState(false);
     const [useFreeship, setUseFreeship] = useState(false);
     const [exportInvoice, setExportInvoice] = useState(false);
+    const [orderLoading, setOrderLoading] = useState(false);
 
     //Kiểm tra xem có hàng để thanh toán không
     useEffect(() => {
@@ -183,6 +184,7 @@ function Checkout() {
             return;
         }
 
+        setOrderLoading(true);
         try {
             // Tìm tên Tỉnh/Huyện/Xã từ ID
             const provinceName =
@@ -242,10 +244,12 @@ function Checkout() {
                 }
             } else {
                 alert("Lỗi tạo đơn hàng: " + response.data.message);
+                setOrderLoading(false);
             }
         } catch (error) {
             console.error("❌ Error creating order:", error);
             alert("Không thể tạo đơn hàng. Vui lòng thử lại!");
+            setOrderLoading(false);
         }
     };
 
@@ -262,7 +266,7 @@ function Checkout() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm mb-1">
+                                <label className="block text-lg mb-1">
                                     Họ và tên người nhận
                                 </label>
                                 <input
@@ -270,12 +274,12 @@ function Checkout() {
                                     name="fullName"
                                     value={formData.fullName}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full p-3! border rounded-md text-lg "
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm mb-1">
+                                <label className="block text-lg mb-1">
                                     Số điện thoại
                                 </label>
                                 <input
@@ -283,20 +287,20 @@ function Checkout() {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full p-3! border rounded-md text-lg"
                                 />
                             </div>
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-sm mb-1">
+                            <label className="block text-lg mb-1">
                                 Quốc gia
                             </label>
                             <select
                                 name="country"
                                 value={formData.country}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                className="w-full p-3! border rounded-md text-lg"
                             >
                                 <option>Việt Nam</option>
                             </select>
@@ -305,7 +309,7 @@ function Checkout() {
                         <div className="grid grid-cols-3 gap-4 mt-4">
                             {["province", "district", "ward"].map((field) => (
                                 <div key={field}>
-                                    <label className="block text-sm mb-1">
+                                    <label className="block text-lg mb-1">
                                         {field === "province"
                                             ? "Tỉnh/Thành phố"
                                             : field === "district"
@@ -316,7 +320,7 @@ function Checkout() {
                                         name={field}
                                         value={formData[field]}
                                         onChange={handleLocationChange}
-                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        className="w-full p-3! border rounded-md text-lg"
                                     >
                                         <option value="">Chọn</option>
                                         {locationOptions[field]?.map((item) => (
@@ -333,7 +337,7 @@ function Checkout() {
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-sm mb-1">
+                            <label className="block text-lg mb-1">
                                 Địa chỉ nhận hàng
                             </label>
                             <input
@@ -341,7 +345,7 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                className="w-full p-3! border rounded-md text-lg"
                             />
                         </div>
                     </div>
@@ -520,7 +524,7 @@ function Checkout() {
                                         setPromoCode(e.target.value)
                                     }
                                     placeholder="Nhập mã khuyến mãi"
-                                    className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                    className="flex-1 p-3! border rounded-md text-lg"
                                     style={{ height: "42px" }} // Cố định chiều cao
                                 />
                             </div>
@@ -632,6 +636,7 @@ function Checkout() {
                                     display: "flex",
                                     justifyContent: "space-between",
                                     fontSize: "15px",
+                                    marginTop: "1rem",
                                 }}
                             >
                                 <span>Thành tiền:</span>
@@ -680,12 +685,44 @@ function Checkout() {
                         <button
                             onClick={handleOrderSubmit}
                             className="checkout-button mt-4 w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            disabled={orderLoading}
                         >
                             Xác nhận thanh toán
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Loading overlay for Order Submit */}
+            {orderLoading && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 10000,
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: "white",
+                            padding: "24px 48px",
+                            borderRadius: "8px",
+                            fontSize: "16px",
+                            fontWeight: "500",
+                            color: "#333",
+                        }}
+                    >
+                        Đang xử lý đơn hàng...
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

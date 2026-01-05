@@ -83,20 +83,128 @@ const VoucherManagement = () => {
 
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/search?keyword=${searchKeyword}`);
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(`${API_URL}/search?keyword=${encodeURIComponent(searchKeyword)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 403) {
+                alert('Bạn không có quyền truy cập');
+                navigate('/login');
+                return;
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
-            setVouchers(data);
+            setVouchers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error searching vouchers:', error);
-            alert('Không thể tìm kiếm voucher');
+            alert('Không thể tìm kiếm voucher: ' + error.message);
+            setVouchers([]);
         } finally {
             setLoading(false);
         }
     };
 
+    // Validate form before submit
+    const validateForm = () => {
+        // Validate required fields
+        if (!formData.code.trim()) {
+            alert('Vui lòng nhập mã voucher');
+            return false;
+        }
+
+        if (!formData.name.trim()) {
+            alert('Vui lòng nhập tên voucher');
+            return false;
+        }
+
+        // Validate code length (max 50 characters)
+        if (formData.code.length > 50) {
+            alert('Mã voucher không được vượt quá 50 ký tự');
+            return false;
+        }
+
+        // Validate name length (max 100 characters)
+        if (formData.name.length > 100) {
+            alert('Tên voucher không được vượt quá 100 ký tự');
+            return false;
+        }
+
+        // Validate description length (max 500 characters)
+        if (formData.description && formData.description.length > 500) {
+            alert('Mô tả không được vượt quá 500 ký tự');
+            return false;
+        }
+
+        // Validate discount value
+        if (formData.discountValue <= 0) {
+            alert('Giá trị giảm phải lớn hơn 0');
+            return false;
+        }
+
+        // Validate percentage discount (must be <= 100)
+        if (formData.discountType === 'PERCENTAGE' && formData.discountValue > 100) {
+            alert('Giảm giá theo phần trăm không được vượt quá 100%');
+            return false;
+        }
+
+        // Validate required dates
+        if (!formData.startDate) {
+            alert('Vui lòng chọn ngày bắt đầu');
+            return false;
+        }
+
+        if (!formData.endDate) {
+            alert('Vui lòng chọn ngày kết thúc');
+            return false;
+        }
+
+        // Validate date logic
+        const startDate = new Date(formData.startDate);
+        const endDate = new Date(formData.endDate);
+        const now = new Date();
+
+        if (endDate <= startDate) {
+            alert('Ngày kết thúc phải sau ngày bắt đầu');
+            return false;
+        }
+
+        // Validate minOrderValue
+        if (formData.minOrderValue < 0) {
+            alert('Giá trị đơn hàng tối thiểu không được âm');
+            return false;
+        }
+
+        // Validate maxDiscount
+        if (formData.maxDiscount < 0) {
+            alert('Giảm giá tối đa không được âm');
+            return false;
+        }
+
+        // Validate quantity
+        if (formData.quantity !== null && formData.quantity !== '' && formData.quantity < 0) {
+            alert('Số lượng không được âm');
+            return false;
+        }
+
+        return true;
+    };
+
     // Create voucher
     const handleCreate = async (e) => {
         e.preventDefault();
+        
+        // Validate form
+        if (!validateForm()) {
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -135,6 +243,12 @@ const VoucherManagement = () => {
     // Update voucher
     const handleUpdate = async (e) => {
         e.preventDefault();
+        
+        // Validate form
+        if (!validateForm()) {
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -270,6 +384,26 @@ const VoucherManagement = () => {
         return new Date(dateString).toLocaleString('vi-VN');
     };
 
+    // Check if voucher is expired
+    const isVoucherExpired = (voucher) => {
+        if (!voucher.endDate) return false;
+        return new Date(voucher.endDate) < new Date();
+    };
+
+    // Check if voucher is out of stock
+    const isVoucherOutOfStock = (voucher) => {
+        if (!voucher.quantity) return false;
+        return voucher.usedCount >= voucher.quantity;
+    };
+
+    // Get actual status (considering expiration and stock)
+    const getActualStatus = (voucher) => {
+        if (isVoucherExpired(voucher) || isVoucherOutOfStock(voucher)) {
+            return 'EXPIRED';
+        }
+        return voucher.status;
+    };
+
     // Get status badge class
     const getStatusBadge = (status) => {
         const badges = {
@@ -308,7 +442,7 @@ const VoucherManagement = () => {
                     onChange={(e) => setSearchKeyword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
-                <button onClick={handleSearch}>
+                <button type="button" onClick={handleSearch}>
                     <FiSearch /> Tìm kiếm
                 </button>
             </div>
@@ -363,8 +497,8 @@ const VoucherManagement = () => {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`badge ${getStatusBadge(voucher.status)}`}>
-                                                {getStatusText(voucher.status)}
+                                            <span className={`badge ${getStatusBadge(getActualStatus(voucher))}`}>
+                                                {getStatusText(getActualStatus(voucher))}
                                             </span>
                                         </td>
                                         <td className="actions">
@@ -400,37 +534,40 @@ const VoucherManagement = () => {
                         <form onSubmit={editingVoucher ? handleUpdate : handleCreate}>
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Mã voucher *</label>
+                                    <label>Mã voucher * <small>(tối đa 50 ký tự)</small></label>
                                     <input
                                         type="text"
                                         name="code"
                                         value={formData.code}
                                         onChange={handleInputChange}
                                         required
+                                        maxLength="50"
                                         placeholder="VD: SUMMER2024"
                                     />
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Tên voucher *</label>
+                                    <label>Tên voucher * <small>(tối đa 100 ký tự)</small></label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
                                         required
+                                        maxLength="100"
                                         placeholder="VD: Giảm giá mùa hè"
                                     />
                                 </div>
                             </div>
 
                             <div className="form-group">
-                                <label>Mô tả</label>
+                                <label>Mô tả <small>(tối đa 500 ký tự)</small></label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows="3"
+                                    maxLength="500"
                                     placeholder="Mô tả chi tiết về voucher..."
                                 />
                             </div>
@@ -457,9 +594,10 @@ const VoucherManagement = () => {
                                         value={formData.discountValue}
                                         onChange={handleInputChange}
                                         required
-                                        min="0"
+                                        min="0.01"
+                                        max={formData.discountType === 'PERCENTAGE' ? "100" : undefined}
                                         step="0.01"
-                                        placeholder={formData.discountType === 'PERCENTAGE' ? 'VD: 10' : 'VD: 50000'}
+                                        placeholder={formData.discountType === 'PERCENTAGE' ? 'VD: 10 (tối đa 100%)' : 'VD: 50000'}
                                     />
                                 </div>
                             </div>
@@ -522,22 +660,24 @@ const VoucherManagement = () => {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Ngày bắt đầu</label>
+                                    <label>Ngày bắt đầu *</label>
                                     <input
                                         type="datetime-local"
                                         name="startDate"
                                         value={formData.startDate}
                                         onChange={handleInputChange}
+                                        required
                                     />
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Ngày kết thúc</label>
+                                    <label>Ngày kết thúc *</label>
                                     <input
                                         type="datetime-local"
                                         name="endDate"
                                         value={formData.endDate}
                                         onChange={handleInputChange}
+                                        required
                                     />
                                 </div>
                             </div>

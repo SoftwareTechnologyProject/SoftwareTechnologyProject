@@ -39,7 +39,6 @@ body {
     font-size: 18px;
     font-weight: 700;
     color: #333;
-    margin-bottom: 20px;
     text-transform: uppercase;
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
@@ -53,17 +52,7 @@ label {
     color: #555;
     margin-bottom: 6px;
     display: block;
-}
-
-input[type="text"],
-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    background-color: #fff;
+    padding: 0.5rem 0;
 }
 
 input[type="text"]:focus,
@@ -198,6 +187,8 @@ select:focus {
     color: var(--primary-red);
     font-size: 22px;
     font-weight: 800;
+    margin-top: 2rem;
+    padding-top: 1rem;
 }
 
 /* -------------------------
@@ -270,6 +261,15 @@ select:focus {
     color: var(--primary-red);
 }
 
+.btn-remove-promo {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 18px;
+}
+.btn-remove-promo:hover { color: var(--primary-red); }
+
 /* -------------------------
    BUTTONS
 -------------------------- */
@@ -285,6 +285,7 @@ select:focus {
 .btn-apply:hover {
     background-color: #0b5ed7;
 }
+.btn-apply:hover { background-color: #0b5ed7; }
 
 .checkout-button {
     background: var(--primary-red);

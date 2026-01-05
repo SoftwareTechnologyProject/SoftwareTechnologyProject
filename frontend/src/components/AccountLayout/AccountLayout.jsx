@@ -1,14 +1,12 @@
 import { Outlet } from "react-router-dom";
-import axios from "../../config/axiosConfig";
+import axios from "../../api/axiosClient";
 import React, { useState, useEffect } from "react";
 
 import "../../pages/HomePage/HomePage.css";
 import "../../components/AccountLayout/AccountLayout.css"
-import { PiCrownSimpleFill } from "react-icons/pi";
 import { CiUser } from "react-icons/ci";
 import { TfiReceipt } from "react-icons/tfi";
 import { IoTicketSharp } from "react-icons/io5";
-import { GoBell } from "react-icons/go";
 import { CiStar } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 
@@ -47,8 +45,7 @@ const AccountLayout = () => {
                             </div>
                             <div className="content">
                                 <h1> {formData.userName} </h1>
-                                <h2 className="bg-gray-400 rounded-full">Thành Viên ...</h2>
-                                <h2>Mua Thêm ... đơn để nâng hạng ....</h2>
+                                <h2 className="w-full h-12 bg-gray-400 rounded relative overflow-hidden mirror-shine mirror-shine">Thành Viên EliteBooks</h2>
                             </div>
                         </div>
                         <div className="main-nav items-center text-center">
@@ -83,17 +80,7 @@ const AccountLayout = () => {
                             </NavLink>
 
                             <NavLink
-                                to="/notification"
-                                className={({ isActive }) =>
-                                    `nav-link ${isActive ? "active" : ""}`
-                                }
-                            >
-                                <GoBell className="w-7 h-7" />
-                                <span>Thông báo</span>
-                            </NavLink>
-
-                            <NavLink
-                                to="/review"
+                                to="/account/review"
                                 className={({ isActive }) =>
                                     `nav-link ${isActive ? "active" : ""}`
                                 }

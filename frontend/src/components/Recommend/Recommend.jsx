@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import axios from "axios";
 
@@ -14,11 +14,11 @@ const Recommend = () => {
     const { pathname } = useLocation();
 
     if (pathname.startsWith("/admin")) return null;
-    if (pathname.startsWith("/blog")) return null;
 
     const [allBooks, setAllBooks] = useState([]);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
+    const topRef = useRef(null);
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -37,6 +37,11 @@ const Recommend = () => {
         fetchBooks();
     }, []);
 
+    useEffect(() => {
+        topRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [page]);
+
+
     // 👉 SÁCH THEO TRANG
     const pagedBooks = allBooks.slice(
         page * PAGE_SIZE,
@@ -47,7 +52,7 @@ const Recommend = () => {
 
     return (
         <main>
-            <div className="recommend">
+            <div className="recommend" ref={topRef}>
                 <img src={recommendBanner} alt="recommend banner" />
 
                 <div className="recommend-detail">
@@ -97,22 +102,40 @@ const Recommend = () => {
                         })
                     )}
                 </div>
-                {/* PAGINATION */}
+                {/* Pagination */}
                 {!loading && totalPages > 1 && (
-                    <div className="flex justify-center items-center">
-                        <div className="pagination-fix">
-                            {Array.from({ length: totalPages }).map((_, i) => (
+                    <div className="pagination mt-625! mb-10!">
+                        <button
+                            onClick={() => setPage(Math.max(0, page - 1))}
+                            disabled={page === 0}
+                        >
+                            Trước
+                        </button>
+
+                        {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                            const pageNum = page > 2 ? page - 2 + i : i;
+                            if (pageNum >= totalPages) return null;
+
+                            return (
                                 <button
-                                    key={i}
-                                    className={page === i ? "active" : ""}
-                                    onClick={() => setPage(i)}
+                                    key={pageNum}
+                                    onClick={() => setPage(pageNum)}
+                                    className={page === pageNum ? "active" : ""}
                                 >
-                                    {i + 1}
+                                    {pageNum + 1}
                                 </button>
-                            ))}
-                        </div>
+                            );
+                        })}
+
+                        <button
+                            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                            disabled={page === totalPages - 1}
+                        >
+                            Sau
+                        </button>
                     </div>
                 )}
+
             </div>
         </main>
     );
