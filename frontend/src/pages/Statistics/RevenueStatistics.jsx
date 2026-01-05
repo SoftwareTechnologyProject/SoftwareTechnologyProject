@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../../api/axiosClient';
 import { FaBook, FaMoneyBillWave, FaChartLine, FaSync } from 'react-icons/fa';
 import './RevenueStatistics.css';
 import RevenueCharts from './RevenueCharts';
@@ -29,7 +29,7 @@ const RevenueStatistics = () => {
     const fetchStatistics = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/statistics/revenue/last-6-months');
+            const response = await axios.get('/statistics/revenue/last-6-months');
             console.log('Statistics data:', response.data);
             setStatistics(response.data);
             setError(null);
@@ -121,7 +121,7 @@ const RevenueStatistics = () => {
                 <button onClick={fetchStatistics} className="refresh-btn">
                     <FaSync /> Làm mới
                 </button>
-                
+
                 <table className="statistics-table">
                     <thead>
                         <tr>
@@ -131,7 +131,7 @@ const RevenueStatistics = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {statistics.months.map((month, index) => {
+                        {statistics.months && statistics.months.map((month, index) => {
                             const booksSold = statistics.booksSold[index];
                             const revenue = statistics.revenues[index];
                             

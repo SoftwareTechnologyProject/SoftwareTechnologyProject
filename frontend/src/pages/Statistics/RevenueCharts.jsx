@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../api/axiosClient';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -43,7 +43,7 @@ const RevenueCharts = () => {
     const fetchStatisticsData = async () => {
         try {
             setLoading(true);
-            const yearResponse = await axios.get('/api/statistics/revenue/current-year');
+            const yearResponse = await axios.get('/statistics/revenue/current-year');
             processYearlyData(yearResponse.data);
             processLast7DaysData(yearResponse.data);
         } catch (err) {

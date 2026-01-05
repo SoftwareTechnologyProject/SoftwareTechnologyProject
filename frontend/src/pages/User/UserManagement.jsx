@@ -71,7 +71,7 @@ const UserManagement = () => {
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Bạn có chắc muốn xóa người dùng này?')) {
             try {
-                await axios.delete(`/api/users/${userId}`);
+                await axios.delete(`/users/${userId}`);
                 fetchUsers(); // Refresh danh sách
             } catch (err) {
                 alert('Không thể xóa người dùng. Vui lòng thử lại.');
