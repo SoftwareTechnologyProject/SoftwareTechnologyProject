@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* Loading Placeholders */
+.book-loading-placeholder {
+    @apply animate-pulse;
+}
+
+.loading-img {
+    @apply w-full h-48 bg-gray-300 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-300 rounded mt-2 w-3/4;
+}
+
+/* ========== Common ================= */
+.product-catalog {
+    @apply bg-[var(--components-color)] mx-30 mb-5 px-5 rounded-xl;
+}
+
+.icon-title {
+    @apply w-[70%] h-[70%] text-[var(--primary-color)] m-auto;
+}
+
+h1 {
+    @apply text-2xl font-bold place-content-center;
+}
+
+.book-view {
+    @apply px-5 py-4 transition-shadow duration-500 ease-in-out hover:shadow-xl;
+}
+
+/* ============ End ================== */
+
+/* ========= Button More ========== */
+.button-more {
+    @apply flex justify-center items-center font-bold pb-10 pt-4;
+}
+
+.button-more a {
+    @apply border-2 py-4 px-20 rounded-xl text-[var(--primary-color)];
+}
+
+/* ============ End ============== */
+
+/* ========================== Banner Area ====================================== */
+.banner-container {
+    @apply grid grid-cols-[7fr_3fr] gap-4 mx-30 my-5;
+}
+
+.banner-container img {
+    @apply rounded-xl;
+}
+
+.elite-banner {
+    @apply relative;
+}
+
+.elite-banner a {
+    @apply w-[80%];
+}
+
+.arrow-left {
+    @apply  absolute top-1/2 left-3 -translate-y-1/2 bg-white/40 hover:bg-white text-black p-4 rounded-full transition duration-300 ease-in cursor-pointer;
+}
+
+.arrow-right {
+    @apply  absolute top-1/2 right-3 -translate-y-1/2 bg-white/40 hover:bg-white text-black p-4 rounded-full transition duration-300 ease-in cursor-pointer;
+}
+
+.pay-banner {
+    @apply grid grid-rows-2 gap-4;
+}
+
+.pay-banner img {
+    @apply h-full;
+}
+
+/* ==================================== End =================================== */
+
+/* =========================== Product Catalog Area =========================== */
+.product-catalog .title-content {
+    @apply grid grid-cols-[0.5fr_9.5fr] gap-4 p-5 border-b-1;
+}
+
+.catalog-detail {
+    @apply grid grid-cols-6 gap-4;
+}
+
+.catalog-detail a {
+    @apply p-5 gap-2 text-center text-xl;
+}
+
+/* ==================================== End =================================== */
+
+/* =========================== Gift Card Area =========================== */
+.gift-card {
+    @apply relative grid grid-cols-3 gap-5 overflow-hidden px-5 pb-5;
+}
+
+.auto-slide {
+    @apply flex transition-all duration-300;
+}
+
+.card {
+    @apply grid grid-cols-3 gap-3 w-full flex-shrink-0 px-2;
+}
+
+.card > div {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.card > div:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+/* ==================================== End =================================== */
+
+/* ================================== Trending ================================ */
+.trending {
+    @apply bg-[var(--components-color)] mx-30 mb-5 px-5 rounded-xl;
+}
+
+.title-trending {
+    @apply grid grid-cols-[0.5fr_9.5fr] gap-4 p-5; 
+}
+
+.title-trending .icon-title {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2;
+}
+
+.trend-detail {
+    @apply grid grid-cols-5 auto-rows-[minmax(0,1.3fr)] gap-4 pb-4;
+}
+
+/* Thêm wrapper cho trend items */
+.trend-detail > div,
+.trend-detail > a {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.trend-detail > div:hover,
+.trend-detail > a:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+/* Cập nhật khung chứa ảnh giống file CSS đầu */
+.trend-detail img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-gray-100;
+}
+
+.label-price {
+    @apply grid grid-rows-[2fr_0.5fr_0.8fr] pt-2;
+}
+
+h3 {
+    @apply line-clamp-2 self-start;
+}
+
+.special-price {
+    @apply pt-2;
+}
+
+.label-price .price-new {
+    @apply text-xl font-bold text-[var(--primary-color)];
+}
+
+.label-price .percent-discount {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2 mx-3;
+}
+
+.label-price .price-old {
+    @apply line-through;
+}
+
+.combo-trending {
+    @apply bg-[var(--components-color)] mx-30 mb-5 grid grid grid-rows-[0.8fr_5fr] px-5 rounded-xl;
+}
+
+.combo-slide {
+    @apply relative overflow-hidden;
+}
+
+.combo-transform {
+    @apply flex transition-transform duration-800;
+}
+
+.combo-detail {
+    @apply flex shrink-0 w-[25%] object-contain pb-4 gap-4;
+}
+
+/* Thêm wrapper cho combo items */
+.combo-detail > div,
+.combo-detail > a {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.combo-detail > div:hover,
+.combo-detail > a:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+/* Cập nhật khung chứa ảnh cho combo giống file CSS đầu */
+.combo-detail img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-gray-100;
+}
+
+/* ======================= End ========================= */
+
+.progress-bar {
+    @apply w-full h-fit! bg-[var(--primary-color)]! rounded-2xl p-2 mt-2;
+}
+
+.progress-bar span {
+    @apply text-[var(--components-color)] flex justify-center items-center;
+}
+
+.description {
+    @apply grid grid-rows-[2fr_0.8fr];
+}
+
+/* Thêm style cho catalog images để thống nhất */
+.catalog-detail img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-white;
+}
+
+/* Thêm style cho gift card images */
+.card img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-white;
+}

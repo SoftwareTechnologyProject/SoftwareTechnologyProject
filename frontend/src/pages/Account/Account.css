@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+.account-main {
+  @apply grid-rows-2 gap-4;
+}
+
+.account-rank {
+  @apply bg-[var(--components-color)] rounded-xl w-[50%] mx-auto;
+}
+
+.account-rank img {
+  @apply rounded-xl w-full;
+}
+
+.account-info {
+  @apply bg-[var(--components-color)] mt-4 p-5 rounded-xl;
+}
+
+/* ==================== NAVIGATION ==================== */
+.account-nav .main-nav .nav-link {
+  @apply flex flex-row justify-start py-2 px-7 gap-4 text-[#080909] rounded mb-1 transition-all duration-300 no-underline;
+}
+
+.account-nav .main-nav .nav-link:hover {
+  @apply bg-[#c74d4d] text-white;
+}
+
+.account-nav .main-nav .nav-link.active {
+  @apply bg-[#c74d4d] text-white font-semibold;
+}
+
+/* ==================== FORM STYLING ==================== */
+.account-title {
+  @apply text-xl md:text-2xl text-gray-700 font-medium mb-8;
+}
+
+.account-form {
+  @apply space-y-6;
+}
+
+.form-row {
+  @apply grid !grid-cols-[20%_70%] items-center gap-4;
+}
+
+.form-label-account {
+  @apply w-full min-w-[120px];
+}
+
+.form-input-wrapper {
+  @apply flex-1;
+}
+
+.required {
+  @apply text-red-500;
+}
+
+/* Text input */
+.form-input-account {
+  @apply w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:border-blue-500 transition-colors;
+}
+
+/* ==================== READONLY FIELDS ==================== */
+.readonly-field {
+  @apply flex items-center justify-between border border-gray-300 rounded px-3 py-2;
+}
+
+.readonly-field span {
+  @apply text-gray-700;
+}
+
+.email-placeholder {
+  @apply text-gray-400;
+}
+
+.change-btn {
+  @apply text-blue-500 hover:underline text-sm bg-transparent border-none cursor-pointer transition-colors;
+}
+
+/* ==================== RADIO BUTTONS ==================== */
+.radio-group {
+  @apply flex items-center space-x-6;
+}
+
+.radio-label {
+  @apply flex items-center space-x-2 cursor-pointer;
+}
+
+.radio-input {
+  @apply text-red-600 focus:ring-red-500 h-4 w-4 accent-red-600;
+}
+
+.radio-label span {
+  @apply text-gray-700;
+}
+
+/* ==================== BIRTHDAY INPUTS ==================== */
+.birthday-group {
+  @apply grid grid-cols-3 gap-4;
+}
+
+.birthday-input {
+  @apply w-full h-10 border border-gray-300 rounded px-3 py-2 text-center text-gray-700 outline-none focus:border-blue-500 transition-colors;
+}
+
+/* ==================== SUBMIT BUTTON ==================== */
+.form-submit {
+  @apply pt-4 flex justify-center;
+}
+
+.btn-submit {
+  @apply !bg-[var(--primary-color)] hover:bg-red-800 text-white font-medium py-2 px-8 rounded shadow-sm transition-colors;
+}
+
+/* ==================== PASSWORD INPUT ==================== */
+.password-wrapper {
+  @apply relative flex items-center;
+}
+
+.password-wrapper .form-input {
+  @apply pr-10; /* chừa chỗ cho icon */
+}
+
+.toggle-password {
+  @apply absolute right-3 top-1/2 -translate-y-1/2
+         cursor-pointer text-gray-500
+         transition-colors duration-200;
+}
+
+.toggle-password:hover {
+  @apply text-gray-800;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .account-container {
+    @apply grid-cols-1 mx-4;
+  }
+
+  .form-label-account {
+    @apply col-span-12 mb-1;
+  }
+
+  .form-input-wrapper {
+    @apply col-span-12;
+  }
+
+  .birthday-group {
+    @apply gap-3;
+  }
+}

@@ -1,0 +1,175 @@
+/* CustomerChat.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --chat-primary: #C92127; /* Màu đỏ chủ đạo giống Admin */
+  --chat-bg: #ffffff;
+  --chat-gray: #f3f4f6;
+  --chat-text: #1f2937;
+  --chat-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* === FLOATING BUTTON === */
+.chat-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C92127 0%, #991b1b 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(201, 33, 39, 0.4);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chat-float-btn:hover {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.chat-badge {
+  position: absolute;
+  top: 0; right: 0;
+  background: #fbbf24;
+  color: #78350f;
+  font-weight: 700;
+  font-size: 11px;
+  min-width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white;
+}
+
+/* === CHAT WINDOW CONTAINER === */
+.customer-chat-window {
+  position: fixed;
+  bottom: 2rem;
+  right: 24px;
+  width: 360px;
+  height: 500px;
+  background: var(--chat-bg);
+  border-radius: 20px;
+  box-shadow: var(--chat-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  animation: slideUp 0.3s ease-out;
+  border: 1px solid #e5e7eb;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === HEADER === */
+.cc-header {
+  background: linear-gradient(135deg, #C92127 0%, #991b1b 100%);
+  padding: 16px 20px;
+  color: white;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.cc-title h4 { margin: 0; font-size: 1rem; font-weight: 700; }
+.cc-title span { font-size: 0.75rem; opacity: 0.9; display: block; margin-top: 2px; }
+.btn-close {
+  background: rgba(255,255,255,0.2);
+  border: none; color: white;
+  width: 30px; height: 30px; border-radius: 50%;
+  cursor: pointer; transition: background 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-close:hover { background: rgba(255,255,255,0.4); }
+
+/* === BODY MESSAGES === */
+.cc-body {
+  flex: 1;
+  background: #f9fafb;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.cc-body::-webkit-scrollbar { width: 5px; }
+.cc-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+.cc-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Tin nhắn của Khách (Mine) */
+.cc-msg.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.cc-msg.mine .bubble {
+  background: var(--chat-primary);
+  color: white;
+  border-radius: 16px 16px 4px 16px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 5px rgba(201, 33, 39, 0.2);
+}
+
+/* Tin nhắn của Shop (Other) */
+.cc-msg.other {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.cc-msg.other .bubble {
+  background: white;
+  color: var(--chat-text);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.timestamp {
+  font-size: 0.65rem; color: #9ca3af; margin-top: 4px;
+}
+
+/* === FOOTER INPUT === */
+.cc-footer {
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex; gap: 8px; align-items: center;
+}
+
+.cc-input {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 10px 14px;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+}
+.cc-input:focus {
+  background: white;
+  border-color: var(--chat-primary);
+  box-shadow: 0 0 0 2px rgba(201, 33, 39, 0.1);
+}
+
+.btn-send {
+  background: var(--chat-primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-send:hover { background: #991b1b; }

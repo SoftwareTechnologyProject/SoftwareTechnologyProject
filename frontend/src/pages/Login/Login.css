@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/* Login Container - Split Layout with Grid */
+.login-container {
+  @apply min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden;
+}
+
+/* Left Side - Form Section */
+.login-left {
+  @apply flex items-center justify-center p-6 lg:p-8 bg-[var(--components-color)];
+  min-height: 100vh;
+}
+
+.login-form-wrapper {
+  @apply w-full max-w-md;
+}
+
+.login-toggle-link {
+  @apply cursor-pointer text-blue-600;
+}
+
+/* Logo */
+.logo-link {
+  @apply mb-6 flex gap-5;
+}
+
+.logo {
+  @apply h-20 w-auto rounded-2xl;
+}
+
+/* Form Card */
+.form-card {
+  @apply w-full;
+}
+
+.form-title {
+  @apply text-2xl lg:text-3xl font-bold text-gray-900 mb-1;
+}
+
+.form-subtitle {
+  @apply text-sm text-gray-600 mb-6;
+}
+
+/* Form Elements */
+.login-form {
+  @apply space-y-4;
+}
+
+.form-group {
+  @apply w-full;
+}
+
+.form-label {
+  @apply block text-xs font-medium text-gray-700 mb-1.5;
+}
+
+.form-input {
+  @apply w-full px-3! py-2.5! text-sm! border! border-gray-300! rounded-lg! focus:ring-2 focus:border-transparent outline-none transition-all duration-200 text-gray-900;
+}
+
+.form-input::placeholder {
+  @apply text-gray-400 text-sm;
+}
+
+/* Form Row for Two Columns */
+.form-row-login {
+  @apply grid grid-cols-[1.5fr_1fr] gap-3;
+}
+
+.form-col {
+  @apply w-full;
+}
+
+/* Forgot Password */
+.forgot-password {
+  @apply text-right -mt-1 mb-2;
+}
+
+.forgot-link {
+  @apply text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors cursor-pointer;
+}
+
+/* Submit Button */
+.submit-btn {
+  @apply w-full bg-[var(--primary-color)] text-white py-2.5 px-4 rounded-lg text-sm font-semibold focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Divider */
+.divider {
+  @apply flex items-center my-4;
+}
+
+.divider::before,
+.divider::after {
+  @apply flex-1 border-t border-gray-300;
+  content: '';
+}
+
+.divider span {
+  @apply px-3 text-xs text-gray-500;
+}
+
+/* Toggle Text */
+.toggle-text {
+  @apply text-center text-sm text-gray-600 mt-4;
+}
+
+.toggle-link {
+  @apply text-blue-600 font-semibold cursor-pointer hover:text-blue-700 transition-colors;
+}
+
+/* Verification Section */
+.verification-section {
+  @apply space-y-4;
+}
+
+.verification-text {
+  @apply text-sm text-gray-600 mb-4;
+}
+
+.resend-btn {
+  @apply w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-3;
+}
+
+/* Reset Password Section */
+.reset-password-section {
+  @apply space-y-4;
+}
+
+.reset-password-section .form-group {
+  @apply mb-4;
+}
+
+/* Right Side - Background Section với Grid */
+.login-right {
+  @apply hidden lg:flex relative items-center justify-center p-8;
+}
+
+.background-image {
+  @apply absolute inset-0 w-full h-full object-contain opacity-40;
+}
+
+.background-overlay {
+  @apply relative z-10 flex items-center justify-center p-8;
+}
+
+.background-content {
+  @apply text-center text-white max-w-md;
+}
+
+.background-title {
+  @apply text-3xl lg:text-4xl font-bold mb-3 leading-tight;
+}
+
+.background-description {
+  @apply text-sm lg:text-base text-blue-50;
+}
+
+/* Compact spacing for sign-up form */
+.login-form .form-group + .form-group {
+  @apply mt-3;
+}
+
+.login-form .form-row + .form-group {
+  @apply mt-3;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1023px) {
+  .login-container {
+    @apply grid-cols-1;
+  }
+  
+  .login-left {
+    @apply min-h-screen py-8;
+  }
+  
+  .form-title {
+    @apply text-xl;
+  }
+  
+  .login-form-wrapper {
+    @apply max-w-sm;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .login-left {
+    @apply p-6;
+  }
+  
+  .form-title {
+    @apply text-2xl;
+  }
+  
+  .background-title {
+    @apply text-2xl;
+  }
+  
+  .background-description {
+    @apply text-sm;
+  }
+}
+
+/* Large screens - more comfortable spacing */
+@media (min-width: 1280px) {
+  .login-form {
+    @apply space-y-5;
+  }
+  
+  .form-input {
+    @apply py-3;
+  }
+  
+  .submit-btn {
+    @apply py-3;
+  }
+  
+  .form-label {
+    @apply text-sm mb-2;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Focus States Enhancement */
+.form-input:focus {
+  @apply shadow-md;
+}
+
+.submit-btn:hover {
+  @apply shadow-lg transform scale-[1.02];
+}
+
+.social-btn:hover {
+  @apply shadow-md transform scale-[1.01];
+}

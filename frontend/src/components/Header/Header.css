@@ -1,0 +1,513 @@
+@import "tailwindcss";
+
+header {
+  @apply w-full h-[50px];
+}
+
+header img {
+  @apply w-full h-full object-cover;
+}
+
+nav {
+  @apply grid grid-cols-3 h-full mx-30;
+}
+
+.nav-left {
+  @apply p-4;
+}
+
+.nav-left img {
+  @apply w-[50%] h-full object-contain;
+}
+
+.nav-right {
+  @apply grid grid-cols-5 place-items-center;
+}
+
+.nav-icons {
+  @apply w-7 h-7
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+.nav-search {
+  @apply relative grid grid-cols-[90%_10%] m-10 px-2 border rounded-lg;
+}
+
+.nav-search input:focus {
+  @apply border-0! shadow-none!;
+}
+
+.input-search-main {
+  @apply px-4 py-2 outline-none;
+}
+
+/* Button Search */
+.btn-search {
+  @apply p-2 text-gray-500 hover:text-gray-800 transition-colors duration-200 rounded-full hover:bg-gray-100;
+}
+
+/* Hộp gợi ý (Dropdown) */
+.suggest-box {
+  @apply absolute left-0 right-0 mt-15 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50;
+}
+
+/* Từng dòng gợi ý */
+.suggest-item {
+  @apply px-4 py-3 text-sm text-gray-700 cursor-pointer transition-colors duration-150 border-b border-gray-50 last:border-none;
+}
+
+.suggest-item:hover {
+  @apply bg-gray-50 text-gray-900 font-medium;
+}
+
+/* Animation nhẹ khi mở box gợi ý */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== DANH MỤC DROPDOWN (HOVER) ==================== */
+/* Category Dropdown Container */
+.category-dropdown-container {
+  @apply relative;
+}
+
+/* Category Button */
+.category-button {
+  @apply flex flex-col items-center cursor-pointer 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+/* Dropdown Menu */
+.category-dropdown-menu {
+  @apply absolute top-full
+         bg-white rounded-2xl shadow-2xl
+         p-5 z-[1000] mt-4
+         min-w-[900px] max-w-[1100px];
+  
+  /* Hidden by default */
+  @apply opacity-0 invisible pointer-events-none;
+  transform: translateX(-50%) translateY(-10px);
+  
+  /* Smooth transition */
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Show dropdown when open */
+.category-dropdown-open {
+  @apply opacity-100 visible pointer-events-auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Category Grid */
+.category-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 
+         gap-3 mb-4;
+}
+
+/* Category Item */
+.category-item {
+  @apply flex items-center gap-3 p-3.5 
+         bg-white border-2 border-gray-200 rounded-xl 
+         hover:bg-[var(--components-color)] 
+         hover:-translate-y-1 hover:shadow-lg 
+         transition-all duration-300 
+         relative overflow-hidden;
+}
+
+/* Background overlay on hover */
+.category-item-overlay {
+  @apply absolute inset-0 
+         transition-all duration-300 -z-10;
+}
+
+/* Icon with gradient */
+.category-item-icon {
+  @apply w-11 h-11 rounded-lg 
+         flex items-center justify-center flex-shrink-0 
+         transition-all duration-300 ;
+}
+
+.category-item-icon-inner {
+  @apply text-[black] text-xl;
+}
+
+/* Content */
+.category-item-content {
+  @apply flex-1 min-w-0 flex items-center justify-between gap-2;
+}
+
+.category-item-title {
+  @apply text-sm font-semibold text-gray-800 
+         line-clamp-2 transition-colors;
+}
+
+.category-item-arrow {
+  @apply w-4 h-4 text-gray-400  
+         transition-all flex-shrink-0;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  @apply overflow-hidden;
+}
+
+/* Category Footer */
+.category-footer {
+  @apply pt-3 border-t-2 border-gray-100;
+}
+
+/* View All Button */
+.category-view-all {
+  @apply flex items-center justify-center gap-2 
+         w-full py-3 px-4 
+         bg-gradient-to-r from-[var(--primary-color)] to-red-600 
+         hover:from-red-600 hover:to-[var(--primary-color)] 
+         text-white rounded-lg font-semibold 
+         shadow-md hover:shadow-lg hover:-translate-y-0.5 
+         transition-all duration-300;
+}
+
+/* ==================== THÔNG BÁO DROPDOWN (CLICK) ==================== */
+/* Notification Container */
+.notification-container {
+  @apply relative;
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+  @apply absolute top-full left-1/2 -translate-x-1/2 mt-2
+         bg-white shadow-2xl rounded-xl border border-gray-100
+         z-[9999]
+         w-[380px] max-h-[500px]
+         overflow-hidden
+         transition-all duration-200 ease-in-out;
+}
+
+/* Dropdown Header */
+.notification-header {
+  @apply px-4 py-3 border-b border-gray-100
+         bg-gradient-to-r from-blue-50 to-white
+         sticky top-0 z-10;
+}
+
+.notification-header h3 {
+  @apply text-base font-semibold text-gray-800;
+}
+
+.notification-dot {
+  @apply absolute top-0 right-5
+         w-4 h-4
+         bg-red-500
+         rounded-full
+         border-2 border-white
+         animate-pulse
+         shadow-md;
+}
+
+/* Notification List Container */
+.notification-list {
+  @apply overflow-y-auto max-h-[400px];
+}
+
+/* Notification Item */
+.notification-item {
+  @apply pl-8 py-3 border-b border-gray-50
+         transition-all duration-200
+         hover:bg-blue-50 cursor-pointer
+         relative;
+}
+
+.notification-item:last-child {
+  @apply border-b-0;
+}
+
+/* Unread Notification */
+.notification-unread {
+  @apply bg-blue-50/50;
+}
+
+.notification-unread::before {
+  content: '';
+  @apply absolute left-2 top-1/2 -translate-y-1/2
+         w-2 h-2 bg-blue-500 rounded-full;
+}
+
+.notification-unread .notification-content {
+  @apply pl-3;
+}
+
+/* Notification Content */
+.notification-content {
+  @apply flex flex-col gap-1;
+}
+
+.notification-title {
+  @apply text-sm font-medium text-gray-800 line-clamp-2;
+}
+
+.notification-message {
+  @apply text-xs text-gray-600 line-clamp-2;
+}
+
+.notification-link {
+  @apply text-sm font-medium text-gray-800
+         hover:text-blue-600
+         transition-colors duration-150
+         block;
+}
+
+/* Notification Time */
+.notification-time {
+  @apply text-xs text-gray-400 mt-1 flex items-center gap-1;
+}
+
+.notification-time svg {
+  @apply w-3 h-3;
+}
+
+/* Empty State */
+.notification-empty {
+  @apply py-12 text-center;
+}
+
+.notification-empty svg {
+  @apply w-16 h-16 mx-auto mb-3 text-gray-300;
+}
+
+.notification-empty p {
+  @apply text-sm text-gray-400;
+}
+
+/* Footer Actions */
+.notification-footer {
+  @apply border-t border-gray-100
+         sticky bottom-0 bg-white;
+}
+
+.notification-more-btn {
+  @apply w-full py-3 text-sm text-blue-600 font-medium
+         hover:bg-blue-50
+         transition-all duration-150
+         flex items-center justify-center gap-2;
+}
+
+.notification-more-btn:hover {
+  @apply text-blue-700;
+}
+
+/* Badge for Unread Count */
+.notification-badge {
+  @apply absolute -top-1 -right-1
+         bg-red-500 text-white
+         text-xs font-bold
+         rounded-full
+         min-w-[18px] h-[18px]
+         flex items-center justify-center
+         shadow-md;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .notification-dropdown {
+    @apply w-[calc(100vw-32px)] right-1/2 translate-x-1/2
+           max-w-[380px];
+  }
+}
+
+/* Custom Scrollbar */
+.notification-list::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Animation for dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-dropdown {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* ==================== TÀI KHOẢN ==================== */
+.account-menu-container {
+  @apply relative mx-4;
+}
+
+.account-menu-link {
+  @apply flex flex-col items-center text-inherit 
+         hover:text-[var(--primary-color)] transition-colors;
+}
+
+/* Account popup cho trạng thái chưa đăng nhập */
+.account-popup {
+  @apply absolute top-full -translate-x-[75%] mt-2
+         bg-white shadow-xl rounded-lg p-2
+         z-50 min-w-[10rem]
+         opacity-0 invisible 
+         transition-all duration-200 ease-in-out
+}
+
+.account-popup-link {
+  @apply block text-center py-2 px-4 rounded-md w-2xs
+         text-lg font-medium transition-all duration-150;
+}
+
+.account-menu-container:hover .account-popup,
+.account-menu-container:hover .account-logged-popup {
+  @apply opacity-100 visible;
+}
+
+.login {
+  @apply bg-[var(--primary-color)] text-[var(--components-color)]
+         hover:opacity-90;
+}
+
+.register {
+  @apply bg-[var(--components-color)] border-2 text-[var(--primary-color)]
+         hover:bg-gray-50;
+}
+
+.account-popup-link + .account-popup-link {
+  @apply mt-1;
+}
+
+/* Account popup cho trạng thái đã đăng nhập */
+.account-logged-popup {
+  @apply absolute top-full -translate-x-[75%] mt-2 
+         w-[280px] bg-white rounded-lg shadow-xl 
+         z-50 opacity-0 invisible 
+         transition-all duration-200 overflow-hidden;
+}
+
+.account-logged-header {
+  @apply flex items-center gap-3 p-4 
+         cursor-pointer hover:bg-gray-50 
+         transition-colors;
+}
+
+.account-logged-avatar {
+  @apply w-12 h-12 rounded-full 
+         bg-gradient-to-br from-red-400 to-pink-500 
+         flex items-center justify-center flex-shrink-0 
+         overflow-hidden;
+}
+
+.account-logged-avatar-text {
+  @apply text-white font-semibold text-lg;
+}
+
+.account-logged-info {
+  @apply flex-1 min-w-0;
+}
+
+.account-logged-name {
+  @apply text-base font-semibold text-gray-800 truncate;
+}
+
+.account-logged-subtitle {
+  @apply text-sm text-gray-500 truncate;
+}
+
+.account-logged-arrow {
+  @apply w-5 h-5 text-gray-400 flex-shrink-0;
+}
+
+.account-logged-divider {
+  @apply h-px bg-gray-200;
+}
+
+.account-logged-menu {
+  @apply py-2 w-full grid grid-rows-4 grid-cols-1;
+}
+
+.account-logged-menu-item {
+  @apply flex items-center gap-3 px-4 py-3 text-sm 
+         transition-colors;
+}
+
+.account-logged-menu-item:not(.active) {
+  @apply text-gray-700 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.account-logged-menu-item.active {
+  @apply bg-gray-100 text-[var(--primary-color)] font-medium;
+}
+
+.account-logged-logout {
+  @apply flex items-center gap-3 px-4 py-3 text-sm 
+         text-gray-700 hover:bg-gray-50 hover:text-gray-900 
+         transition-colors w-full;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .category-dropdown-menu {
+    @apply min-w-[800px] max-w-[900px];
+  }
+}
+
+@media (max-width: 992px) {
+  .category-dropdown-menu {
+    @apply min-w-[600px] max-w-[700px];
+  }
+}
+
+@media (max-width: 768px) {
+  .category-dropdown-menu {
+    @apply min-w-[90vw] max-w-[90vw] p-4;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .category-dropdown-open {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .account-menu-container,
+  .category-container,
+  .notification-container {
+    @apply mx-2;
+  }
+  
+  .nav-icons {
+    @apply w-6 h-6;
+  }
+  
+  .account-popup,
+  .category-dropdown {
+    @apply min-w-[8rem];
+  }
+  
+  .notification-dropdown {
+    @apply min-w-[280px];
+  }
+}
+
+@media (max-width: 640px) {
+  .category-dropdown-menu {
+    @apply min-w-[95vw] max-w-[95vw];
+  }
+}

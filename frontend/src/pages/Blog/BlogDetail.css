@@ -1,0 +1,332 @@
+@import "tailwindcss";
+
+/* Page Layout */
+.blog-page {
+  @apply mx-30 h-fit;
+}
+
+.blog-container {
+  @apply w-full px-4 py-4! lg:px-6 lg:py-6;
+}
+
+/* Main Layout - Two Columns */
+.blog-layout {
+  @apply grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 lg:gap-8;
+}
+
+/* Left Side - Post Section */
+.post-section {
+  @apply w-full;
+}
+
+/* Post Article */
+.post-article {
+  @apply relative;
+  background: #fffdfd;
+  @apply rounded-lg p-6 lg:p-8 shadow-sm;
+}
+
+/* Back Button - Inside Article Top Left */
+.back-button {
+  @apply inline-flex items-center gap-2 mb-6
+         px-4 py-2 rounded-lg
+         text-sm font-medium
+         transition-all duration-200;
+  background: #d80000;
+  color: #fffdfd;
+}
+
+.back-button:hover {
+  @apply shadow-lg transform scale-105;
+  background: #b00000;
+}
+
+.back-button svg {
+  @apply flex-shrink-0;
+}
+
+/* Back Button for Error State */
+.back-button-error {
+  @apply inline-flex items-center gap-2
+         px-4 py-2 rounded-lg
+         text-sm font-medium
+         transition-all duration-200;
+  background: #d80000;
+  color: #fffdfd;
+}
+
+.back-button-error:hover {
+  @apply shadow-lg;
+  background: #b00000;
+}
+
+/* Loading State */
+.loading-state {
+  @apply flex flex-col items-center justify-center py-20 gap-4;
+}
+
+.spinner {
+  @apply w-12 h-12 border-4 border-gray-200 rounded-full animate-spin;
+  border-top-color: #d80000;
+}
+
+.loading-state p {
+  @apply text-gray-500 text-sm;
+}
+
+/* Error State */
+.error-state {
+  @apply flex flex-col items-center gap-6 py-20;
+}
+
+.error-message {
+  @apply text-red-600 text-center;
+}
+
+/* Post Header */
+.post-header {
+  @apply mb-6 pb-6 border-b border-gray-200;
+}
+
+.post-title {
+  @apply text-3xl lg:text-4xl font-bold text-gray-900 mb-4;
+}
+
+.post-meta {
+  @apply flex flex-wrap gap-4 text-sm text-gray-600;
+}
+
+.meta-item {
+  @apply flex items-center gap-2;
+}
+
+.meta-item svg {
+  color: #d80000;
+}
+
+/* Post Cover Image */
+.post-cover {
+  @apply my-6 rounded-lg overflow-hidden place-items-center;
+}
+
+.post-cover img {
+  @apply w-80 h-80 max-h-[20rem] object-cover;
+}
+
+/* Post Content */
+.post-content {
+  @apply text-gray-700 text-base lg:text-lg leading-relaxed;
+}
+
+.post-content p {
+  @apply mb-4;
+}
+
+.post-content p:last-child {
+  @apply mb-0;
+}
+
+/* Right Side - Comments Sidebar */
+.comments-sidebar {
+  @apply w-full lg:sticky lg:top-8 lg:self-start;
+}
+
+.comments-section {
+  background: #fffdfd;
+  @apply rounded-lg p-6 shadow-sm;
+  @apply max-h-[calc(100vh-4rem)] overflow-y-auto;
+}
+
+/* Comments Header */
+.comments-header {
+  @apply flex items-center gap-3 mb-6 pb-4 border-b border-gray-200;
+}
+
+.comments-header svg {
+  color: #d80000;
+}
+
+.comments-header h2 {
+  @apply text-xl font-bold text-gray-900;
+}
+
+/* Comment Form */
+.comment-form-wrapper {
+  @apply mb-6 p-4 bg-gray-50 rounded-lg;
+}
+
+.form-title-blog {
+  @apply text-xl font-semibold text-gray-900 mb-6;
+}
+
+.comment-form {
+  @apply space-y-3;
+}
+
+.form-group {
+  @apply space-y-1.5;
+}
+
+.form-group label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-group input,
+.form-group textarea {
+  @apply w-full px-3 py-2 text-sm
+         border border-gray-300 rounded-lg
+         focus:outline-none focus:ring-2 focus:border-transparent
+         transition-all duration-200;
+  background: #fffdfd;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #d80000;
+  box-shadow: 0 0 0 3px rgba(216, 0, 0, 0.1);
+}
+
+.form-group textarea {
+  @apply min-h-[80px];
+}
+
+.submit-button {
+  @apply w-full inline-flex items-center justify-center gap-2
+         px-4 py-2 text-sm font-medium
+         rounded-lg
+         transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+  background: #d80000;
+  color: #fffdfd;
+}
+
+.submit-button:hover:not(:disabled) {
+  @apply shadow-lg transform scale-105;
+  background: #b00000;
+}
+
+/* Comments List */
+.comments-list {
+  @apply space-y-3;
+}
+
+/* Empty Comments */
+.empty-comments {
+  @apply flex flex-col items-center justify-center py-8 text-center;
+}
+
+.empty-comments svg {
+  @apply text-gray-300 mb-3;
+}
+
+.empty-comments p {
+  @apply text-gray-600 font-medium mb-1 text-sm;
+}
+
+.empty-comments span {
+  @apply text-xs text-gray-400;
+}
+
+/* Comment Item */
+.comment-item {
+  @apply flex gap-3 p-3 rounded-lg border border-gray-100
+         hover:bg-gray-50 transition-colors duration-200;
+}
+
+.comment-avatar {
+  @apply flex-shrink-0 w-9 h-9 rounded-full
+         flex items-center justify-center
+         font-semibold text-xs;
+  background: #d80000;
+  color: #fffdfd;
+}
+
+.comment-body {
+  @apply flex-1 min-w-0;
+}
+
+.comment-header {
+  @apply flex items-start justify-between gap-2 mb-1.5;
+}
+
+.commenter-name {
+  @apply font-semibold text-gray-900 text-sm;
+}
+
+.comment-date {
+  @apply flex items-center gap-1 text-xs text-gray-500 flex-shrink-0;
+}
+
+.comment-content {
+  @apply text-sm text-gray-700 leading-relaxed;
+}
+
+/* Custom Scrollbar for Comments Section */
+.comments-section::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.comments-section::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+.comments-section::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded;
+}
+
+.comments-section::-webkit-scrollbar-thumb:hover {
+  background: #d80000;
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+  .blog-layout {
+    @apply grid-cols-1;
+  }
+
+  .comments-sidebar {
+    @apply static;
+  }
+
+  .comments-section {
+    @apply max-h-none;
+  }
+
+  .post-article {
+    @apply p-4;
+  }
+
+  .post-title {
+    @apply text-2xl;
+  }
+
+  .post-meta {
+    @apply flex-col gap-2;
+  }
+
+  .comments-section {
+    @apply p-4;
+  }
+
+  .comment-form-wrapper {
+    @apply p-3;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-container {
+    @apply px-3 py-6;
+  }
+
+  .back-button {
+    @apply text-xs px-3 py-1.5;
+  }
+
+  .comment-item {
+    @apply flex-col gap-2;
+  }
+
+  .comment-header {
+    @apply flex-col items-start gap-1;
+  }
+}

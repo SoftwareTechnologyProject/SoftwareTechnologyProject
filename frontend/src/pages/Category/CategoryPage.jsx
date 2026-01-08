@@ -1,0 +1,353 @@
+﻿import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import axiosClient from "../../api/axiosClient";
+import { Link } from "react-router-dom";
+import ex1 from "../../assets/ex1.jpg";
+import "./CategoryPage.css";
+
+const CategoryPage = () => {
+  const { categorySlug } = useParams();
+  const normalizedSlug = categorySlug?.toLowerCase() || "";
+  const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(32);
+  const [sortBy, setSortBy] = useState("newest"); // newest, price-asc, price-desc, trending
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [selectedPublishers, setSelectedPublishers] = useState([]);
+
+  const categoryMap = {
+    "agriculture": "Sách Nông - Lâm - Ngư Nghiệp",
+    "manga": "Truyện Tranh, Manga, Comic",
+    "magazines": "Tạp Chí - Catalogue",
+    "cooking": "Ingredients, Methods & Appliances",
+    "desserts": "Baking - Desserts",
+    "magazines-alt": "Magazines",
+    "beverages-wine": "Beverages & Wine",
+    "drinks": "Drinks & Beverages",
+    "travel": "Discovery & Exploration",
+    "vietnam": "Vietnam",
+    "vegetarian": "Vegetarian & Vegan",
+    "anthropology": "Anthropology",
+    "europe": "Europe",
+    "guidebook": "Guidebook series",
+    "diet": "Diets - Weight Loss - Nutrition",
+    "cooking-education": "Cooking Education & Reference",
+    "asia": "Asia"
+  };
+
+  const categoryName = categoryMap[normalizedSlug] || "Sản Phẩm";
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchBooksByCategory = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosClient.get("/books?page=0&size=500");
+        const respData = response.data || {};
+        let allBooks = [];
+        if (Array.isArray(respData)) {
+          allBooks = respData;
+        } else if (Array.isArray(respData.value)) {
+          allBooks = respData.value;
+        } else if (Array.isArray(respData.content)) {
+          allBooks = respData.content;
+        } else {
+          // fallback: try to find any array in response
+          allBooks = [];
+        }
+
+        if (!mounted) return;
+
+        const targetCategory = categoryMap[normalizedSlug];
+        if (targetCategory) {
+          const filteredByCategory = allBooks.filter((book) =>
+            book.categoryNames?.includes(targetCategory)
+          );
+          setBooks(filteredByCategory);
+        } else {
+          setBooks(allBooks);
+        }
+      } catch (err) {
+        console.error("Error fetching books:", err);
+        setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại!");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchBooksByCategory();
+
+    return () => {
+      mounted = false;
+    };
+  }, [normalizedSlug]);
+
+  // Apply filters and sorting
+  useEffect(() => {
+    let result = [...books];
+
+    // Filter by price
+    result = result.filter((book) => {
+      const price = book.variants?.[0]?.price || 0;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
+
+    // Filter by publisher
+    if (selectedPublishers.length > 0) {
+      result = result.filter((book) =>
+        selectedPublishers.includes(book.publisherName)
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case "price-asc":
+        result.sort(
+          (a, b) => (a.variants?.[0]?.price || 0) - (b.variants?.[0]?.price || 0)
+        );
+        break;
+      case "price-desc":
+        result.sort(
+          (a, b) => (b.variants?.[0]?.price || 0) - (a.variants?.[0]?.price || 0)
+        );
+        break;
+      case "newest":
+        result.sort((a, b) => b.id - a.id);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredBooks(result);
+    setCurrentPage(0);
+  }, [books, priceRange, selectedPublishers, sortBy]);
+  
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentPage]);
+
+
+  if (loading) return <div className="category-page"><p>Đang tải...</p></div>;
+  if (error) return <div className="category-page"><p className="error">{error}</p></div>;
+
+  const uniquePublishers = [
+    ...new Set(books.map((b) => b.publisherName).filter(Boolean)),
+  ];
+
+  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage) || 0;
+  const paginatedBooks = filteredBooks.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  return (
+    <div className="category-page">
+      <div className="category-header">
+        <h1>{categoryName}</h1>
+        <p>{filteredBooks.length} sản phẩm</p>
+      </div>
+
+      <div className="category-container">
+        <aside className="filter-sidebar">
+          <div className="filter-section">
+            <h3>Giá</h3>
+            <div className="price-inputs">
+              <input
+                type="number"
+                value={priceRange[0]}
+                onChange={(e) =>
+                  setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])
+                }
+                placeholder="Từ"
+              />
+              <span>-</span>
+              <input
+                type="number"
+                value={priceRange[1]}
+                onChange={(e) =>
+                  setPriceRange([priceRange[0], parseInt(e.target.value) || 1000000])
+                }
+                placeholder="Đến"
+              />
+            </div>
+
+            <div className="price-ranges">
+              <label className="checkbox-item">
+                <input
+                  type="radio"
+                  name="price"
+                  checked={priceRange[0] === 0 && priceRange[1] === 1000000}
+                  onChange={() => setPriceRange([0, 1000000])}
+                />
+                Tất cả giá
+              </label>
+              <label className="checkbox-item">
+                <input
+                  type="radio"
+                  name="price"
+                  checked={priceRange[0] === 0 && priceRange[1] === 100000}
+                  onChange={() => setPriceRange([0, 100000])}
+                />
+                Dưới 100K
+              </label>
+              <label className="checkbox-item">
+                <input
+                  type="radio"
+                  name="price"
+                  checked={priceRange[0] === 100000 && priceRange[1] === 300000}
+                  onChange={() => setPriceRange([100000, 300000])}
+                />
+                100K - 300K
+              </label>
+              <label className="checkbox-item">
+                <input
+                  type="radio"
+                  name="price"
+                  checked={priceRange[0] === 300000 && priceRange[1] === 1000000}
+                  onChange={() => setPriceRange([300000, 1000000])}
+                />
+                Trên 300K
+              </label>
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <h3>Nhà cung cấp</h3>
+            <div className="publishers-list">
+              {uniquePublishers.map((publisher) => (
+                <label key={publisher} className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    checked={selectedPublishers.includes(publisher)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPublishers([...selectedPublishers, publisher]);
+                      } else {
+                        setSelectedPublishers(
+                          selectedPublishers.filter((p) => p !== publisher)
+                        );
+                      }
+                    }}
+                  />
+                  {publisher}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="btn-clear-filter"
+            onClick={() => {
+              setPriceRange([0, 1000000]);
+              setSelectedPublishers([]);
+              setSortBy("newest");
+            }}
+          >
+            Xóa lọc
+          </button>
+        </aside>
+
+        <section className="products-section">
+          <div className="products-toolbar">
+            <div className="sort-container">
+              <label htmlFor="sort">Sắp xếp:</label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="price-asc">Giá: Thấp đến cao</option>
+                <option value="price-desc">Giá: Cao đến thấp</option>
+              </select>
+            </div>
+          </div>
+
+          {paginatedBooks.length === 0 ? (
+            <div className="no-products">
+              <p>Không có sản phẩm nào phù hợp với bộ lọc của bạn.</p>
+            </div>
+          ) : (
+            <>
+              <div className="products-grid">
+                {paginatedBooks.map((book, index) => {
+                  const variant = book.variants?.[0];
+                  const imageUrl = variant?.imageUrls?.[0] || ex1;
+                  const price = variant?.price || 0;
+                  const oldPrice = Math.round(price * 1.1);
+
+                  return (
+                    <Link
+                      key={book.id || index}
+                      to={`/books/${book.id}`}
+                      className="product-card"
+                    >
+                      <div className="product-image">
+                        <img
+                          src={imageUrl}
+                          alt={book.title}
+                          onError={(e) => {
+                            e.target.src = ex1;
+                          }}
+                        />
+                      </div>
+                      <div className="product-info">
+                        <div className="label-price">
+                          <h3>{book.title}</h3>
+                          <p className="author">{book.authorNames?.join(", ")}</p>
+                          <p className="special-price">
+                            <span className="price-new">{price.toLocaleString('vi-VN')} đ</span>
+                            <span className="percent-discount">-10%</span>
+                          </p>
+                          <span className="price-old">{oldPrice.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                  >
+                    Trước
+                  </button>
+                  {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                    const pageNum = currentPage > 2 ? currentPage - 2 + i : i;
+                    if (pageNum >= totalPages) return null;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={currentPage === pageNum ? "active" : ""}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                    disabled={currentPage === totalPages - 1}
+                  >
+                    Sau
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default CategoryPage;

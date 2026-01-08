@@ -1,0 +1,141 @@
+.order-detail-container {
+  width: 850px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* Top Order Code */
+.order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-status-final {
+  padding: 6px 12px;
+  background: #e5f8e5;
+  color: green;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.step {
+  text-align: center;
+  width: 20%;
+}
+
+.step.active {
+  opacity: 1;
+  font-weight: bold;
+}
+
+.line {
+  flex: 1;
+  height: 3px;
+  background: #ccc;
+  margin: 0 10px;
+}
+
+/* Shipping */
+.shipping-info {
+  background: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Products */
+.product-list h3 {
+  margin-bottom: 10px;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px 60px 120px;
+  gap: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #ececec;
+  align-items: center;
+}
+
+.product-img {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.product-info h4 {
+  margin: 0;
+}
+
+.sku {
+  font-size: 12px;
+  color: #777;
+}
+
+/* Prices */
+.product-price .price {
+  font-weight: bold;
+}
+
+.product-total {
+  font-weight: bold;
+}
+
+/* Total */
+.total-section {
+  font-size: 20px;
+  padding: 20px 0;
+  border-top: 2px solid #ddd;
+  margin-top: 15px;
+}
+
+.total-section .row {
+  display: flex;
+  justify-content: space-between; /* 👈 trái – phải */
+  margin: 8px 0;
+}
+
+.total-section .total {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.back-btn {
+  margin-top: 20px;
+  padding: 8px 15px;
+  background: #ddd;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.timeline {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.step {
+  text-align: center;
+  font-weight: bold;
+  width: 120px; /* rộng hơn chút cho đẹp */
+  color: black ; /* mặc định màu đen */
+}
+
+.line {
+  height: 3px;
+  flex: 1;
+  background-color: black; /* luôn đen */
+  margin: 0 10px;
+}

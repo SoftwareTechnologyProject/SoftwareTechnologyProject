@@ -1,0 +1,80 @@
+.payment-failed {
+    width: 100%;
+}
+
+.payment-failed__content {
+    margin: 16px auto;
+    width: calc(100% - 192px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 500px;
+    background-color: #fffdfd;
+    border-radius: 0.75rem;
+}
+
+.payment-failed__icon {
+    width: 130px;
+    height: 130px;
+    fill: #dc3545;
+}
+
+.payment-failed__title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #dc3545;
+}
+
+.payment-failed__message {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.payment-failed__message p {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.payment-failed__message-sub {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 12px;
+}
+
+.payment-failed__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-failed__btn {
+    padding: 8px 80px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.retry-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.retry-btn:hover {
+    opacity: 0.9;
+}
+
+.home-btn {
+    background-color: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.home-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}

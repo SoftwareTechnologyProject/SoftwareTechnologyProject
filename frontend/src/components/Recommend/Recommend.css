@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+.recommend {
+    @apply relative mx-30 grid gap-4 rounded-2xl;
+}
+
+.recommend > img {
+    @apply w-full rounded-2xl;
+}
+
+.recommend-detail {
+    @apply absolute grid grid-cols-5 gap-4 mt-50 p-5 pb-10 bg-[var(--components-color)] rounded-2xl;
+}
+
+/* Cập nhật khung chứa ảnh giống các file khác */
+.recommend-detail img {
+    @apply w-full h-[250px] object-contain p-2.5 bg-gray-100 mb-5;
+}
+
+/* Loading Placeholders */
+.book-loading-placeholder {
+    @apply animate-pulse bg-white rounded-lg p-2.5;
+}
+
+.loading-img {
+    @apply w-full h-[250px] bg-gray-300 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-300 rounded mt-2 w-3/4;
+}
+
+/* Thêm hover effect giống các file khác */
+.book-view {
+    @apply px-5 bg-white rounded-lg overflow-hidden transition-all duration-300 shadow-md;
+}
+
+.book-view:hover {
+    @apply -translate-y-1 shadow-xl;
+}
+
+.label-price {
+    @apply pt-2;
+}
+
+.special-price {
+    @apply pt-2;
+}
+
+.label-price .price-new {
+    @apply text-xl font-bold text-[var(--primary-color)];
+}
+
+.label-price .percent-discount {
+    @apply bg-[var(--primary-color)] text-[var(--components-color)] rounded-xl p-2 mx-3;
+}
+
+.label-price .price-old {
+    @apply line-through;
+}
